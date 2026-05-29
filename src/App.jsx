@@ -432,15 +432,27 @@ function QuestionScreen({ question, index, total, selected, onAnswer, onPrev }) 
 }
 
 // ── Tab content components ──
+// Generate a default display from the type string when real scores aren't available
+function defaultDisplay(type) {
+  const labels = {
+    E: "Extrovertido", I: "Introvertido",
+    N: "Intuitivo",    S: "Sensorial",
+    F: "Sentimental",  T: "Racional",
+    J: "Calificador",  P: "Perceptivo",
+  };
+  const defaults = { EI: 65, SN: 62, TF: 60, JP: 63 };
+  const [e,s,t,j] = type.split('');
+  return {
+    EI: { letter: e, pct: defaults.EI, label: labels[e] },
+    SN: { letter: s, pct: defaults.SN, label: labels[s] },
+    TF: { letter: t, pct: defaults.TF, label: labels[t] },
+    JP: { letter: j, pct: defaults.JP, label: labels[j] },
+  };
+}
+
 function TabPerfil({ type, display, info }) {
-  const entries = display ? Object.entries(display) : [];
-  if (!entries.length) return (
-    <Card>
-      <p style={{ color: "#555", fontSize: "0.85rem", textAlign: "center", padding: "1rem 0" }}>
-        Repite el test para ver tu desglose por dimensión.
-      </p>
-    </Card>
-  );
+  const effectiveDisplay = display || defaultDisplay(type);
+  const entries = Object.entries(effectiveDisplay);
   return (
     <div>
       <Card>
@@ -904,15 +916,13 @@ function ResultsScreen({ type, display, onRetake }) {
         <div style={{ color: "#555", fontSize: "0.85rem", lineHeight: 1.6, fontStyle: "italic", maxWidth: "380px", margin: "0 auto" }}>"{info.tagline}"</div>
 
         {/* Dimension pills */}
-        {display && (
-          <div style={{ display: "flex", justifyContent: "center", gap: "6px", marginTop: "1.25rem", flexWrap: "wrap" }}>
-            {Object.entries(display).map(([dim, data]) => (
-              <div key={dim} style={{ background: "#0f0f0f", border: `1px solid ${info.color}22`, borderRadius: "8px", padding: "4px 10px", fontSize: "0.72rem", color: "#888" }}>
-                <span style={{ color: info.color, fontWeight: 700 }}>{data.letter}</span> {data.pct}%
-              </div>
-            ))}
-          </div>
-        )}
+        <div style={{ display: "flex", justifyContent: "center", gap: "6px", marginTop: "1.25rem", flexWrap: "wrap" }}>
+          {Object.entries(display || defaultDisplay(type)).map(([dim, data]) => (
+            <div key={dim} style={{ background: "#0f0f0f", border: `1px solid ${info.color}22`, borderRadius: "8px", padding: "4px 10px", fontSize: "0.72rem", color: "#888" }}>
+              <span style={{ color: info.color, fontWeight: 700 }}>{data.letter}</span> {data.pct}%
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Tabs */}
