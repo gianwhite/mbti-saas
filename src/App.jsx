@@ -1021,8 +1021,8 @@ function TabCompatibilidad({ analysis }) {
             </div>
             <p style={{ color: "#bbb", fontSize: "0.85rem", lineHeight: 1.65, margin: "0 0 0.6rem" }}>{match.por_que}</p>
             <div style={{ background: "#0f0f0f", borderRadius: "8px", padding: "0.65rem 0.85rem" }}>
-              <div style={{ color: "#6C63FF", fontSize: "0.68rem", letterSpacing: "0.1em", marginBottom: "0.3rem" }}>CÓMO ATRAERLA</div>
-              <div style={{ color: "#aaa", fontSize: "0.83rem", lineHeight: 1.6 }}>{match.como_atraerla}</div>
+              <div style={{ color: "#6C63FF", fontSize: "0.68rem", letterSpacing: "0.1em", marginBottom: "0.3rem" }}>CÓMO CONECTAR</div>
+              <div style={{ color: "#aaa", fontSize: "0.83rem", lineHeight: 1.6 }}>{match.como_conectar}</div>
             </div>
           </Card>
         );
