@@ -1120,7 +1120,7 @@ function TabAdvisor({ type, typeColor }) {
   const SUGGESTIONS = [
     "¿Cuáles son mis mayores errores al socializar?",
     "¿Cómo proyecto más atracción siendo " + type + "?",
-    "¿Qué tipo de mujer me complementa mejor?",
+    "¿Qué tipo de personalidad me complementa mejor?",
     "¿Cómo manejo el conflicto en una relación?",
   ];
 
@@ -1547,6 +1547,56 @@ function ResultsScreen({ type, display, onRetake }) {
           ))}
         </div>
       </div>
+
+      {/* ── Unlock Banner (non-paid only) ── */}
+      {!isPaid && (
+        <div className="fade-up" style={{ background: `linear-gradient(135deg, #0f0f0f 0%, ${info.color}0a 100%)`, border: `1px solid ${info.color}44`, borderRadius: "18px", padding: "1.25rem 1.4rem", marginBottom: "1.25rem", position: "relative", overflow: "hidden" }}>
+          {/* Glow top border */}
+          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: `linear-gradient(90deg, transparent, ${info.color}99, transparent)` }} />
+
+          <div style={{ display: "flex", alignItems: "flex-start", gap: "0.85rem" }}>
+            {/* Icon */}
+            <div style={{ fontSize: "1.5rem", flexShrink: 0, marginTop: "2px" }}>🧠</div>
+
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: "0.92rem", fontWeight: 700, color: "#fff", marginBottom: "0.3rem", lineHeight: 1.3 }}>
+                Descubre qué significa ser {type} en profundidad
+              </div>
+              <div style={{ fontSize: "0.78rem", color: "#666", marginBottom: "0.85rem", lineHeight: 1.5 }}>
+                Tu perfil básico está listo. Desbloquea el análisis completo:
+              </div>
+
+              {/* Feature list */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "5px 1rem", marginBottom: "1rem" }}>
+                {[
+                  ["🧬", "Funciones cognitivas"],
+                  ["💞", "Compatibilidad de pareja"],
+                  ["⚡", "Fortalezas y sabotajes"],
+                  ["🎯", "Atracción y vínculos"],
+                  ["💼", "Carrera y liderazgo"],
+                  ["🤖", "Advisor IA ilimitado"],
+                ].map(([icon, text]) => (
+                  <div key={text} style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "0.73rem", color: "#999" }}>
+                    <span style={{ fontSize: "0.7rem" }}>{icon}</span> {text}
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={() => setShowPaywall(true)}
+                className="btn-primary"
+                style={{ width: "100%", background: `linear-gradient(135deg, ${info.color}, #6C63FF)`, color: "#fff", border: "none", borderRadius: "12px", padding: "0.85rem", fontSize: "0.92rem", fontWeight: 700, cursor: "pointer", letterSpacing: "0.02em" }}
+              >
+                Desbloquear análisis completo →
+              </button>
+
+              <div style={{ textAlign: "center", marginTop: "0.5rem", fontSize: "0.68rem", color: "#444" }}>
+                $19/mes · Cancela cuando quieras
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Tabs */}
       <div style={{ display: "flex", gap: "3px", background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: "14px", padding: "4px", marginBottom: "1.25rem", overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none", msOverflowStyle: "none" }}>
