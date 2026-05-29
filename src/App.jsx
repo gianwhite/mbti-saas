@@ -230,8 +230,8 @@ function DimensionBar({ dim, data }) {
   return (
     <div style={{ marginBottom: "1.25rem" }}>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
-        <span style={{ color: "#aaa", fontSize: "0.8rem" }}>{labels[dim]}</span>
-        <span style={{ color: "#fff", fontSize: "0.85rem", fontWeight: 600 }}>{data.letter} — {data.pct}%</span>
+        <span style={{ color: "#aaa", fontSize: "0.8rem", flexShrink: 0 }}>{labels[dim]}</span>
+        <span style={{ color: "#fff", fontSize: "0.85rem", fontWeight: 600, flexShrink: 0 }}>{data.letter} — {data.pct}%</span>
       </div>
       <div style={{ height: "6px", background: "#1e1e1e", borderRadius: "4px" }}>
         <div style={{ height: "100%", width: `${data.pct}%`, background: "linear-gradient(90deg,#6C63FF,#ff6b6b)", borderRadius: "4px", transition: "width 1s ease" }} />
@@ -1509,7 +1509,7 @@ function ResultsScreen({ type, display, onRetake }) {
   const handleShare = () => setShowShare(true);
 
   return (
-    <div style={{ maxWidth: "640px", margin: "0 auto", padding: "1.5rem 1rem 3rem" }}>
+    <div style={{ maxWidth: "640px", width: "100%", margin: "0 auto", padding: "1.5rem 1rem 3rem", boxSizing: "border-box" }}>
       {showPaywall && <PaywallModal type={type} onClose={() => setShowPaywall(false)} onPay={() => {}} />}
       {showShare   && <ShareModal type={type} info={info} onClose={() => setShowShare(false)} />}
 
@@ -1549,7 +1549,7 @@ function ResultsScreen({ type, display, onRetake }) {
       </div>
 
       {/* Tabs */}
-      <div style={{ display: "flex", gap: "3px", background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: "14px", padding: "4px", marginBottom: "1.25rem", overflowX: "auto" }}>
+      <div style={{ display: "flex", gap: "3px", background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: "14px", padding: "4px", marginBottom: "1.25rem", overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none", msOverflowStyle: "none" }}>
         {TABS.map(t => {
           const isActive  = tab === t.id;
           const isLocked  = !t.free && !isPaid;
@@ -1699,7 +1699,7 @@ function AppInner() {
         </div>
       </header>
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onSuccess={() => setShowAuthModal(false)} title="Inicia sesión o crea tu cuenta" />}
-      <main style={{ flex: 1, display: "flex", alignItems: screen === "results" ? "flex-start" : "center", justifyContent: "center", padding: "1rem" }}>
+      <main style={{ flex: 1, display: "flex", alignItems: screen === "results" ? "flex-start" : "center", justifyContent: "center", padding: screen === "results" ? "0" : "1rem", width: "100%" }}>
         <ErrorBoundary>
         {!ready ? (
           <div style={{ color: "#333", fontSize: "0.85rem" }}>...</div>

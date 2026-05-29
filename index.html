@@ -167,6 +167,10 @@
         .modal-inner { padding: 1.5rem 1.25rem !important; max-width: 100% !important; margin: 0 0.5rem !important; }
       }
 
+      /* Hide tab scrollbar globally */
+      [style*="overflowX"]::-webkit-scrollbar { display: none; }
+      .results-tabs-bar::-webkit-scrollbar { display: none; }
+
       /* Touch devices: disable hover elevation to avoid stuck states */
       @media (hover: none) {
         .card-hover:hover { transform: none; box-shadow: none; }
