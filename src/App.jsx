@@ -988,10 +988,22 @@ function AppInner() {
     if (!ready) return;
     if (user && screen === "intro") {
       const meta = user.user_metadata;
-      if (meta?.mbti_type) {
-        const savedDisplay = meta.mbti_display ? JSON.parse(meta.mbti_display) : null;
-        setResult({ type: meta.mbti_type, display: savedDisplay });
+
+      // Try Supabase metadata first, fallback to localStorage
+      const savedType    = meta?.mbti_type    || localStorage.getItem('mbti_type');
+      const savedDispStr = meta?.mbti_display || localStorage.getItem('mbti_display');
+      const savedDisplay = savedDispStr ? (() => { try { return JSON.parse(savedDispStr); } catch { return null; } })() : null;
+
+      if (savedType) {
+        setResult({ type: savedType, display: savedDisplay });
         setScreen("results");
+
+        // If data came from localStorage but wasn't in Supabase yet, sync it up
+        if (!meta?.mbti_type) {
+          supabase.auth.updateUser({
+            data: { mbti_type: savedType, mbti_display: savedDispStr || null }
+          }).catch(() => {});
+        }
       }
     }
   }, [ready, user]);
