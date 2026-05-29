@@ -1,4 +1,27 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, Component } from 'react';
+
+// ─────────────────────────────────────────────
+// ERROR BOUNDARY
+// ─────────────────────────────────────────────
+class ErrorBoundary extends Component {
+  constructor(props) { super(props); this.state = { error: null }; }
+  static getDerivedStateFromError(error) { return { error }; }
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{ padding: "2rem", textAlign: "center", color: "#ff6b6b", maxWidth: "500px", margin: "0 auto" }}>
+          <div style={{ fontSize: "2rem", marginBottom: "1rem" }}>⚠️</div>
+          <h2 style={{ color: "#fff", marginBottom: "0.5rem" }}>Algo salió mal</h2>
+          <p style={{ color: "#888", fontSize: "0.85rem", marginBottom: "1.5rem" }}>{this.state.error.message}</p>
+          <button onClick={() => window.location.reload()} style={{ background: "#6C63FF", color: "#fff", border: "none", borderRadius: "8px", padding: "0.75rem 1.5rem", cursor: "pointer", fontWeight: 600 }}>
+            Reiniciar
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 import { RAW_QUESTIONS, seededShuffle, calculateResult } from './data/questions.js';
 import { TYPE_ANALYSIS } from './data/analysis.js';
 import { TYPES } from './data/types.js';
@@ -789,10 +812,12 @@ export default function App() {
         <div style={{ fontWeight: 800, fontSize: "1rem", letterSpacing: "0.05em" }}>MBTI<span style={{ color: "#6C63FF" }}>.</span></div>
         {screen === "test" && <button onClick={handleRetake} style={{ background: "none", border: "none", color: "#444", cursor: "pointer", fontSize: "0.8rem" }}>Reiniciar</button>}
       </header>
-      <main style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }}>
+      <main style={{ flex: 1, display: "flex", alignItems: screen === "results" ? "flex-start" : "center", justifyContent: "center", padding: "1rem" }}>
+        <ErrorBoundary>
         {screen === "intro"   && <IntroScreen onStart={handleStart} />}
         {screen === "test"    && <QuestionScreen question={QUESTIONS[index]} index={index} total={QUESTIONS.length} selected={answers[QUESTIONS[index].id]} onAnswer={handleAnswer} onPrev={handlePrev} />}
         {screen === "results" && result && <ResultsScreen type={result.type} display={result.display} onRetake={handleRetake} />}
+        </ErrorBoundary>
       </main>
       <footer style={{ borderTop: "1px solid #111", padding: "1rem", textAlign: "center" }}>
         <span style={{ color: "#333", fontSize: "0.75rem" }}>Basado en el modelo MBTI · Myers-Briggs Type Indicator</span>
