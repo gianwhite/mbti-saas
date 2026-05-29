@@ -983,8 +983,9 @@ function AppInner() {
     } catch {}
   };
 
-  // Load saved result when user logs in
+  // Load saved result when session is ready
   useEffect(() => {
+    if (!ready) return;
     if (user && screen === "intro") {
       const meta = user.user_metadata;
       if (meta?.mbti_type) {
@@ -993,7 +994,7 @@ function AppInner() {
         setScreen("results");
       }
     }
-  }, [user]);
+  }, [ready, user]);
 
   // Handle return from Stripe (URL has session_id)
   useEffect(() => {
