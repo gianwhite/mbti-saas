@@ -1168,62 +1168,198 @@ function TabAdvisor({ type, typeColor }) {
 // ─────────────────────────────────────────────
 // SHARE MODAL
 // ─────────────────────────────────────────────
+// Generates a 1080x1920 Instagram Story canvas and returns a blob URL
+function generateStoryCanvas(type, info) {
+  const W = 1080, H = 1920;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  // Parse hex color to rgb components
+  const hexToRgb = (hex) => {
+    const r = parseInt(hex.slice(1,3),16);
+    const g = parseInt(hex.slice(3,5),16);
+    const b = parseInt(hex.slice(5,7),16);
+    return { r, g, b };
+  };
+  const c = hexToRgb(info.color.length === 7 ? info.color : '#6C63FF');
+
+  // Background — deep dark with radial glow
+  ctx.fillStyle = '#080810';
+  ctx.fillRect(0, 0, W, H);
+
+  // Radial glow at center-top
+  const grd = ctx.createRadialGradient(W/2, H*0.38, 0, W/2, H*0.38, 700);
+  grd.addColorStop(0, `rgba(${c.r},${c.g},${c.b},0.22)`);
+  grd.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = grd;
+  ctx.fillRect(0, 0, W, H);
+
+  // Grid lines — subtle
+  ctx.strokeStyle = 'rgba(255,255,255,0.025)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x < W; x += 120) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  for (let y = 0; y < H; y += 120) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+  // Top label
+  ctx.fillStyle = `rgba(${c.r},${c.g},${c.b},0.7)`;
+  ctx.font = '700 52px -apple-system, Inter, sans-serif';
+  ctx.letterSpacing = '12px';
+  ctx.textAlign = 'center';
+  ctx.fillText('MI TIPO DE PERSONALIDAD', W/2, 280);
+
+  // Hexagon badge outline
+  const cx = W/2, cy = H*0.42, hr = 280;
+  ctx.beginPath();
+  for (let i = 0; i < 6; i++) {
+    const angle = (Math.PI / 3) * i - Math.PI/6;
+    const px = cx + hr * Math.cos(angle);
+    const py = cy + hr * Math.sin(angle);
+    i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+  }
+  ctx.closePath();
+  ctx.strokeStyle = `rgba(${c.r},${c.g},${c.b},0.5)`;
+  ctx.lineWidth = 4;
+  ctx.stroke();
+  // Inner hex fill
+  const innerGrd = ctx.createRadialGradient(cx, cy, 0, cx, cy, hr);
+  innerGrd.addColorStop(0, `rgba(${c.r},${c.g},${c.b},0.15)`);
+  innerGrd.addColorStop(1, `rgba(${c.r},${c.g},${c.b},0.02)`);
+  ctx.fillStyle = innerGrd;
+  ctx.fill();
+
+  // Type letters — big
+  ctx.fillStyle = '#ffffff';
+  ctx.font = `900 260px -apple-system, Inter, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(type, W/2, cy);
+
+  // Color accent under type
+  ctx.fillStyle = `rgba(${c.r},${c.g},${c.b},0.9)`;
+  ctx.fillRect(W/2 - 120, cy + 160, 240, 6);
+
+  // Type name
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = '#f0f0f0';
+  ctx.font = `700 72px -apple-system, Inter, sans-serif`;
+  ctx.fillText(info.name, W/2, H*0.67);
+
+  // Tagline — word wrap
+  ctx.fillStyle = 'rgba(255,255,255,0.38)';
+  ctx.font = `400 44px -apple-system, Inter, sans-serif`;
+  const tagline = `"${info.tagline}"`;
+  const maxWidth = W - 180;
+  const words = tagline.split(' ');
+  let line = '', lines = [], lineY = H * 0.74;
+  for (const word of words) {
+    const test = line + word + ' ';
+    if (ctx.measureText(test).width > maxWidth && line !== '') {
+      lines.push(line.trim()); line = word + ' ';
+    } else { line = test; }
+  }
+  lines.push(line.trim());
+  lines.forEach((l, i) => ctx.fillText(l, W/2, lineY + i * 58));
+
+  // Bottom — domain
+  ctx.fillStyle = `rgba(${c.r},${c.g},${c.b},0.55)`;
+  ctx.font = '600 46px -apple-system, Inter, sans-serif';
+  ctx.letterSpacing = '6px';
+  ctx.fillText('16personalidades.app', W/2, H - 140);
+
+  return canvas.toDataURL('image/png');
+}
+
 function ShareModal({ type, info, onClose }) {
-  const [copied, setCopied] = useState(false);
-  const url = `https://16personalidades.app`;
+  const [copied, setCopied]         = useState(false);
+  const [storyDataUrl, setStoryDataUrl] = useState(null);
+  const [igShared, setIgShared]     = useState(false);
+  const url  = `https://16personalidades.app`;
   const text = `Soy ${type} — ${info.name}. Descubre tu tipo de personalidad MBTI:`;
   const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`;
   const twitterUrl  = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
 
+  // Generate story image on mount
+  useEffect(() => {
+    try { setStoryDataUrl(generateStoryCanvas(type, info)); } catch {}
+  }, [type, info]);
+
+  // Instagram Story: download image + prompt user to share
+  const handleInstagram = async () => {
+    if (!storyDataUrl) return;
+    // Try native share with file (works on Android/iOS Chrome)
+    try {
+      const blob = await (await fetch(storyDataUrl)).blob();
+      const file = new File([blob], `mbti-${type}.png`, { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: `Soy ${type} — ${info.name}` });
+        return;
+      }
+    } catch {}
+    // Fallback: download the image
+    const a = document.createElement('a');
+    a.href = storyDataUrl;
+    a.download = `mbti-${type}-historia.png`;
+    a.click();
+    setIgShared(true);
+  };
+
   const handleNativeShare = async () => {
     if (navigator.share) {
-      try {
-        await navigator.share({ title: `Soy ${type} — ${info.name}`, text, url });
-      } catch {}
+      try { await navigator.share({ title: `Soy ${type} — ${info.name}`, text, url }); } catch {}
     }
   };
 
   const handleCopy = () => {
     navigator.clipboard.writeText(`${text} ${url}`).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
+      setCopied(true); setTimeout(() => setCopied(false), 2500);
     });
   };
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.9)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000, padding: "1rem" }} onClick={onClose}>
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.92)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000, padding: "1rem", overflowY: "auto" }} onClick={onClose}>
       <div className="share-modal-card" onClick={e => e.stopPropagation()} style={{ background: "#111", border: `1px solid ${info.color}44`, borderRadius: "20px", padding: "2rem", maxWidth: "420px", width: "100%", position: "relative" }}>
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: `linear-gradient(90deg,transparent,${info.color},transparent)`, borderRadius: "20px 20px 0 0" }} />
         <button onClick={onClose} style={{ position: "absolute", top: "1rem", right: "1rem", background: "none", border: "none", color: "#444", cursor: "pointer", fontSize: "1.2rem" }}>✕</button>
 
         <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
           <div style={{ color: "#555", fontSize: "0.7rem", letterSpacing: "0.12em", marginBottom: "1rem" }}>COMPARTIR MI TIPO</div>
-          {/* Visual card */}
+          {/* Preview card */}
           <div style={{ background: `linear-gradient(160deg, #0d0d0d, ${info.color}18)`, border: `1px solid ${info.color}33`, borderRadius: "16px", padding: "1.5rem", marginBottom: "1.25rem" }}>
-            <div style={{ fontSize: "0.65rem", color: "#444", letterSpacing: "0.18em", marginBottom: "0.5rem" }}>MI TIPO MBTI</div>
+            <div style={{ fontSize: "0.62rem", color: "#444", letterSpacing: "0.18em", marginBottom: "0.5rem" }}>MI TIPO MBTI</div>
             <div style={{ fontSize: "2.8rem", fontWeight: 900, letterSpacing: "0.1em", background: `linear-gradient(90deg,${info.color},#fff,${info.color})`, backgroundSize: "200% auto", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", animation: "shimmer 3s linear infinite", lineHeight: 1, marginBottom: "0.4rem" }}>{type}</div>
-            <div style={{ color: "#ccc", fontWeight: 700, fontSize: "1rem", marginBottom: "0.3rem" }}>{info.name}</div>
-            <div style={{ color: "#555", fontSize: "0.78rem", fontStyle: "italic" }}>"{info.tagline}"</div>
-            <div style={{ marginTop: "0.85rem", color: "#333", fontSize: "0.68rem", letterSpacing: "0.06em" }}>16personalidades.app</div>
+            <div style={{ color: "#ccc", fontWeight: 700, fontSize: "0.95rem", marginBottom: "0.25rem" }}>{info.name}</div>
+            <div style={{ color: "#444", fontSize: "0.75rem", fontStyle: "italic" }}>"{info.tagline}"</div>
+            <div style={{ marginTop: "0.75rem", color: "#2a2a2a", fontSize: "0.65rem", letterSpacing: "0.06em" }}>16personalidades.app</div>
           </div>
         </div>
 
-        {/* Share buttons */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+        {/* Instagram Story — hero button */}
+        <button onClick={handleInstagram} className="btn-primary" style={{ width: "100%", background: "linear-gradient(135deg,#833AB4,#FD1D1D,#F56040,#FCAF45)", color: "#fff", border: "none", borderRadius: "12px", padding: "0.95rem", fontSize: "0.95rem", fontWeight: 700, cursor: "pointer", marginBottom: "0.6rem", letterSpacing: "0.02em" }}>
+          📸 Historia de Instagram
+        </button>
+        {igShared && (
+          <p style={{ color: "#555", fontSize: "0.75rem", textAlign: "center", marginBottom: "0.75rem", lineHeight: 1.5 }}>
+            Imagen guardada · Ábrela en Instagram → <strong style={{ color: "#aaa" }}>+ Nueva historia</strong>
+          </p>
+        )}
+
+        {/* Other share options */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
           {navigator.share && (
-            <button onClick={handleNativeShare} className="btn-primary" style={{ width: "100%", background: `linear-gradient(135deg,${info.color},#6C63FF)`, color: "#fff", border: "none", borderRadius: "10px", padding: "0.85rem", fontSize: "0.9rem", fontWeight: 700, cursor: "pointer" }}>
-              📤 Compartir
+            <button onClick={handleNativeShare} style={{ width: "100%", background: "#0f0f0f", border: `1px solid ${info.color}22`, borderRadius: "10px", padding: "0.75rem", color: "#aaa", cursor: "pointer", fontSize: "0.85rem", fontWeight: 600 }}>
+              📤 Compartir (sistema)
             </button>
           )}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.6rem" }}>
-            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" style={{ display: "block", background: "#0f0f0f", border: "1px solid #25D36622", borderRadius: "10px", padding: "0.75rem", textAlign: "center", textDecoration: "none", color: "#25D366", fontSize: "0.85rem", fontWeight: 600 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
+            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" style={{ display: "block", background: "#0f0f0f", border: "1px solid #25D36625", borderRadius: "10px", padding: "0.75rem", textAlign: "center", textDecoration: "none", color: "#25D366", fontSize: "0.85rem", fontWeight: 600 }}>
               WhatsApp
             </a>
-            <a href={twitterUrl} target="_blank" rel="noopener noreferrer" style={{ display: "block", background: "#0f0f0f", border: "1px solid #1DA1F222", borderRadius: "10px", padding: "0.75rem", textAlign: "center", textDecoration: "none", color: "#1DA1F2", fontSize: "0.85rem", fontWeight: 600 }}>
+            <a href={twitterUrl} target="_blank" rel="noopener noreferrer" style={{ display: "block", background: "#0f0f0f", border: "1px solid #1DA1F225", borderRadius: "10px", padding: "0.75rem", textAlign: "center", textDecoration: "none", color: "#1DA1F2", fontSize: "0.85rem", fontWeight: 600 }}>
               Twitter / X
             </a>
           </div>
-          <button onClick={handleCopy} style={{ width: "100%", background: "none", border: "1px solid #222", borderRadius: "10px", padding: "0.75rem", color: copied ? info.color : "#555", cursor: "pointer", fontSize: "0.85rem", fontWeight: 600, transition: "color 0.2s" }}>
+          <button onClick={handleCopy} style={{ width: "100%", background: "none", border: "1px solid #1e1e1e", borderRadius: "10px", padding: "0.7rem", color: copied ? info.color : "#444", cursor: "pointer", fontSize: "0.82rem", fontWeight: 600, transition: "color 0.2s" }}>
             {copied ? "✓ Copiado" : "Copiar enlace"}
           </button>
         </div>
