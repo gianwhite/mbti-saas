@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef, Component, createContext, useContext } from 'react';
+import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import { supabase } from './supabase.js';
 
 // ─────────────────────────────────────────────
@@ -468,80 +469,291 @@ function DotsText() {
 }
 
 // ─────────────────────────────────────────────
-// SCREENS
+// LANDING PAGE
 // ─────────────────────────────────────────────
-function IntroScreen({ onStart }) {
+function LandingLogo() {
+  return (
+    <svg width="52" height="52" viewBox="228 88 224 254" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="llF" gradientUnits="userSpaceOnUse" x1="245" y1="100" x2="435" y2="320">
+          <stop offset="0%" stopColor="#6D28D9" stopOpacity="0.85"/>
+          <stop offset="55%" stopColor="#3730A3" stopOpacity="0.7"/>
+          <stop offset="100%" stopColor="#0891B2" stopOpacity="0.85"/>
+        </linearGradient>
+        <linearGradient id="llS" gradientUnits="userSpaceOnUse" x1="245" y1="100" x2="435" y2="320">
+          <stop offset="0%" stopColor="#A78BFA"/>
+          <stop offset="100%" stopColor="#22D3EE"/>
+        </linearGradient>
+      </defs>
+      <circle cx="340" cy="210" r="128" fill="none" stroke="#7C3AED" strokeWidth="0.8" opacity="0.2"/>
+      <polygon points="340,100 435,155 435,265 340,320 245,265 245,155" fill="none" stroke="#1D2238" strokeWidth="1.2"/>
+      <line x1="340" y1="210" x2="340" y2="100" stroke="#1D2238" strokeWidth="1"/>
+      <line x1="340" y1="210" x2="435" y2="155" stroke="#1D2238" strokeWidth="1"/>
+      <line x1="340" y1="210" x2="435" y2="265" stroke="#1D2238" strokeWidth="1"/>
+      <line x1="340" y1="210" x2="340" y2="320" stroke="#1D2238" strokeWidth="1"/>
+      <line x1="340" y1="210" x2="245" y2="265" stroke="#1D2238" strokeWidth="1"/>
+      <line x1="340" y1="210" x2="245" y2="155" stroke="#1D2238" strokeWidth="1"/>
+      <polygon points="340,117 421,163 421,257 340,304 259,257 259,163" fill="url(#llF)" stroke="url(#llS)" strokeWidth="2.5" strokeLinejoin="round"/>
+      <polygon points="340,139 402,174 402,246 340,282 278,246 278,174" fill="none" stroke="url(#llS)" strokeWidth="1.1" strokeLinejoin="round" opacity="0.4"/>
+      <circle cx="340" cy="117" r="5" fill="#C4B5FD"/>
+      <circle cx="421" cy="163" r="5" fill="#A78BFA"/>
+      <circle cx="421" cy="257" r="5" fill="#22D3EE"/>
+      <circle cx="340" cy="304" r="5" fill="#67E8F9"/>
+      <circle cx="259" cy="257" r="5" fill="#7DD3FC"/>
+      <circle cx="259" cy="163" r="5" fill="#93C5FD"/>
+      <circle cx="340" cy="210" r="7" fill="url(#llS)" opacity="0.5"/>
+      <circle cx="340" cy="210" r="3.5" fill="#FFFFFF" opacity="0.95"/>
+    </svg>
+  );
+}
+
+function LandingPage() {
+  const navigate = useNavigate();
+  const { user, ready, signOut } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const hasResult = !!localStorage.getItem('mbti_type');
+
+  const handleCTA = () => navigate('/test');
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", color: "#fff", fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", overflowX: "hidden" }}>
+      {/* Neural bg — only top portion */}
+      <div style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none" }}>
+        <NeuralCanvas />
+      </div>
+
+      {/* ── NAV ── */}
+      <nav style={{ position: "relative", zIndex: 10, borderBottom: "1px solid #111", padding: "0.85rem 2rem", display: "flex", alignItems: "center", justifyContent: "space-between", maxWidth: "1100px", margin: "0 auto" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <LandingLogo />
+          <div style={{ display: "flex", alignItems: "baseline", gap: "3px" }}>
+            <span style={{ fontWeight: 900, fontSize: "1.2rem", background: "linear-gradient(90deg,#A78BFA,#22D3EE)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>16</span>
+            <span style={{ fontWeight: 700, fontSize: "1.05rem", color: "#e0e0e0" }}>Personalidades</span>
+            <sup style={{ color: "#A78BFA", fontSize: "0.55rem", fontWeight: 700, marginLeft: "1px" }}>AI</sup>
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+          {ready && user ? (
+            <>
+              <span style={{ color: "#555", fontSize: "0.75rem", maxWidth: "160px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.email}</span>
+              {hasResult && <button onClick={() => navigate('/test')} style={{ background: "none", border: "1px solid #333", borderRadius: "6px", color: "#aaa", cursor: "pointer", fontSize: "0.78rem", padding: "5px 12px" }}>Mi análisis →</button>}
+              <button onClick={signOut} style={{ background: "none", border: "1px solid #222", borderRadius: "6px", color: "#555", cursor: "pointer", fontSize: "0.72rem", padding: "4px 10px" }}>Salir</button>
+            </>
+          ) : (
+            <button onClick={() => setShowAuthModal(true)} style={{ background: "none", border: "1px solid #222", borderRadius: "6px", color: "#777", cursor: "pointer", fontSize: "0.78rem", padding: "5px 14px" }}>Iniciar sesión</button>
+          )}
+        </div>
+      </nav>
+
+      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onSuccess={() => setShowAuthModal(false)} title="Inicia sesión o crea tu cuenta" />}
+
+      {/* ── HERO ── */}
+      <section style={{ position: "relative", zIndex: 1, textAlign: "center", padding: "6rem 1.5rem 5rem", maxWidth: "760px", margin: "0 auto" }}>
+        <div style={{ display: "inline-block", background: "#6C63FF18", border: "1px solid #6C63FF44", borderRadius: "20px", padding: "5px 16px", fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.1em", color: "#A78BFA", marginBottom: "1.75rem" }}>
+          TEST MBTI + ANÁLISIS DE IA · ESPAÑOL
+        </div>
+        <h1 style={{ fontSize: "clamp(2.2rem, 6vw, 3.6rem)", fontWeight: 900, lineHeight: 1.1, marginBottom: "1.25rem", letterSpacing: "-0.02em" }}>
+          Entender cómo piensas<br />
+          <span style={{ background: "linear-gradient(90deg,#A78BFA,#22D3EE,#A78BFA)", backgroundSize: "200% auto", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", animation: "shimmer 4s linear infinite" }}>
+            es tu mayor ventaja.
+          </span>
+        </h1>
+        <p style={{ color: "#777", fontSize: "1.1rem", lineHeight: 1.75, maxWidth: "540px", margin: "0 auto 2.5rem" }}>
+          60 preguntas calibradas. Tu tipo MBTI exacto con análisis profundo de funciones cognitivas, compatibilidad, estilo de apego y cómo operas en relaciones y liderazgo.
+        </p>
+        <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
+          <button className="btn-primary" onClick={handleCTA} style={{ background: "linear-gradient(135deg,#6C63FF,#ff6b6b)", color: "#fff", border: "none", borderRadius: "12px", padding: "1rem 2.5rem", fontSize: "1.05rem", fontWeight: 700, cursor: "pointer", letterSpacing: "0.04em" }}>
+            {hasResult ? "Ver mi análisis →" : "Hacer el test gratis →"}
+          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#444", fontSize: "0.82rem" }}>
+            <span style={{ color: "#6C63FF" }}>✓</span> 60 preguntas · ~10 min
+            <span style={{ color: "#6C63FF", marginLeft: "8px" }}>✓</span> Resultados inmediatos
+          </div>
+        </div>
+        {/* Social proof strip */}
+        <div style={{ marginTop: "3rem", display: "flex", justifyContent: "center", gap: "2rem", flexWrap: "wrap" }}>
+          {[["4 800+", "análisis completados"], ["16", "tipos de personalidad"], ["6", "dimensiones de análisis"]].map(([n, l]) => (
+            <div key={l} style={{ textAlign: "center" }}>
+              <div style={{ fontSize: "1.5rem", fontWeight: 900, background: "linear-gradient(90deg,#A78BFA,#22D3EE)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{n}</div>
+              <div style={{ color: "#444", fontSize: "0.72rem", letterSpacing: "0.05em" }}>{l.toUpperCase()}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── TYPE PILLS ── */}
+      <section style={{ position: "relative", zIndex: 1, padding: "0 1.5rem 4rem", maxWidth: "900px", margin: "0 auto" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", justifyContent: "center" }}>
+          {[
+            ["INTJ", "#6C63FF", "El Arquitecto"],
+            ["ENFP", "#f97316", "El Inspirador"],
+            ["INFJ", "#8b5cf6", "El Consejero"],
+            ["ENTJ", "#ef4444", "El Comandante"],
+            ["INTP", "#3b82f6", "El Lógico"],
+            ["ISFJ", "#10b981", "El Protector"],
+            ["ENTP", "#f59e0b", "El Debatidor"],
+            ["INFP", "#ec4899", "El Mediador"],
+          ].map(([type, color, label]) => (
+            <div key={type} style={{ background: color + "12", border: `1px solid ${color}33`, borderRadius: "10px", padding: "0.45rem 0.9rem", display: "flex", gap: "6px", alignItems: "center" }}>
+              <span style={{ color, fontWeight: 800, fontSize: "0.85rem" }}>{type}</span>
+              <span style={{ color: "#555", fontSize: "0.75rem" }}>{label}</span>
+            </div>
+          ))}
+          <div style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: "10px", padding: "0.45rem 0.9rem", color: "#333", fontSize: "0.75rem" }}>+8 más</div>
+        </div>
+      </section>
+
+      {/* ── WHAT YOU GET ── */}
+      <section style={{ position: "relative", zIndex: 1, padding: "4rem 1.5rem", background: "#0d0d0d", borderTop: "1px solid #111", borderBottom: "1px solid #111" }}>
+        <div style={{ maxWidth: "900px", margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "3rem" }}>
+            <div style={{ color: "#555", fontSize: "0.7rem", letterSpacing: "0.15em", marginBottom: "0.75rem" }}>QUÉ OBTIENES</div>
+            <h2 style={{ fontSize: "clamp(1.6rem,4vw,2.2rem)", fontWeight: 800, color: "#fff" }}>Análisis que va más allá del tipo</h2>
+            <p style={{ color: "#555", marginTop: "0.75rem", fontSize: "0.9rem" }}>No solo una letra. Entiende el sistema completo que te define.</p>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "1rem" }}>
+            {[
+              ["🧠", "Advisor IA personalizado", "Habla con una IA entrenada en tu tipo. Preguntas sobre relaciones, decisiones, carrera — respuestas contextualizadas a tu perfil."],
+              ["⚡", "Funciones cognitivas", "Las 8 funciones de Jung ordenadas por tu tipo: cuáles son tu motor, cuáles tu talón de Aquiles."],
+              ["💞", "Estilo de apego & amor", "Cómo te vinculas emocionalmente, tus lenguajes del amor y qué rompe la conexión contigo."],
+              ["🎯", "Fortalezas & debilidades", "Lo que nadie te dice: tus puntos ciegos reales y las ventajas que probablemente estás subusing."],
+              ["🔥", "Atracción & química", "Qué tipos te atraen y por qué. Cómo funciona la tensión entre tipos y qué esperar a largo plazo."],
+              ["🤝", "Compatibilidad top 3", "Los tres tipos más y menos compatibles contigo, con análisis de dinámica real de pareja."],
+            ].map(([icon, title, desc]) => (
+              <div key={title} className="card-hover" style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: "14px", padding: "1.5rem" }}>
+                <div style={{ fontSize: "1.5rem", marginBottom: "0.75rem" }}>{icon}</div>
+                <div style={{ color: "#eee", fontWeight: 700, fontSize: "0.95rem", marginBottom: "0.5rem" }}>{title}</div>
+                <div style={{ color: "#555", fontSize: "0.82rem", lineHeight: 1.65 }}>{desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── HOW IT WORKS ── */}
+      <section style={{ position: "relative", zIndex: 1, padding: "5rem 1.5rem", maxWidth: "800px", margin: "0 auto" }}>
+        <div style={{ textAlign: "center", marginBottom: "3rem" }}>
+          <div style={{ color: "#555", fontSize: "0.7rem", letterSpacing: "0.15em", marginBottom: "0.75rem" }}>CÓMO FUNCIONA</div>
+          <h2 style={{ fontSize: "clamp(1.6rem,4vw,2.2rem)", fontWeight: 800, color: "#fff" }}>Simple. Tres pasos.</h2>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1.5rem" }}>
+          {[
+            ["01", "#6C63FF", "Haz el test gratis", "60 preguntas diseñadas para detectar tu tipo con precisión. Toma ~10 minutos."],
+            ["02", "#22D3EE", "Recibe tu tipo", "Resultado inmediato: tu tipo MBTI con perfil básico de personalidad — sin costo."],
+            ["03", "#A78BFA", "Desbloquea el análisis", "Activa tu membership por $19/mes y accede a todas las dimensiones profundas."],
+          ].map(([num, color, title, desc]) => (
+            <div key={num} style={{ textAlign: "center", padding: "1.5rem 1rem" }}>
+              <div style={{ width: "52px", height: "52px", borderRadius: "50%", background: color + "15", border: `2px solid ${color}44`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem", fontSize: "1rem", fontWeight: 900, color }}>
+                {num}
+              </div>
+              <div style={{ color: "#eee", fontWeight: 700, marginBottom: "0.5rem" }}>{title}</div>
+              <div style={{ color: "#555", fontSize: "0.82rem", lineHeight: 1.6 }}>{desc}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── TESTIMONIALS ── */}
+      <section style={{ position: "relative", zIndex: 1, padding: "4rem 1.5rem", background: "#0d0d0d", borderTop: "1px solid #111", borderBottom: "1px solid #111" }}>
+        <div style={{ maxWidth: "900px", margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "3rem" }}>
+            <div style={{ color: "#555", fontSize: "0.7rem", letterSpacing: "0.15em", marginBottom: "0.75rem" }}>TESTIMONIOS</div>
+            <h2 style={{ fontSize: "clamp(1.4rem,3.5vw,2rem)", fontWeight: 800, color: "#fff" }}>Lo que dicen los usuarios</h2>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "1rem" }}>
+            {[
+              ["INTJ", "#6C63FF", "Finalmente un análisis que no suena a horóscopo. El apartado de funciones cognitivas describe exactamente cómo proceso decisiones bajo presión.", "Alejandro R., México"],
+              ["ENFP", "#f97316", "El Advisor IA es lo que hace la diferencia. Le pregunté sobre cómo manejar conflictos con mi pareja ISTJ y la respuesta fue sorprendentemente precisa.", "Valentina M., Colombia"],
+              ["INFJ", "#8b5cf6", "Llevaba años sabiendo mi tipo pero nunca había entendido bien los patrones de atracción que tengo. El análisis de compatibilidad lo explica con claridad brutal.", "Diego F., Argentina"],
+            ].map(([type, color, quote, name]) => (
+              <div key={name} className="card-hover" style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: "14px", padding: "1.5rem" }}>
+                <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "1rem" }}>
+                  <div style={{ background: color + "15", border: `1px solid ${color}33`, borderRadius: "6px", padding: "2px 8px", fontSize: "0.75rem", fontWeight: 800, color }}>{type}</div>
+                  <div style={{ display: "flex", gap: "2px" }}>{"★★★★★".split("").map((s, i) => <span key={i} style={{ color: "#f59e0b", fontSize: "0.7rem" }}>{s}</span>)}</div>
+                </div>
+                <p style={{ color: "#888", fontSize: "0.84rem", lineHeight: 1.7, fontStyle: "italic", marginBottom: "1rem" }}>"{quote}"</p>
+                <div style={{ color: "#444", fontSize: "0.75rem" }}>{name}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── PRICING ── */}
+      <section style={{ position: "relative", zIndex: 1, padding: "5rem 1.5rem", maxWidth: "480px", margin: "0 auto", textAlign: "center" }}>
+        <div style={{ color: "#555", fontSize: "0.7rem", letterSpacing: "0.15em", marginBottom: "0.75rem" }}>PRECIO</div>
+        <h2 style={{ fontSize: "clamp(1.6rem,4vw,2.2rem)", fontWeight: 800, color: "#fff", marginBottom: "2rem" }}>Un plan. Sin complicaciones.</h2>
+        <div style={{ background: "#111", border: "1px solid #6C63FF44", borderRadius: "20px", padding: "2.5rem 2rem", position: "relative" }}>
+          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: "linear-gradient(90deg,transparent,#6C63FF,#22D3EE,transparent)", borderRadius: "20px 20px 0 0" }} />
+          <div style={{ color: "#A78BFA", fontSize: "0.72rem", letterSpacing: "0.1em", fontWeight: 700, marginBottom: "0.5rem" }}>MEMBERSHIP COMPLETA</div>
+          <div style={{ fontSize: "3.5rem", fontWeight: 900, color: "#fff", lineHeight: 1 }}>$19<span style={{ fontSize: "1rem", color: "#555", fontWeight: 400 }}>/mes</span></div>
+          <div style={{ color: "#444", fontSize: "0.8rem", marginBottom: "2rem", marginTop: "0.4rem" }}>Cancela cuando quieras</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem", marginBottom: "2rem", textAlign: "left" }}>
+            {["Advisor IA personalizado a tu tipo", "Funciones cognitivas completas", "Análisis de apego y lenguajes del amor", "Fortalezas, debilidades y puntos ciegos", "Compatibilidad y química con otros tipos", "Atracción: por qué te atraen ciertos tipos", "Acceso inmediato · Sin permanencia"].map(item => (
+              <div key={item} style={{ display: "flex", gap: "0.75rem", alignItems: "flex-start" }}>
+                <span style={{ color: "#6C63FF", fontSize: "0.85rem", marginTop: "1px", flexShrink: 0 }}>✓</span>
+                <span style={{ color: "#888", fontSize: "0.85rem" }}>{item}</span>
+              </div>
+            ))}
+          </div>
+          <button className="btn-primary" onClick={handleCTA} style={{ width: "100%", background: "linear-gradient(135deg,#6C63FF,#ff6b6b)", color: "#fff", border: "none", borderRadius: "12px", padding: "1rem", fontSize: "1rem", fontWeight: 700, cursor: "pointer" }}>
+            {hasResult ? "Desbloquear análisis →" : "Hacer el test gratis →"}
+          </button>
+          <p style={{ color: "#333", fontSize: "0.75rem", marginTop: "1rem" }}>El test es gratuito. La membership desbloquea el análisis completo.</p>
+        </div>
+      </section>
+
+      {/* ── FOOTER ── */}
+      <footer style={{ position: "relative", zIndex: 1, borderTop: "1px solid #111", padding: "2rem 1.5rem", textAlign: "center" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", marginBottom: "0.75rem" }}>
+          <span style={{ fontWeight: 900, fontSize: "0.95rem", background: "linear-gradient(90deg,#A78BFA,#22D3EE)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>16 Personalidades</span>
+          <sup style={{ color: "#A78BFA", fontSize: "0.5rem", fontWeight: 700 }}>AI</sup>
+        </div>
+        <p style={{ color: "#333", fontSize: "0.73rem" }}>Basado en el modelo MBTI · Myers-Briggs Type Indicator · © 2025</p>
+      </footer>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// TEST INTRO (página /test antes de empezar)
+// ─────────────────────────────────────────────
+function TestIntro({ onStart }) {
+  const navigate = useNavigate();
   return (
     <div style={{ textAlign: "center", maxWidth: "520px", margin: "0 auto", padding: "2rem 1rem", position: "relative" }}>
-      {/* Neural particles background */}
       <div style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none" }}>
         <NeuralCanvas />
       </div>
       <div style={{ position: "relative", zIndex: 1 }}>
-
-      {/* Logo hexagonal */}
-      <div style={{ display: "flex", justifyContent: "center", marginBottom: "1.5rem" }}>
-        <svg width="170" height="170" viewBox="228 88 224 254" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="lgF" gradientUnits="userSpaceOnUse" x1="245" y1="100" x2="435" y2="320">
-              <stop offset="0%" stopColor="#6D28D9" stopOpacity="0.78"/>
-              <stop offset="55%" stopColor="#3730A3" stopOpacity="0.65"/>
-              <stop offset="100%" stopColor="#0891B2" stopOpacity="0.78"/>
-            </linearGradient>
-            <linearGradient id="lgS" gradientUnits="userSpaceOnUse" x1="245" y1="100" x2="435" y2="320">
-              <stop offset="0%" stopColor="#A78BFA"/>
-              <stop offset="100%" stopColor="#22D3EE"/>
-            </linearGradient>
-          </defs>
-          <circle cx="340" cy="210" r="128" fill="none" stroke="#7C3AED" strokeWidth="0.8" opacity="0.2"/>
-          <polygon points="340,100 435,155 435,265 340,320 245,265 245,155" fill="none" stroke="#1D2238" strokeWidth="1.2"/>
-          <polygon points="340,127 398,152 422,210 398,268 340,293 282,268 258,210 282,152" fill="none" stroke="#1D2238" strokeWidth="0.9"/>
-          <polygon points="340,155 379,171 395,210 379,249 340,265 301,249 285,210 301,171" fill="none" stroke="#1D2238" strokeWidth="0.9"/>
-          <line x1="340" y1="210" x2="340" y2="100" stroke="#1D2238" strokeWidth="1"/>
-          <line x1="340" y1="210" x2="435" y2="155" stroke="#1D2238" strokeWidth="1"/>
-          <line x1="340" y1="210" x2="435" y2="265" stroke="#1D2238" strokeWidth="1"/>
-          <line x1="340" y1="210" x2="340" y2="320" stroke="#1D2238" strokeWidth="1"/>
-          <line x1="340" y1="210" x2="245" y2="265" stroke="#1D2238" strokeWidth="1"/>
-          <line x1="340" y1="210" x2="245" y2="155" stroke="#1D2238" strokeWidth="1"/>
-          <polygon points="340,117 421,163 421,257 340,304 259,257 259,163" fill="url(#lgF)" stroke="url(#lgS)" strokeWidth="2.5" strokeLinejoin="round"/>
-          <polygon points="340,139 402,174 402,246 340,282 278,246 278,174" fill="none" stroke="url(#lgS)" strokeWidth="1.1" strokeLinejoin="round" opacity="0.4"/>
-          <circle cx="340" cy="117" r="5" fill="#C4B5FD"/>
-          <circle cx="421" cy="163" r="5" fill="#A78BFA"/>
-          <circle cx="421" cy="257" r="5" fill="#22D3EE"/>
-          <circle cx="340" cy="304" r="5" fill="#67E8F9"/>
-          <circle cx="259" cy="257" r="5" fill="#7DD3FC"/>
-          <circle cx="259" cy="163" r="5" fill="#93C5FD"/>
-          <circle cx="340" cy="210" r="7" fill="url(#lgS)" opacity="0.5"/>
-          <circle cx="340" cy="210" r="3.5" fill="#FFFFFF" opacity="0.95"/>
-        </svg>
-      </div>
-
-      <h1 style={{ fontSize: "2rem", fontWeight: 700, color: "#fff", marginBottom: "0.5rem", lineHeight: 1.2 }}>Test de Personalidad MBTI</h1>
-      <p style={{ color: "#888", marginBottom: "2rem", fontSize: "0.95rem" }}>60 preguntas · ~10 minutos</p>
-
-      {/* Guidelines */}
-      <div style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: "14px", padding: "1.25rem", marginBottom: "2rem", textAlign: "left" }}>
-        <div style={{ color: "#555", fontSize: "0.7rem", letterSpacing: "0.12em", marginBottom: "1rem" }}>INSTRUCCIONES</div>
-        {[
-          ["Responde según tu opinión genuina", "No hay respuestas correctas ni incorrectas — refleja cómo realmente eres."],
-          ["No saltes preguntas", "Debes responder cada una, pero puedes volver atrás cuando quieras."],
-          ["Usa tu primera reacción", "No pienses demasiado. La respuesta instintiva es la más precisa."],
-          ["Resultados inmediatos", "Al terminar verás tu tipo MBTI con análisis detallado de personalidad."],
-        ].map(([t, d]) => (
-          <div key={t} style={{ display: "flex", gap: "0.75rem", marginBottom: "0.9rem", alignItems: "flex-start" }}>
-            <span style={{ color: "#6C63FF", marginTop: "3px", fontSize: "0.8rem" }}>✓</span>
-            <div>
-              <div style={{ color: "#eee", fontSize: "0.88rem", fontWeight: 600 }}>{t}</div>
-              <div style={{ color: "#555", fontSize: "0.78rem", lineHeight: 1.5 }}>{d}</div>
+        <h1 style={{ fontSize: "1.8rem", fontWeight: 800, color: "#fff", marginBottom: "0.5rem", lineHeight: 1.2 }}>Test de Personalidad MBTI</h1>
+        <p style={{ color: "#888", marginBottom: "2rem", fontSize: "0.92rem" }}>60 preguntas · ~10 minutos · Resultados inmediatos</p>
+        <div style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: "14px", padding: "1.25rem", marginBottom: "2rem", textAlign: "left" }}>
+          <div style={{ color: "#555", fontSize: "0.68rem", letterSpacing: "0.12em", marginBottom: "1rem" }}>INSTRUCCIONES</div>
+          {[
+            ["Responde según tu opinión genuina", "No hay respuestas correctas — refleja cómo realmente eres."],
+            ["Usa tu primera reacción", "No pienses demasiado. La respuesta instintiva es la más precisa."],
+            ["No saltes preguntas", "Puedes volver atrás cuando quieras."],
+            ["Resultados inmediatos", "Al terminar verás tu tipo MBTI con análisis detallado."],
+          ].map(([t, d]) => (
+            <div key={t} style={{ display: "flex", gap: "0.75rem", marginBottom: "0.85rem", alignItems: "flex-start" }}>
+              <span style={{ color: "#6C63FF", marginTop: "3px", fontSize: "0.8rem" }}>✓</span>
+              <div>
+                <div style={{ color: "#eee", fontSize: "0.87rem", fontWeight: 600 }}>{t}</div>
+                <div style={{ color: "#555", fontSize: "0.76rem", lineHeight: 1.5 }}>{d}</div>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
+        <div style={{ display: "flex", gap: "0.75rem", justifyContent: "center", flexWrap: "wrap" }}>
+          <button className="btn-primary" onClick={onStart} style={{ background: "linear-gradient(135deg,#6C63FF,#ff6b6b)", color: "#fff", border: "none", borderRadius: "10px", padding: "0.9rem 2.5rem", fontSize: "1rem", fontWeight: 700, cursor: "pointer", letterSpacing: "0.05em" }}>
+            COMENZAR TEST →
+          </button>
+          <button className="btn-secondary" onClick={() => navigate('/')} style={{ background: "none", border: "1px solid #222", borderRadius: "10px", padding: "0.9rem 1.5rem", fontSize: "0.9rem", color: "#555", cursor: "pointer" }}>
+            ← Volver
+          </button>
+        </div>
       </div>
-
-      <button className="btn-primary" onClick={onStart} style={{ background: "linear-gradient(135deg,#6C63FF,#ff6b6b)", color: "#fff", border: "none", borderRadius: "10px", padding: "0.9rem 2.5rem", fontSize: "1rem", fontWeight: 700, cursor: "pointer", letterSpacing: "0.05em" }}>
-        COMENZAR TEST →
-      </button>
-      </div>{/* end z-index wrapper */}
     </div>
   );
 }
@@ -1122,7 +1334,7 @@ function AppInner() {
     return { type, display };
   });
   const [screen, setScreen] = useState(() =>
-    localStorage.getItem('mbti_type') ? "results" : "intro"
+    localStorage.getItem('mbti_type') ? "results" : "test-intro"
   );
   const [index, setIndex]     = useState(0);
   const [answers, setAnswers] = useState({});
@@ -1140,7 +1352,7 @@ function AppInner() {
   // Load saved result when session is ready
   useEffect(() => {
     if (!ready) return;
-    if (user && screen === "intro") {
+    if (user && screen === "test-intro") {
       const meta = user.user_metadata;
 
       // Try Supabase metadata first, fallback to localStorage
@@ -1174,7 +1386,7 @@ function AppInner() {
     }
   }, []);
 
-  const handleStart = () => { setAnswers({}); setIndex(0); setScreen("test"); };
+  const handleStart = () => { setAnswers({}); setIndex(0); setScreen("test-questions"); };
 
   const handleAnswer = useCallback((value) => {
     const q = QUESTIONS[index];
@@ -1193,52 +1405,21 @@ function AppInner() {
   }, [index, answers, user]);
 
   const handlePrev  = () => { if (index > 0) setIndex(i => i - 1); };
-  const handleRetake = () => { setAnswers({}); setIndex(0); setResult(null); setScreen("intro"); };
+  const handleRetake = () => { setAnswers({}); setIndex(0); setResult(null); setScreen("test-intro"); };
 
   return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", color: "#fff", display: "flex", flexDirection: "column" }}>
       <header style={{ borderBottom: "1px solid #111", padding: "0.75rem 1.5rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <svg width="32" height="32" viewBox="230 90 220 250" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="hgF" gradientUnits="userSpaceOnUse" x1="245" y1="100" x2="435" y2="320">
-                <stop offset="0%" stopColor="#6D28D9" stopOpacity="0.78"/>
-                <stop offset="55%" stopColor="#3730A3" stopOpacity="0.65"/>
-                <stop offset="100%" stopColor="#0891B2" stopOpacity="0.78"/>
-              </linearGradient>
-              <linearGradient id="hgS" gradientUnits="userSpaceOnUse" x1="245" y1="100" x2="435" y2="320">
-                <stop offset="0%" stopColor="#A78BFA"/>
-                <stop offset="100%" stopColor="#22D3EE"/>
-              </linearGradient>
-            </defs>
-            <circle cx="340" cy="210" r="128" fill="none" stroke="#7C3AED" strokeWidth="0.8" opacity="0.2"/>
-            <polygon points="340,100 435,155 435,265 340,320 245,265 245,155" fill="none" stroke="#1D2238" strokeWidth="1.2"/>
-            <polygon points="340,127 398,152 422,210 398,268 340,293 282,268 258,210 282,152" fill="none" stroke="#1D2238" strokeWidth="0.9"/>
-            <line x1="340" y1="210" x2="340" y2="100" stroke="#1D2238" strokeWidth="1"/>
-            <line x1="340" y1="210" x2="435" y2="155" stroke="#1D2238" strokeWidth="1"/>
-            <line x1="340" y1="210" x2="435" y2="265" stroke="#1D2238" strokeWidth="1"/>
-            <line x1="340" y1="210" x2="340" y2="320" stroke="#1D2238" strokeWidth="1"/>
-            <line x1="340" y1="210" x2="245" y2="265" stroke="#1D2238" strokeWidth="1"/>
-            <line x1="340" y1="210" x2="245" y2="155" stroke="#1D2238" strokeWidth="1"/>
-            <polygon points="340,117 421,163 421,257 340,304 259,257 259,163" fill="url(#hgF)" stroke="url(#hgS)" strokeWidth="2.5" strokeLinejoin="round"/>
-            <polygon points="340,139 402,174 402,246 340,282 278,246 278,174" fill="none" stroke="url(#hgS)" strokeWidth="1.1" strokeLinejoin="round" opacity="0.4"/>
-            <circle cx="340" cy="117" r="5" fill="#C4B5FD"/>
-            <circle cx="421" cy="163" r="5" fill="#A78BFA"/>
-            <circle cx="421" cy="257" r="5" fill="#22D3EE"/>
-            <circle cx="340" cy="304" r="5" fill="#67E8F9"/>
-            <circle cx="259" cy="257" r="5" fill="#7DD3FC"/>
-            <circle cx="259" cy="163" r="5" fill="#93C5FD"/>
-            <circle cx="340" cy="210" r="7" fill="url(#hgS)" opacity="0.5"/>
-            <circle cx="340" cy="210" r="3.5" fill="#FFFFFF" opacity="0.95"/>
-          </svg>
+        <a href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none" }}>
+          <LandingLogo />
           <div style={{ display: "flex", alignItems: "baseline", gap: "3px" }}>
             <span style={{ fontWeight: 900, fontSize: "1.15rem", background: "linear-gradient(90deg,#A78BFA,#22D3EE)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>16</span>
             <span style={{ fontWeight: 700, fontSize: "1.05rem", color: "#e0e0e0", letterSpacing: "0.02em" }}>Personalidades</span>
             <sup style={{ color: "#A78BFA", fontSize: "0.55rem", fontWeight: 700, letterSpacing: "0.05em", marginLeft: "1px" }}>AI</sup>
           </div>
-        </div>
+        </a>
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-          {screen === "test" && <button onClick={handleRetake} style={{ background: "none", border: "none", color: "#444", cursor: "pointer", fontSize: "0.8rem" }}>Reiniciar</button>}
+          {screen === "test-questions" && <button onClick={handleRetake} style={{ background: "none", border: "none", color: "#444", cursor: "pointer", fontSize: "0.8rem" }}>Reiniciar</button>}
           {user ? (
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
               <span style={{ color: "#555", fontSize: "0.75rem", maxWidth: "140px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.email}</span>
@@ -1256,9 +1437,9 @@ function AppInner() {
           <div style={{ color: "#333", fontSize: "0.85rem" }}>...</div>
         ) : (
           <>
-            {screen === "intro"   && <IntroScreen onStart={handleStart} />}
-            {screen === "test"    && <QuestionScreen question={QUESTIONS[index]} index={index} total={QUESTIONS.length} selected={answers[QUESTIONS[index].id]} onAnswer={handleAnswer} onPrev={handlePrev} />}
-            {screen === "results" && result && <ResultsScreen type={result.type} display={result.display} onRetake={handleRetake} />}
+            {screen === "test-intro"     && <TestIntro onStart={handleStart} />}
+            {screen === "test-questions" && <QuestionScreen question={QUESTIONS[index]} index={index} total={QUESTIONS.length} selected={answers[QUESTIONS[index].id]} onAnswer={handleAnswer} onPrev={handlePrev} />}
+            {screen === "results"        && result && <ResultsScreen type={result.type} display={result.display} onRetake={handleRetake} />}
           </>
         )}
         </ErrorBoundary>
@@ -1273,7 +1454,11 @@ function AppInner() {
 export default function App() {
   return (
     <AuthProvider>
-      <AppInner />
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/test" element={<AppInner />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </AuthProvider>
   );
 }
