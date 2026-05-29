@@ -20,6 +20,7 @@ export default async function handler(req, res) {
       mode: 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
       customer_email: email || undefined,
+      allow_promotion_codes: true,
       success_url: `${appUrl}/?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/`,
       subscription_data: {

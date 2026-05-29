@@ -1,4 +1,5 @@
-import { useState, useCallback, useEffect, Component } from 'react';
+import { useState, useCallback, useEffect, Component, createContext, useContext } from 'react';
+import { supabase } from './supabase.js';
 
 // ─────────────────────────────────────────────
 // ERROR BOUNDARY
@@ -22,6 +23,141 @@ class ErrorBoundary extends Component {
     return this.props.children;
   }
 }
+// ─────────────────────────────────────────────
+// AUTH CONTEXT
+// ─────────────────────────────────────────────
+const AuthContext = createContext(null);
+function useAuth() { return useContext(AuthContext); }
+
+function AuthProvider({ children }) {
+  const [user, setUser]   = useState(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setUser(data.session?.user ?? null);
+      setReady(true);
+    });
+    const { data: listener } = supabase.auth.onAuthStateChange((_e, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => listener.subscription.unsubscribe();
+  }, []);
+
+  const signUp = (email, password) =>
+    supabase.auth.signUp({ email, password });
+
+  const signIn = (email, password) =>
+    supabase.auth.signInWithPassword({ email, password });
+
+  const signOut = () => supabase.auth.signOut();
+
+  return (
+    <AuthContext.Provider value={{ user, ready, signUp, signIn, signOut }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+// ─────────────────────────────────────────────
+// AUTH MODAL  (Login / Signup)
+// ─────────────────────────────────────────────
+function AuthModal({ onClose, onSuccess, title = "Crea tu cuenta" }) {
+  const { signIn, signUp } = useAuth();
+  const [mode, setMode]       = useState("signup"); // "signup" | "login"
+  const [email, setEmail]     = useState("");
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [error, setError]     = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const inputStyle = {
+    width: "100%", background: "#0f0f0f", border: "1px solid #222",
+    borderRadius: "8px", padding: "0.75rem 1rem", color: "#fff",
+    fontSize: "0.9rem", marginBottom: "0.65rem", outline: "none",
+    boxSizing: "border-box",
+  };
+
+  const handleSubmit = async () => {
+    setError("");
+    if (!email || !email.includes("@")) { setError("Email inválido"); return; }
+    if (password.length < 6) { setError("La contraseña debe tener al menos 6 caracteres"); return; }
+    if (mode === "signup" && password !== confirm) { setError("Las contraseñas no coinciden"); return; }
+
+    setLoading(true);
+    try {
+      const { error: err } = mode === "signup"
+        ? await signUp(email, password)
+        : await signIn(email, password);
+
+      if (err) {
+        if (err.message.includes("already registered")) setError("Este email ya tiene cuenta. Inicia sesión.");
+        else if (err.message.includes("Invalid login")) setError("Email o contraseña incorrectos.");
+        else setError(err.message);
+        setLoading(false);
+        return;
+      }
+
+      if (mode === "signup") {
+        setError("");
+        // Auto sign-in after signup (Supabase may require email confirm)
+        const { error: loginErr } = await signIn(email, password);
+        if (!loginErr) onSuccess?.();
+        else setError("Cuenta creada. Inicia sesión.");
+      } else {
+        onSuccess?.();
+      }
+    } catch (e) {
+      setError("Error inesperado. Intenta de nuevo.");
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000, padding: "1rem" }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{ background: "#111", border: "1px solid #2a2a2a", borderRadius: "20px", padding: "2rem", maxWidth: "400px", width: "100%", position: "relative" }}>
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: "linear-gradient(90deg,transparent,#6C63FF,transparent)", borderRadius: "20px 20px 0 0" }} />
+        <button onClick={onClose} style={{ position: "absolute", top: "1rem", right: "1rem", background: "none", border: "none", color: "#444", cursor: "pointer", fontSize: "1.2rem" }}>✕</button>
+
+        <h2 style={{ color: "#fff", fontWeight: 700, fontSize: "1.2rem", marginBottom: "0.3rem", textAlign: "center" }}>
+          {mode === "signup" ? title : "Iniciar sesión"}
+        </h2>
+        <p style={{ color: "#555", fontSize: "0.8rem", textAlign: "center", marginBottom: "1.5rem" }}>
+          {mode === "signup" ? "Crea tu cuenta para acceder a tu análisis" : "Bienvenido de vuelta"}
+        </p>
+
+        <input type="email" placeholder="tu@email.com" value={email}
+          onChange={e => setEmail(e.target.value)} style={inputStyle} />
+        <input type="password" placeholder="Contraseña (mín. 6 caracteres)" value={password}
+          onChange={e => setPassword(e.target.value)} style={inputStyle} />
+        {mode === "signup" && (
+          <input type="password" placeholder="Confirmar contraseña" value={confirm}
+            onChange={e => setConfirm(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && handleSubmit()}
+            style={{ ...inputStyle, marginBottom: "1rem" }} />
+        )}
+        {mode === "login" && (
+          <div style={{ marginBottom: "1rem" }} />
+        )}
+
+        {error && <p style={{ color: "#ff6b6b", fontSize: "0.8rem", marginBottom: "0.75rem" }}>{error}</p>}
+
+        <button onClick={handleSubmit} disabled={loading} style={{ width: "100%", background: loading ? "#333" : "linear-gradient(135deg,#6C63FF,#9b59b6)", color: "#fff", border: "none", borderRadius: "10px", padding: "0.9rem", fontSize: "1rem", fontWeight: 700, cursor: loading ? "not-allowed" : "pointer" }}>
+          {loading ? "Procesando..." : mode === "signup" ? "Crear cuenta →" : "Entrar →"}
+        </button>
+
+        <p style={{ color: "#555", fontSize: "0.78rem", textAlign: "center", marginTop: "1rem" }}>
+          {mode === "signup" ? "¿Ya tienes cuenta? " : "¿No tienes cuenta? "}
+          <button onClick={() => { setMode(mode === "signup" ? "login" : "signup"); setError(""); }}
+            style={{ background: "none", border: "none", color: "#6C63FF", cursor: "pointer", fontSize: "0.78rem", textDecoration: "underline" }}>
+            {mode === "signup" ? "Inicia sesión" : "Regístrate"}
+          </button>
+        </p>
+      </div>
+    </div>
+  );
+}
+
 import { RAW_QUESTIONS, seededShuffle, calculateResult } from './data/questions.js';
 import { TYPE_ANALYSIS } from './data/analysis.js';
 import { TYPES } from './data/types.js';
@@ -106,23 +242,23 @@ function DimensionBar({ dim, data }) {
 // PAYWALL MODAL
 // ─────────────────────────────────────────────
 function PaywallModal({ type, onClose }) {
+  const { user } = useAuth();
   const info = TYPES[type] || { color: "#6C63FF" };
+  const [step, setStep]       = useState(user ? "checkout" : "auth"); // "auth" | "checkout"
   const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError]     = useState('');
+
+  // If user logs in during this modal, advance to checkout
+  useEffect(() => { if (user && step === "auth") setStep("checkout"); }, [user]);
 
   const handleSubscribe = async () => {
-    if (!email || !email.includes('@')) {
-      setError('Ingresa un email válido');
-      return;
-    }
     setLoading(true);
     setError('');
     try {
       const res = await fetch('/api/create-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email: user?.email }),
       });
       const data = await res.json();
       if (data.url) {
@@ -139,20 +275,19 @@ function PaywallModal({ type, onClose }) {
     }
   };
 
+  // Step 1: Auth (if not logged in)
+  if (step === "auth") {
+    return <AuthModal onClose={onClose} onSuccess={() => setStep("checkout")} title="Crea tu cuenta para continuar" />;
+  }
+
+  // Step 2: Checkout
   return (
     <div style={{
       position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)",
       display: "flex", alignItems: "center", justifyContent: "center",
       zIndex: 1000, padding: "1rem",
     }} onClick={onClose}>
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          background: "#111", border: `1px solid ${info.color}44`,
-          borderRadius: "20px", padding: "2rem", maxWidth: "460px", width: "100%",
-          position: "relative",
-        }}
-      >
+      <div onClick={e => e.stopPropagation()} style={{ background: "#111", border: `1px solid ${info.color}44`, borderRadius: "20px", padding: "2rem", maxWidth: "460px", width: "100%", position: "relative" }}>
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: `linear-gradient(90deg, transparent, ${info.color}, transparent)`, borderRadius: "20px 20px 0 0" }} />
         <button onClick={onClose} style={{ position: "absolute", top: "1rem", right: "1rem", background: "none", border: "none", color: "#444", cursor: "pointer", fontSize: "1.2rem" }}>✕</button>
 
@@ -172,36 +307,20 @@ function PaywallModal({ type, onClose }) {
           ))}
         </div>
 
-        <input
-          type="email"
-          placeholder="tu@email.com"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && handleSubscribe()}
-          style={{
-            width: "100%", background: "#0f0f0f", border: "1px solid #222",
-            borderRadius: "8px", padding: "0.75rem 1rem", color: "#fff",
-            fontSize: "0.9rem", marginBottom: "0.75rem", outline: "none", boxSizing: "border-box",
-          }}
-        />
+        {/* Logged in as */}
+        <div style={{ background: "#0f0f0f", border: "1px solid #1e1e1e", borderRadius: "8px", padding: "0.6rem 1rem", marginBottom: "1rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <span style={{ color: "#6C63FF", fontSize: "0.8rem" }}>✓</span>
+          <span style={{ color: "#777", fontSize: "0.82rem" }}>Cuenta: <span style={{ color: "#bbb" }}>{user?.email}</span></span>
+        </div>
 
         {error && <p style={{ color: "#ff6b6b", fontSize: "0.8rem", marginBottom: "0.5rem" }}>{error}</p>}
 
-        <button
-          onClick={handleSubscribe}
-          disabled={loading}
-          style={{
-            width: "100%", background: loading ? "#333" : "linear-gradient(135deg,#6C63FF,#ff6b6b)",
-            color: "#fff", border: "none", borderRadius: "10px",
-            padding: "0.9rem", fontSize: "1rem", fontWeight: 700,
-            cursor: loading ? "not-allowed" : "pointer",
-          }}
-        >
+        <button onClick={handleSubscribe} disabled={loading} style={{ width: "100%", background: loading ? "#333" : "linear-gradient(135deg,#6C63FF,#ff6b6b)", color: "#fff", border: "none", borderRadius: "10px", padding: "0.9rem", fontSize: "1rem", fontWeight: 700, cursor: loading ? "not-allowed" : "pointer" }}>
           {loading ? "Redirigiendo a Stripe..." : `Activar Membership — ${PRICE_DISPLAY}/mes`}
         </button>
 
         <p style={{ color: "#444", fontSize: "0.72rem", textAlign: "center", marginTop: "0.75rem" }}>
-          Pago seguro vía Stripe · Cancela cuando quieras
+          Pago seguro vía Stripe · Tienes un código de descuento? Ingrésalo en el siguiente paso.
         </p>
       </div>
     </div>
@@ -805,13 +924,15 @@ function ResultsScreen({ type, display, onRetake }) {
 }
 
 // ─────────────────────────────────────────────
-// APP ROOT
+// APP ROOT (inner)
 // ─────────────────────────────────────────────
-export default function App() {
+function AppInner() {
+  const { user, signOut } = useAuth();
   const [screen, setScreen]   = useState("intro");
   const [index, setIndex]     = useState(0);
   const [answers, setAnswers] = useState({});
   const [result, setResult]   = useState(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   // Handle return from Stripe (URL has session_id)
   useEffect(() => {
@@ -886,8 +1007,19 @@ export default function App() {
             <sup style={{ color: "#A78BFA", fontSize: "0.55rem", fontWeight: 700, letterSpacing: "0.05em", marginLeft: "1px" }}>AI</sup>
           </div>
         </div>
-        {screen === "test" && <button onClick={handleRetake} style={{ background: "none", border: "none", color: "#444", cursor: "pointer", fontSize: "0.8rem" }}>Reiniciar</button>}
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+          {screen === "test" && <button onClick={handleRetake} style={{ background: "none", border: "none", color: "#444", cursor: "pointer", fontSize: "0.8rem" }}>Reiniciar</button>}
+          {user ? (
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <span style={{ color: "#555", fontSize: "0.75rem", maxWidth: "140px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.email}</span>
+              <button onClick={signOut} style={{ background: "none", border: "1px solid #222", borderRadius: "6px", color: "#555", cursor: "pointer", fontSize: "0.72rem", padding: "3px 8px" }}>Salir</button>
+            </div>
+          ) : (
+            <button onClick={() => setShowAuthModal(true)} style={{ background: "none", border: "1px solid #222", borderRadius: "6px", color: "#777", cursor: "pointer", fontSize: "0.78rem", padding: "4px 12px" }}>Iniciar sesión</button>
+          )}
+        </div>
       </header>
+      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onSuccess={() => setShowAuthModal(false)} title="Inicia sesión o crea tu cuenta" />}
       <main style={{ flex: 1, display: "flex", alignItems: screen === "results" ? "flex-start" : "center", justifyContent: "center", padding: "1rem" }}>
         <ErrorBoundary>
         {screen === "intro"   && <IntroScreen onStart={handleStart} />}
@@ -899,5 +1031,13 @@ export default function App() {
         <span style={{ color: "#333", fontSize: "0.75rem" }}>Basado en el modelo MBTI · Myers-Briggs Type Indicator</span>
       </footer>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppInner />
+    </AuthProvider>
   );
 }

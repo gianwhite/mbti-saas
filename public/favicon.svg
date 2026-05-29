@@ -1,0 +1,28 @@
+<svg width="32" height="32" viewBox="228 88 224 254" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="f1" gradientUnits="userSpaceOnUse" x1="245" y1="100" x2="435" y2="320">
+      <stop offset="0%" stop-color="#6D28D9" stop-opacity="0.85"/>
+      <stop offset="55%" stop-color="#3730A3" stop-opacity="0.75"/>
+      <stop offset="100%" stop-color="#0891B2" stop-opacity="0.85"/>
+    </linearGradient>
+    <linearGradient id="f2" gradientUnits="userSpaceOnUse" x1="245" y1="100" x2="435" y2="320">
+      <stop offset="0%" stop-color="#A78BFA"/>
+      <stop offset="100%" stop-color="#22D3EE"/>
+    </linearGradient>
+  </defs>
+  <polygon points="340,100 435,155 435,265 340,320 245,265 245,155" fill="none" stroke="#1D2238" stroke-width="1.5"/>
+  <line x1="340" y1="210" x2="340" y2="100" stroke="#1D2238" stroke-width="1.2"/>
+  <line x1="340" y1="210" x2="435" y2="155" stroke="#1D2238" stroke-width="1.2"/>
+  <line x1="340" y1="210" x2="435" y2="265" stroke="#1D2238" stroke-width="1.2"/>
+  <line x1="340" y1="210" x2="340" y2="320" stroke="#1D2238" stroke-width="1.2"/>
+  <line x1="340" y1="210" x2="245" y2="265" stroke="#1D2238" stroke-width="1.2"/>
+  <line x1="340" y1="210" x2="245" y2="155" stroke="#1D2238" stroke-width="1.2"/>
+  <polygon points="340,117 421,163 421,257 340,304 259,257 259,163" fill="url(#f1)" stroke="url(#f2)" stroke-width="3" stroke-linejoin="round"/>
+  <circle cx="340" cy="117" r="6" fill="#C4B5FD"/>
+  <circle cx="421" cy="163" r="6" fill="#A78BFA"/>
+  <circle cx="421" cy="257" r="6" fill="#22D3EE"/>
+  <circle cx="340" cy="304" r="6" fill="#67E8F9"/>
+  <circle cx="259" cy="257" r="6" fill="#7DD3FC"/>
+  <circle cx="259" cy="163" r="6" fill="#93C5FD"/>
+  <circle cx="340" cy="210" r="4" fill="#FFFFFF" opacity="0.95"/>
+</svg>
