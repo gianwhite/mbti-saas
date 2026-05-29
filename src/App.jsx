@@ -967,7 +967,7 @@ function ResultsScreen({ type, display, onRetake }) {
 // APP ROOT (inner)
 // ─────────────────────────────────────────────
 function AppInner() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, ready } = useAuth();
   const [screen, setScreen]   = useState("intro");
   const [index, setIndex]     = useState(0);
   const [answers, setAnswers] = useState({});
@@ -1085,9 +1085,15 @@ function AppInner() {
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onSuccess={() => setShowAuthModal(false)} title="Inicia sesión o crea tu cuenta" />}
       <main style={{ flex: 1, display: "flex", alignItems: screen === "results" ? "flex-start" : "center", justifyContent: "center", padding: "1rem" }}>
         <ErrorBoundary>
-        {screen === "intro"   && <IntroScreen onStart={handleStart} />}
-        {screen === "test"    && <QuestionScreen question={QUESTIONS[index]} index={index} total={QUESTIONS.length} selected={answers[QUESTIONS[index].id]} onAnswer={handleAnswer} onPrev={handlePrev} />}
-        {screen === "results" && result && <ResultsScreen type={result.type} display={result.display} onRetake={handleRetake} />}
+        {!ready ? (
+          <div style={{ color: "#333", fontSize: "0.85rem" }}>...</div>
+        ) : (
+          <>
+            {screen === "intro"   && <IntroScreen onStart={handleStart} />}
+            {screen === "test"    && <QuestionScreen question={QUESTIONS[index]} index={index} total={QUESTIONS.length} selected={answers[QUESTIONS[index].id]} onAnswer={handleAnswer} onPrev={handlePrev} />}
+            {screen === "results" && result && <ResultsScreen type={result.type} display={result.display} onRetake={handleRetake} />}
+          </>
+        )}
         </ErrorBoundary>
       </main>
       <footer style={{ borderTop: "1px solid #111", padding: "1rem", textAlign: "center" }}>
