@@ -871,27 +871,49 @@ function ResultsScreen({ type, display, onRetake }) {
       )}
 
       {/* Hero */}
-      <div style={{ background: "#111", border: `1px solid ${info.color}33`, borderRadius: "20px", padding: "1.75rem", textAlign: "center", marginBottom: "1.25rem", position: "relative", overflow: "hidden" }}>
+      <div style={{ background: `linear-gradient(160deg, #111 60%, ${info.color}0d)`, border: `1px solid ${info.color}44`, borderRadius: "24px", padding: "2rem 1.75rem 1.75rem", textAlign: "center", marginBottom: "1.25rem", position: "relative", overflow: "hidden" }}>
+        {/* Top glow bar */}
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: `linear-gradient(90deg, transparent, ${info.color}, transparent)` }} />
-        <div style={{ fontSize: "0.7rem", color: "#555", letterSpacing: "0.15em", marginBottom: "0.4rem" }}>TU TIPO MBTI</div>
-        <div style={{ fontSize: "3.5rem", fontWeight: 900, color: info.color, letterSpacing: "0.1em", lineHeight: 1 }}>{type}</div>
-        <div style={{ fontSize: "1.2rem", color: "#eee", fontWeight: 600, margin: "0.4rem 0 0.6rem" }}>{info.name}</div>
-        <div style={{ color: "#666", fontSize: "0.85rem", lineHeight: 1.6, fontStyle: "italic" }}>"{info.tagline}"</div>
+        {/* Background glow */}
+        <div style={{ position: "absolute", top: "-40px", left: "50%", transform: "translateX(-50%)", width: "200px", height: "200px", borderRadius: "50%", background: info.color, opacity: 0.04, filter: "blur(40px)", pointerEvents: "none" }} />
+
+        {/* Post-payment celebration */}
         {isPaid && (
-          <div style={{ marginTop: "0.75rem", display: "flex", justifyContent: "center", gap: "0.5rem", alignItems: "center" }}>
-            <Tag color="#6C63FF">✓ Membership activa</Tag>
-            <button onClick={handleManageSubscription} style={{ background: "none", border: "none", color: "#444", fontSize: "0.72rem", cursor: "pointer", textDecoration: "underline" }}>Gestionar</button>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#6C63FF18", border: "1px solid #6C63FF44", borderRadius: "20px", padding: "4px 12px", marginBottom: "1rem", fontSize: "0.72rem", color: "#A78BFA", fontWeight: 600, letterSpacing: "0.05em" }}>
+            ✦ MEMBERSHIP ACTIVA
+            <button onClick={handleManageSubscription} style={{ background: "none", border: "none", color: "#555", cursor: "pointer", fontSize: "0.68rem", textDecoration: "underline", padding: 0, marginLeft: "4px" }}>gestionar</button>
+          </div>
+        )}
+
+        <div style={{ fontSize: "0.65rem", color: "#444", letterSpacing: "0.2em", marginBottom: "0.6rem", textTransform: "uppercase" }}>Tu tipo de personalidad</div>
+
+        {/* Big type badge */}
+        <div style={{ display: "inline-block", background: `${info.color}15`, border: `2px solid ${info.color}55`, borderRadius: "16px", padding: "0.4rem 1.4rem", marginBottom: "0.75rem" }}>
+          <span style={{ fontSize: "3.2rem", fontWeight: 900, color: info.color, letterSpacing: "0.12em", lineHeight: 1 }}>{type}</span>
+        </div>
+
+        <div style={{ fontSize: "1.25rem", color: "#f0f0f0", fontWeight: 700, marginBottom: "0.4rem" }}>{info.name}</div>
+        <div style={{ color: "#555", fontSize: "0.85rem", lineHeight: 1.6, fontStyle: "italic", maxWidth: "380px", margin: "0 auto" }}>"{info.tagline}"</div>
+
+        {/* Dimension pills */}
+        {display && (
+          <div style={{ display: "flex", justifyContent: "center", gap: "6px", marginTop: "1.25rem", flexWrap: "wrap" }}>
+            {Object.entries(display).map(([dim, data]) => (
+              <div key={dim} style={{ background: "#0f0f0f", border: `1px solid ${info.color}22`, borderRadius: "8px", padding: "4px 10px", fontSize: "0.72rem", color: "#888" }}>
+                <span style={{ color: info.color, fontWeight: 700 }}>{data.letter}</span> {data.pct}%
+              </div>
+            ))}
           </div>
         )}
       </div>
 
       {/* Tabs */}
-      <div style={{ display: "flex", gap: "4px", background: "#0f0f0f", borderRadius: "12px", padding: "4px", marginBottom: "1rem", overflowX: "auto" }}>
+      <div style={{ display: "flex", gap: "3px", background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: "14px", padding: "4px", marginBottom: "1.25rem", overflowX: "auto" }}>
         {TABS.map(t => {
           const isActive  = tab === t.id;
           const isLocked  = !t.free && !isPaid;
           return (
-            <button key={t.id} onClick={() => handleTabClick(t.id, t.free)} style={{ flex: 1, minWidth: "fit-content", padding: "0.5rem 0.6rem", borderRadius: "8px", border: "none", background: isActive ? "linear-gradient(135deg,#6C63FF,#9b59b6)" : "transparent", color: isActive ? "#fff" : isLocked ? "#444" : "#555", fontSize: "0.75rem", fontWeight: isActive ? 700 : 400, cursor: "pointer", transition: "all 0.2s", whiteSpace: "nowrap" }}>
+            <button key={t.id} onClick={() => handleTabClick(t.id, t.free)} style={{ flex: 1, minWidth: "fit-content", padding: "0.5rem 0.65rem", borderRadius: "10px", border: "none", background: isActive ? `linear-gradient(135deg, ${info.color}cc, ${info.color}88)` : "transparent", color: isActive ? "#fff" : isLocked ? "#333" : "#555", fontSize: "0.72rem", fontWeight: isActive ? 700 : 400, cursor: "pointer", transition: "all 0.2s", whiteSpace: "nowrap", letterSpacing: isActive ? "0.02em" : 0 }}>
               {isLocked ? "🔒 " : ""}{t.label}
             </button>
           );
@@ -911,12 +933,12 @@ function ResultsScreen({ type, display, onRetake }) {
       </div>
 
       {/* Actions */}
-      <div style={{ display: "flex", gap: "0.75rem", marginTop: "1.5rem" }}>
-        <button onClick={handleShare} style={{ flex: 1, background: "#111", border: "1px solid #222", borderRadius: "10px", padding: "0.75rem", color: copied ? "#6C63FF" : "#aaa", cursor: "pointer", fontSize: "0.85rem", fontWeight: 600 }}>
-          {copied ? "✓ Copiado" : "📋 Compartir"}
+      <div style={{ display: "flex", gap: "0.75rem", marginTop: "1.75rem" }}>
+        <button onClick={handleShare} style={{ flex: 1, background: "#111", border: "1px solid #1e1e1e", borderRadius: "12px", padding: "0.8rem", color: copied ? info.color : "#666", cursor: "pointer", fontSize: "0.82rem", fontWeight: 600, transition: "all 0.2s" }}>
+          {copied ? "✓ Copiado al portapapeles" : "Compartir resultado"}
         </button>
-        <button onClick={onRetake} style={{ flex: 1, background: "#111", border: "1px solid #222", borderRadius: "10px", padding: "0.75rem", color: "#aaa", cursor: "pointer", fontSize: "0.85rem", fontWeight: 600 }}>
-          ↺ Repetir
+        <button onClick={onRetake} style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: "12px", padding: "0.8rem 1.2rem", color: "#444", cursor: "pointer", fontSize: "0.82rem", fontWeight: 600 }}>
+          ↺
         </button>
       </div>
     </div>
@@ -933,6 +955,27 @@ function AppInner() {
   const [answers, setAnswers] = useState({});
   const [result, setResult]   = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
+
+  // Save result to Supabase user metadata
+  const saveResultToSupabase = async (type, display) => {
+    try {
+      await supabase.auth.updateUser({
+        data: { mbti_type: type, mbti_display: JSON.stringify(display) }
+      });
+    } catch {}
+  };
+
+  // Load saved result when user logs in
+  useEffect(() => {
+    if (user && screen === "intro") {
+      const meta = user.user_metadata;
+      if (meta?.mbti_type) {
+        const savedDisplay = meta.mbti_display ? JSON.parse(meta.mbti_display) : null;
+        setResult({ type: meta.mbti_type, display: savedDisplay });
+        setScreen("results");
+      }
+    }
+  }, [user]);
 
   // Handle return from Stripe (URL has session_id)
   useEffect(() => {
@@ -959,8 +1002,10 @@ function AppInner() {
       localStorage.setItem('mbti_display', JSON.stringify(res.display));
       setResult(res);
       setScreen("results");
+      // Save to Supabase if logged in
+      if (user) saveResultToSupabase(res.type, res.display);
     }
-  }, [index, answers]);
+  }, [index, answers, user]);
 
   const handlePrev  = () => { if (index > 0) setIndex(i => i - 1); };
   const handleRetake = () => { setAnswers({}); setIndex(0); setResult(null); setScreen("intro"); };
