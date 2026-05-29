@@ -161,6 +161,7 @@ function AuthModal({ onClose, onSuccess, title = "Crea tu cuenta" }) {
 
 import { RAW_QUESTIONS, seededShuffle, calculateResult } from './data/questions.js';
 import { TYPE_ANALYSIS } from './data/analysis.js';
+import { TYPE_PROFESSIONAL } from './data/professional.js';
 import { TYPES } from './data/types.js';
 
 const QUESTIONS = seededShuffle(RAW_QUESTIONS);
@@ -180,6 +181,7 @@ const TABS = [
   { id: "perfil",          label: "Perfil",          free: true  },
   { id: "advisor",         label: "Advisor IA",      free: false },
   { id: "psicologia",      label: "Psicología",      free: false },
+  { id: "profesional",     label: "Profesional",     free: false },
   { id: "vinculos",        label: "Vínculos",        free: false },
   { id: "fortalezas",      label: "Fortalezas",      free: false },
   { id: "atraccion",       label: "Atracción",       free: false },
@@ -616,7 +618,7 @@ function LandingPage() {
               ["🧠", "Advisor IA personalizado", "Habla con una IA entrenada en tu tipo. Preguntas sobre relaciones, decisiones, carrera — respuestas contextualizadas a tu perfil."],
               ["⚡", "Funciones cognitivas", "Las 8 funciones de Jung ordenadas por tu tipo: cuáles son tu motor, cuáles tu talón de Aquiles."],
               ["💞", "Estilo de apego & amor", "Cómo te vinculas emocionalmente, tus lenguajes del amor y qué rompe la conexión contigo."],
-              ["🎯", "Fortalezas & debilidades", "Lo que nadie te dice: tus puntos ciegos reales y las ventajas que probablemente estás subusing."],
+              ["🎯", "Fortalezas & debilidades", "Lo que nadie te dice: tus puntos ciegos reales y las ventajas que probablemente estás desaprovechando."],
               ["🔥", "Atracción & química", "Qué tipos te atraen y por qué. Cómo funciona la tensión entre tipos y qué esperar a largo plazo."],
               ["🤝", "Compatibilidad top 3", "Los tres tipos más y menos compatibles contigo, con análisis de dinámica real de pareja."],
             ].map(([icon, title, desc]) => (
@@ -1033,6 +1035,78 @@ function TabCompatibilidad({ analysis }) {
         </div>
         <p style={{ color: "#bbb", fontSize: "0.85rem", lineHeight: 1.65, margin: 0 }}>{c.evitar.razon}</p>
       </Card>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// TAB PROFESIONAL
+// ─────────────────────────────────────────────
+function TabProfesional({ type, typeColor }) {
+  const data = TYPE_PROFESSIONAL[type];
+  if (!data) return <Card><p style={{ color: "#555", fontSize: "0.85rem" }}>Análisis profesional próximamente.</p></Card>;
+
+  return (
+    <div>
+      {/* Resumen ejecutivo */}
+      <Card>
+        <div style={{ color: "#555", fontSize: "0.7rem", letterSpacing: "0.12em", marginBottom: "0.75rem" }}>PERFIL PROFESIONAL</div>
+        <p style={{ color: "#ccc", lineHeight: 1.75, fontSize: "0.88rem" }}>{data.resumen}</p>
+      </Card>
+
+      {/* Carreras top */}
+      <Card>
+        <div style={{ color: "#555", fontSize: "0.7rem", letterSpacing: "0.12em", marginBottom: "1rem" }}>CARRERAS & ROLES DE ALTO IMPACTO</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
+          {data.carreras_top.map((c, i) => (
+            <div key={i} style={{ display: "flex", gap: "0.75rem", alignItems: "flex-start" }}>
+              <div style={{ minWidth: "28px", height: "28px", borderRadius: "8px", background: typeColor + "18", border: `1px solid ${typeColor}33`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.72rem", fontWeight: 900, color: typeColor, flexShrink: 0 }}>{i + 1}</div>
+              <div>
+                <div style={{ color: "#eee", fontWeight: 700, fontSize: "0.9rem", marginBottom: "0.25rem" }}>{c.rol}</div>
+                <div style={{ color: "#666", fontSize: "0.82rem", lineHeight: 1.6 }}>{c.razon}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      {/* Grid — liderazgo + dinero */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.85rem", marginBottom: "0.85rem" }}>
+        <div style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: "14px", padding: "1.25rem" }}>
+          <div style={{ color: typeColor, fontSize: "0.68rem", letterSpacing: "0.1em", fontWeight: 700, marginBottom: "0.6rem" }}>ESTILO DE LIDERAZGO</div>
+          <p style={{ color: "#888", fontSize: "0.81rem", lineHeight: 1.65, margin: 0 }}>{data.estilo_liderazgo}</p>
+        </div>
+        <div style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: "14px", padding: "1.25rem" }}>
+          <div style={{ color: typeColor, fontSize: "0.68rem", letterSpacing: "0.1em", fontWeight: 700, marginBottom: "0.6rem" }}>RELACIÓN CON EL DINERO</div>
+          <p style={{ color: "#888", fontSize: "0.81rem", lineHeight: 1.65, margin: 0 }}>{data.relacion_dinero}</p>
+        </div>
+      </div>
+
+      {/* Entorno ideal */}
+      <Card>
+        <div style={{ color: "#555", fontSize: "0.7rem", letterSpacing: "0.12em", marginBottom: "0.6rem" }}>ENTORNO QUE TE POTENCIA</div>
+        <p style={{ color: "#aaa", fontSize: "0.85rem", lineHeight: 1.7, margin: 0 }}>{data.entorno_ideal}</p>
+      </Card>
+
+      {/* Errores de carrera */}
+      <Card>
+        <div style={{ color: "#555", fontSize: "0.7rem", letterSpacing: "0.12em", marginBottom: "1rem" }}>ERRORES QUE DEBES EVITAR</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.65rem" }}>
+          {data.errores_carrera.map((e, i) => (
+            <div key={i} style={{ display: "flex", gap: "0.75rem", alignItems: "flex-start" }}>
+              <div style={{ minWidth: "20px", height: "20px", borderRadius: "50%", background: "#ff6b6b18", border: "1px solid #ff6b6b33", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.65rem", color: "#ff6b6b", marginTop: "1px", flexShrink: 0 }}>✕</div>
+              <p style={{ color: "#777", fontSize: "0.83rem", lineHeight: 1.6, margin: 0 }}>{e}</p>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      {/* Consejo clave */}
+      <div style={{ background: `linear-gradient(135deg, ${typeColor}10, #0d0d0d)`, border: `1px solid ${typeColor}33`, borderRadius: "14px", padding: "1.25rem", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: `linear-gradient(90deg, transparent, ${typeColor}, transparent)` }} />
+        <div style={{ color: typeColor, fontSize: "0.68rem", letterSpacing: "0.1em", fontWeight: 700, marginBottom: "0.6rem" }}>CONSEJO CLAVE</div>
+        <p style={{ color: "#ddd", fontSize: "0.88rem", lineHeight: 1.7, margin: 0, fontStyle: "italic" }}>"{data.consejo_clave}"</p>
+      </div>
     </div>
   );
 }
@@ -1492,6 +1566,7 @@ function ResultsScreen({ type, display, onRetake }) {
         {tab === "perfil"         && <TabPerfil type={type} display={display} info={info} />}
         {tab === "advisor"        && <TabAdvisor type={type} typeColor={info.color} />}
         {tab === "psicologia"     && analysis && <TabPsicologia analysis={analysis} typeColor={info.color} />}
+        {tab === "profesional"    && <TabProfesional type={type} typeColor={info.color} />}
         {tab === "vinculos"       && analysis && <TabVinculos analysis={analysis} typeColor={info.color} />}
         {tab === "social"         && analysis && <TabSocial analysis={analysis} />}
         {tab === "fortalezas"     && analysis && <TabFortalezas analysis={analysis} />}
