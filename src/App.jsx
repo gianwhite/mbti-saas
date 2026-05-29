@@ -129,7 +129,7 @@ function AuthModal({ onClose, onSuccess, title = "Crea tu cuenta" }) {
 
         <input type="email" placeholder="tu@email.com" value={email}
           onChange={e => setEmail(e.target.value)} style={inputStyle} />
-        <input type="password" placeholder="Contraseña (mín. 6 caracteres)" value={password}
+        <input type="password" placeholder={mode === "signup" ? "Contraseña (mín. 6 caracteres)" : "Contraseña"} value={password}
           onChange={e => setPassword(e.target.value)} style={inputStyle} />
         {mode === "signup" && (
           <input type="password" placeholder="Confirmar contraseña" value={confirm}
