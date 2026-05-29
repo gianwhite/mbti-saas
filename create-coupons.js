@@ -4,9 +4,16 @@
  * (from inside mbti-saas directory, with .env.local set)
  */
 import Stripe from 'stripe';
-import { config } from 'dotenv';
+import { readFileSync } from 'fs';
 
-config({ path: '.env.local' });
+// Read .env.local manually (no dotenv dependency needed)
+try {
+  const env = readFileSync('.env.local', 'utf8');
+  for (const line of env.split('\n')) {
+    const [key, ...val] = line.split('=');
+    if (key && !key.startsWith('#')) process.env[key.trim()] = val.join('=').trim();
+  }
+} catch {}
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
