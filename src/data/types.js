@@ -1,0 +1,18 @@
+export const TYPES = {
+  INTJ: { name: "El Arquitecto",    color: "#6C63FF", tagline: "Estratega implacable. Visión a largo plazo. Solitario por elección." },
+  INTP: { name: "El Lógico",        color: "#4ECDC4", tagline: "Arquitecto de ideas. Análisis profundo. Desapegado pero brillante." },
+  ENTJ: { name: "El Comandante",    color: "#E63946", tagline: "Liderazgo natural. Eficiencia sobre todo. Implacable con los estándares." },
+  ENTP: { name: "El Innovador",     color: "#F4A261", tagline: "Debate como deporte. Ideas sin filtro. Maestro del ángulo muerto." },
+  INFJ: { name: "El Consejero",     color: "#A8DADC", tagline: "Empatía táctica. Visión única. Profundo y selectivo." },
+  INFP: { name: "El Mediador",      color: "#90BE6D", tagline: "Valores inamovibles. Intensidad interior. Poco visible, muy presente." },
+  ENFJ: { name: "El Protagonista",  color: "#F9C74F", tagline: "Influencia social innata. Lector de personas. Carismático y directo." },
+  ENFP: { name: "El Activista",     color: "#FF6B6B", tagline: "Energía contagiosa. Conexiones genuinas. Caos organizado." },
+  ISTJ: { name: "El Inspector",     color: "#457B9D", tagline: "Confiabilidad absoluta. Sistemas y orden. Silencioso y efectivo." },
+  ISFJ: { name: "El Defensor",      color: "#80B918", tagline: "Apoyo incondicional. Detalles que importan. Lealtad sobre visibilidad." },
+  ESTJ: { name: "El Director",      color: "#D62828", tagline: "Estructura y ejecución. Líder por defecto. Claro y directo." },
+  ESFJ: { name: "El Cónsul",        color: "#F77F00", tagline: "Armonía social. Red de contactos. Necesita aprobación externa." },
+  ISTP: { name: "El Virtuoso",      color: "#6A994E", tagline: "Frío bajo presión. Habilidad práctica. Independiente por naturaleza." },
+  ISFP: { name: "El Aventurero",    color: "#C77DFF", tagline: "Estética y presencia. Acción silenciosa. Intenso en privado." },
+  ESTP: { name: "El Emprendedor",   color: "#E9C46A", tagline: "Reacción instantánea. Riesgo calculado. Presente total." },
+  ESFP: { name: "El Animador",      color: "#F15BB5", tagline: "Atracción natural. Presente absoluto. Energía sin filtros." },
+};
