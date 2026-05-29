@@ -968,10 +968,20 @@ function ResultsScreen({ type, display, onRetake }) {
 // ─────────────────────────────────────────────
 function AppInner() {
   const { user, signOut, ready } = useAuth();
-  const [screen, setScreen]   = useState("intro");
+
+  // Initialize synchronously from localStorage — no flash, no race conditions
+  const [result, setResult] = useState(() => {
+    const type = localStorage.getItem('mbti_type');
+    if (!type) return null;
+    const dispStr = localStorage.getItem('mbti_display');
+    const display = dispStr ? (() => { try { return JSON.parse(dispStr); } catch { return null; } })() : null;
+    return { type, display };
+  });
+  const [screen, setScreen] = useState(() =>
+    localStorage.getItem('mbti_type') ? "results" : "intro"
+  );
   const [index, setIndex]     = useState(0);
   const [answers, setAnswers] = useState({});
-  const [result, setResult]   = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   // Save result to Supabase user metadata
