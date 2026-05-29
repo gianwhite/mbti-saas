@@ -433,16 +433,24 @@ function QuestionScreen({ question, index, total, selected, onAnswer, onPrev }) 
 
 // ── Tab content components ──
 function TabPerfil({ type, display, info }) {
+  const entries = display ? Object.entries(display) : [];
+  if (!entries.length) return (
+    <Card>
+      <p style={{ color: "#555", fontSize: "0.85rem", textAlign: "center", padding: "1rem 0" }}>
+        Repite el test para ver tu desglose por dimensión.
+      </p>
+    </Card>
+  );
   return (
     <div>
       <Card>
         <div style={{ color: "#555", fontSize: "0.7rem", letterSpacing: "0.12em", marginBottom: "1rem" }}>DESGLOSE POR DIMENSIÓN</div>
-        {Object.entries(display).map(([dim, data]) => <DimensionBar key={dim} dim={dim} data={data} />)}
+        {entries.map(([dim, data]) => <DimensionBar key={dim} dim={dim} data={data} />)}
       </Card>
       <Card>
         <div style={{ color: "#555", fontSize: "0.7rem", letterSpacing: "0.12em", marginBottom: "0.75rem" }}>DISTRIBUCIÓN GLOBAL</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.6rem" }}>
-          {Object.entries(display).map(([dim, data]) => (
+          {entries.map(([dim, data]) => (
             <div key={dim} style={{ background: "#0f0f0f", borderRadius: "10px", padding: "0.75rem", textAlign: "center" }}>
               <div style={{ fontSize: "1.6rem", fontWeight: 900, color: info.color }}>{data.letter}</div>
               <div style={{ fontSize: "0.72rem", color: "#666" }}>{data.label}</div>
