@@ -216,8 +216,8 @@ function IntroScreen({ onStart }) {
     <div style={{ textAlign: "center", maxWidth: "520px", margin: "0 auto", padding: "2rem 1rem" }}>
 
       {/* Logo hexagonal */}
-      <div style={{ display: "flex", justifyContent: "center", marginBottom: "1.25rem" }}>
-        <svg width="80" height="80" viewBox="0 0 680 450" xmlns="http://www.w3.org/2000/svg">
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: "1.5rem" }}>
+        <svg width="170" height="170" viewBox="228 88 224 254" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <linearGradient id="lgF" gradientUnits="userSpaceOnUse" x1="245" y1="100" x2="435" y2="320">
               <stop offset="0%" stopColor="#6D28D9" stopOpacity="0.78"/>
@@ -846,8 +846,46 @@ export default function App() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", color: "#fff", display: "flex", flexDirection: "column" }}>
-      <header style={{ borderBottom: "1px solid #111", padding: "1rem 1.5rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ fontWeight: 800, fontSize: "1rem", letterSpacing: "0.05em" }}>MBTI<span style={{ color: "#6C63FF" }}>.</span></div>
+      <header style={{ borderBottom: "1px solid #111", padding: "0.75rem 1.5rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <svg width="32" height="32" viewBox="230 90 220 250" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="hgF" gradientUnits="userSpaceOnUse" x1="245" y1="100" x2="435" y2="320">
+                <stop offset="0%" stopColor="#6D28D9" stopOpacity="0.78"/>
+                <stop offset="55%" stopColor="#3730A3" stopOpacity="0.65"/>
+                <stop offset="100%" stopColor="#0891B2" stopOpacity="0.78"/>
+              </linearGradient>
+              <linearGradient id="hgS" gradientUnits="userSpaceOnUse" x1="245" y1="100" x2="435" y2="320">
+                <stop offset="0%" stopColor="#A78BFA"/>
+                <stop offset="100%" stopColor="#22D3EE"/>
+              </linearGradient>
+            </defs>
+            <circle cx="340" cy="210" r="128" fill="none" stroke="#7C3AED" strokeWidth="0.8" opacity="0.2"/>
+            <polygon points="340,100 435,155 435,265 340,320 245,265 245,155" fill="none" stroke="#1D2238" strokeWidth="1.2"/>
+            <polygon points="340,127 398,152 422,210 398,268 340,293 282,268 258,210 282,152" fill="none" stroke="#1D2238" strokeWidth="0.9"/>
+            <line x1="340" y1="210" x2="340" y2="100" stroke="#1D2238" strokeWidth="1"/>
+            <line x1="340" y1="210" x2="435" y2="155" stroke="#1D2238" strokeWidth="1"/>
+            <line x1="340" y1="210" x2="435" y2="265" stroke="#1D2238" strokeWidth="1"/>
+            <line x1="340" y1="210" x2="340" y2="320" stroke="#1D2238" strokeWidth="1"/>
+            <line x1="340" y1="210" x2="245" y2="265" stroke="#1D2238" strokeWidth="1"/>
+            <line x1="340" y1="210" x2="245" y2="155" stroke="#1D2238" strokeWidth="1"/>
+            <polygon points="340,117 421,163 421,257 340,304 259,257 259,163" fill="url(#hgF)" stroke="url(#hgS)" strokeWidth="2.5" strokeLinejoin="round"/>
+            <polygon points="340,139 402,174 402,246 340,282 278,246 278,174" fill="none" stroke="url(#hgS)" strokeWidth="1.1" strokeLinejoin="round" opacity="0.4"/>
+            <circle cx="340" cy="117" r="5" fill="#C4B5FD"/>
+            <circle cx="421" cy="163" r="5" fill="#A78BFA"/>
+            <circle cx="421" cy="257" r="5" fill="#22D3EE"/>
+            <circle cx="340" cy="304" r="5" fill="#67E8F9"/>
+            <circle cx="259" cy="257" r="5" fill="#7DD3FC"/>
+            <circle cx="259" cy="163" r="5" fill="#93C5FD"/>
+            <circle cx="340" cy="210" r="7" fill="url(#hgS)" opacity="0.5"/>
+            <circle cx="340" cy="210" r="3.5" fill="#FFFFFF" opacity="0.95"/>
+          </svg>
+          <div style={{ display: "flex", alignItems: "baseline", gap: "3px" }}>
+            <span style={{ fontWeight: 900, fontSize: "1.15rem", background: "linear-gradient(90deg,#A78BFA,#22D3EE)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>16</span>
+            <span style={{ fontWeight: 700, fontSize: "1.05rem", color: "#e0e0e0", letterSpacing: "0.02em" }}>Personalidades</span>
+            <sup style={{ color: "#A78BFA", fontSize: "0.55rem", fontWeight: 700, letterSpacing: "0.05em", marginLeft: "1px" }}>AI</sup>
+          </div>
+        </div>
         {screen === "test" && <button onClick={handleRetake} style={{ background: "none", border: "none", color: "#444", cursor: "pointer", fontSize: "0.8rem" }}>Reiniciar</button>}
       </header>
       <main style={{ flex: 1, display: "flex", alignItems: screen === "results" ? "flex-start" : "center", justifyContent: "center", padding: "1rem" }}>
