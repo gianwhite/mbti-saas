@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, Component, createContext, useContext } from 'react';
+import { useState, useCallback, useEffect, useRef, Component, createContext, useContext } from 'react';
 import { supabase } from './supabase.js';
 
 // ─────────────────────────────────────────────
@@ -142,7 +142,7 @@ function AuthModal({ onClose, onSuccess, title = "Crea tu cuenta" }) {
 
         {error && <p style={{ color: "#ff6b6b", fontSize: "0.8rem", marginBottom: "0.75rem" }}>{error}</p>}
 
-        <button onClick={handleSubmit} disabled={loading} style={{ width: "100%", background: loading ? "#333" : "linear-gradient(135deg,#6C63FF,#9b59b6)", color: "#fff", border: "none", borderRadius: "10px", padding: "0.9rem", fontSize: "1rem", fontWeight: 700, cursor: loading ? "not-allowed" : "pointer" }}>
+        <button onClick={handleSubmit} disabled={loading} className="btn-primary" style={{ width: "100%", background: loading ? "#333" : "linear-gradient(135deg,#6C63FF,#9b59b6)", color: "#fff", border: "none", borderRadius: "10px", padding: "0.9rem", fontSize: "1rem", fontWeight: 700, cursor: loading ? "not-allowed" : "pointer" }}>
           {loading ? "Procesando..." : mode === "signup" ? "Crear cuenta →" : "Entrar →"}
         </button>
 
@@ -200,7 +200,7 @@ function Tag({ children, color = "#6C63FF" }) {
 
 function Card({ children, style = {} }) {
   return (
-    <div style={{
+    <div className="card-hover" style={{
       background: "#111", border: "1px solid #1e1e1e",
       borderRadius: "14px", padding: "1.25rem", marginBottom: "0.85rem", ...style,
     }}>{children}</div>
@@ -315,7 +315,7 @@ function PaywallModal({ type, onClose }) {
 
         {error && <p style={{ color: "#ff6b6b", fontSize: "0.8rem", marginBottom: "0.5rem" }}>{error}</p>}
 
-        <button onClick={handleSubscribe} disabled={loading} style={{ width: "100%", background: loading ? "#333" : "linear-gradient(135deg,#6C63FF,#ff6b6b)", color: "#fff", border: "none", borderRadius: "10px", padding: "0.9rem", fontSize: "1rem", fontWeight: 700, cursor: loading ? "not-allowed" : "pointer" }}>
+        <button onClick={handleSubscribe} disabled={loading} className="btn-primary" style={{ width: "100%", background: loading ? "#333" : "linear-gradient(135deg,#6C63FF,#ff6b6b)", color: "#fff", border: "none", borderRadius: "10px", padding: "0.9rem", fontSize: "1rem", fontWeight: 700, cursor: loading ? "not-allowed" : "pointer" }}>
           {loading ? "Redirigiendo a Stripe..." : `Activar Membership — ${PRICE_DISPLAY}/mes`}
         </button>
 
@@ -328,11 +328,156 @@ function PaywallModal({ type, onClose }) {
 }
 
 // ─────────────────────────────────────────────
+// NEURAL PARTICLES BACKGROUND
+// ─────────────────────────────────────────────
+function NeuralCanvas() {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let animId;
+
+    const resize = () => {
+      canvas.width  = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    const COUNT = 55;
+    const nodes = Array.from({ length: COUNT }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 0.35,
+      vy: (Math.random() - 0.5) * 0.35,
+      r: Math.random() * 1.8 + 0.6,
+    }));
+
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Move
+      nodes.forEach(n => {
+        n.x += n.vx; n.y += n.vy;
+        if (n.x < 0 || n.x > canvas.width)  n.vx *= -1;
+        if (n.y < 0 || n.y > canvas.height) n.vy *= -1;
+      });
+
+      // Connections
+      for (let i = 0; i < COUNT; i++) {
+        for (let j = i + 1; j < COUNT; j++) {
+          const dx = nodes[i].x - nodes[j].x;
+          const dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 130) {
+            const alpha = (1 - dist / 130) * 0.18;
+            ctx.beginPath();
+            ctx.moveTo(nodes[i].x, nodes[i].y);
+            ctx.lineTo(nodes[j].x, nodes[j].y);
+            // Alternate violet/cyan
+            ctx.strokeStyle = j % 2 === 0
+              ? `rgba(167,139,250,${alpha})`
+              : `rgba(34,211,238,${alpha})`;
+            ctx.lineWidth = 0.6;
+            ctx.stroke();
+          }
+        }
+      }
+
+      // Nodes
+      nodes.forEach((n, i) => {
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+        ctx.fillStyle = i % 2 === 0 ? 'rgba(167,139,250,0.45)' : 'rgba(34,211,238,0.35)';
+        ctx.fill();
+      });
+
+      animId = requestAnimationFrame(draw);
+    };
+    draw();
+
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener('resize', resize);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{
+        position: "absolute", inset: 0, width: "100%", height: "100%",
+        pointerEvents: "none", opacity: 0.55,
+      }}
+    />
+  );
+}
+
+// ─────────────────────────────────────────────
+// HEX LOADING ANIMATION
+// ─────────────────────────────────────────────
+function HexLoader() {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.75rem", padding: "1.5rem 0" }}>
+      <svg width="48" height="48" viewBox="228 88 224 254" xmlns="http://www.w3.org/2000/svg"
+        style={{ animation: "hexPulse 1.8s ease-in-out infinite" }}>
+        <defs>
+          <linearGradient id="hlF" gradientUnits="userSpaceOnUse" x1="245" y1="100" x2="435" y2="320">
+            <stop offset="0%" stopColor="#6D28D9" stopOpacity="0.85"/>
+            <stop offset="100%" stopColor="#0891B2" stopOpacity="0.85"/>
+          </linearGradient>
+          <linearGradient id="hlS" gradientUnits="userSpaceOnUse" x1="245" y1="100" x2="435" y2="320">
+            <stop offset="0%" stopColor="#A78BFA"/>
+            <stop offset="100%" stopColor="#22D3EE"/>
+          </linearGradient>
+        </defs>
+        <polygon points="340,100 435,155 435,265 340,320 245,265 245,155" fill="none" stroke="#1D2238" strokeWidth="1.2"/>
+        <line x1="340" y1="210" x2="340" y2="100" stroke="#1D2238" strokeWidth="1"/>
+        <line x1="340" y1="210" x2="435" y2="155" stroke="#1D2238" strokeWidth="1"/>
+        <line x1="340" y1="210" x2="435" y2="265" stroke="#1D2238" strokeWidth="1"/>
+        <line x1="340" y1="210" x2="340" y2="320" stroke="#1D2238" strokeWidth="1"/>
+        <line x1="340" y1="210" x2="245" y2="265" stroke="#1D2238" strokeWidth="1"/>
+        <line x1="340" y1="210" x2="245" y2="155" stroke="#1D2238" strokeWidth="1"/>
+        <polygon points="340,117 421,163 421,257 340,304 259,257 259,163" fill="url(#hlF)" stroke="url(#hlS)" strokeWidth="2.5" strokeLinejoin="round"/>
+        <circle cx="340" cy="117" r="5" fill="#C4B5FD"/>
+        <circle cx="421" cy="163" r="5" fill="#A78BFA"/>
+        <circle cx="421" cy="257" r="5" fill="#22D3EE"/>
+        <circle cx="340" cy="304" r="5" fill="#67E8F9"/>
+        <circle cx="259" cy="257" r="5" fill="#7DD3FC"/>
+        <circle cx="259" cy="163" r="5" fill="#93C5FD"/>
+        <circle cx="340" cy="210" r="4" fill="#FFFFFF" opacity="0.9"/>
+      </svg>
+      <DotsText />
+    </div>
+  );
+}
+
+function DotsText() {
+  const [dots, setDots] = useState(1);
+  useEffect(() => {
+    const t = setInterval(() => setDots(d => d === 3 ? 1 : d + 1), 500);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <span style={{ color: "#555", fontSize: "0.82rem", letterSpacing: "0.08em" }}>
+      Analizando{'.'.repeat(dots)}
+    </span>
+  );
+}
+
+// ─────────────────────────────────────────────
 // SCREENS
 // ─────────────────────────────────────────────
 function IntroScreen({ onStart }) {
   return (
-    <div style={{ textAlign: "center", maxWidth: "520px", margin: "0 auto", padding: "2rem 1rem" }}>
+    <div style={{ textAlign: "center", maxWidth: "520px", margin: "0 auto", padding: "2rem 1rem", position: "relative" }}>
+      {/* Neural particles background */}
+      <div style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none" }}>
+        <NeuralCanvas />
+      </div>
+      <div style={{ position: "relative", zIndex: 1 }}>
 
       {/* Logo hexagonal */}
       <div style={{ display: "flex", justifyContent: "center", marginBottom: "1.5rem" }}>
@@ -393,9 +538,10 @@ function IntroScreen({ onStart }) {
         ))}
       </div>
 
-      <button onClick={onStart} style={{ background: "linear-gradient(135deg,#6C63FF,#ff6b6b)", color: "#fff", border: "none", borderRadius: "10px", padding: "0.9rem 2.5rem", fontSize: "1rem", fontWeight: 700, cursor: "pointer", letterSpacing: "0.05em" }}>
+      <button className="btn-primary" onClick={onStart} style={{ background: "linear-gradient(135deg,#6C63FF,#ff6b6b)", color: "#fff", border: "none", borderRadius: "10px", padding: "0.9rem 2.5rem", fontSize: "1rem", fontWeight: 700, cursor: "pointer", letterSpacing: "0.05em" }}>
         COMENZAR TEST →
       </button>
+      </div>{/* end z-index wrapper */}
     </div>
   );
 }
@@ -772,9 +918,7 @@ function TabAdvisor({ type, typeColor }) {
           ))}
           {loading && (
             <div style={{ display: "flex", justifyContent: "flex-start" }}>
-              <div style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: "16px 16px 16px 4px", padding: "0.75rem 1rem" }}>
-                <span style={{ color: "#555", fontSize: "0.9rem" }}>···</span>
-              </div>
+              <HexLoader />
             </div>
           )}
         </div>
@@ -908,8 +1052,8 @@ function ResultsScreen({ type, display, onRetake }) {
         <div style={{ fontSize: "0.65rem", color: "#444", letterSpacing: "0.2em", marginBottom: "0.6rem", textTransform: "uppercase" }}>Tu tipo de personalidad</div>
 
         {/* Big type badge */}
-        <div style={{ display: "inline-block", background: `${info.color}15`, border: `2px solid ${info.color}55`, borderRadius: "16px", padding: "0.4rem 1.4rem", marginBottom: "0.75rem" }}>
-          <span style={{ fontSize: "3.2rem", fontWeight: 900, color: info.color, letterSpacing: "0.12em", lineHeight: 1 }}>{type}</span>
+        <div style={{ display: "inline-block", background: `${info.color}15`, border: `2px solid ${info.color}55`, borderRadius: "16px", padding: "0.4rem 1.4rem", marginBottom: "0.75rem", boxShadow: `0 0 24px ${info.color}33` }}>
+          <span className="shimmer-text" style={{ fontSize: "3.2rem", fontWeight: 900, letterSpacing: "0.12em", lineHeight: 1, background: `linear-gradient(90deg, ${info.color}, #fff, ${info.color})`, backgroundSize: "200% auto", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{type}</span>
         </div>
 
         <div style={{ fontSize: "1.25rem", color: "#f0f0f0", fontWeight: 700, marginBottom: "0.4rem" }}>{info.name}</div>

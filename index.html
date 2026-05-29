@@ -35,6 +35,92 @@
       ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
       button { font-family: inherit; }
       #root { min-height: 100vh; }
+
+      /* ── Global animations ── */
+      @keyframes hexSpin {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+      }
+      @keyframes hexPulse {
+        0%, 100% { opacity: 0.7; filter: drop-shadow(0 0 4px #A78BFA66); }
+        50%       { opacity: 1;   filter: drop-shadow(0 0 12px #A78BFA); }
+      }
+      @keyframes shimmer {
+        0%   { background-position: -200% center; }
+        100% { background-position:  200% center; }
+      }
+      @keyframes dots {
+        0%,20%  { content: '.';   }
+        40%,60% { content: '..';  }
+        80%,100%{ content: '...'; }
+      }
+      @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(12px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes gradientShift {
+        0%   { background-position: 0% 50%; }
+        50%  { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+
+      /* ── Button micro-interactions ── */
+      .btn-primary {
+        transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+      }
+      .btn-primary:hover {
+        transform: translateY(-1px) scale(1.02);
+        filter: brightness(1.12);
+        box-shadow: 0 4px 20px rgba(108,99,255,0.35);
+      }
+      .btn-primary:active {
+        transform: scale(0.97);
+        filter: brightness(0.92);
+      }
+      .btn-secondary {
+        transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+      }
+      .btn-secondary:hover {
+        transform: translateY(-1px);
+        background: #1a1a1a !important;
+        color: #ccc !important;
+        border-color: #333 !important;
+      }
+      .btn-secondary:active {
+        transform: scale(0.97);
+      }
+
+      /* ── Card hover elevation ── */
+      .card-hover {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      .card-hover:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      }
+
+      /* ── Shimmer badge ── */
+      .shimmer-text {
+        background: linear-gradient(90deg, #A78BFA, #22D3EE, #A78BFA);
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: shimmer 3s linear infinite;
+      }
+
+      /* ── Fade up entrance ── */
+      .fade-up {
+        animation: fadeUp 0.5s ease forwards;
+      }
+
+      /* ── Tab hover ── */
+      .tab-btn {
+        transition: all 0.18s ease;
+      }
+      .tab-btn:hover:not(.tab-active) {
+        background: #1a1a1a !important;
+        color: #888 !important;
+      }
     </style>
   </head>
   <body>
