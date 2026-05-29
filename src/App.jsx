@@ -214,28 +214,66 @@ function PaywallModal({ type, onClose }) {
 function IntroScreen({ onStart }) {
   return (
     <div style={{ textAlign: "center", maxWidth: "520px", margin: "0 auto", padding: "2rem 1rem" }}>
-      <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>🧠</div>
+
+      {/* Logo hexagonal */}
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: "1.25rem" }}>
+        <svg width="80" height="80" viewBox="0 0 680 450" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="lgF" gradientUnits="userSpaceOnUse" x1="245" y1="100" x2="435" y2="320">
+              <stop offset="0%" stopColor="#6D28D9" stopOpacity="0.78"/>
+              <stop offset="55%" stopColor="#3730A3" stopOpacity="0.65"/>
+              <stop offset="100%" stopColor="#0891B2" stopOpacity="0.78"/>
+            </linearGradient>
+            <linearGradient id="lgS" gradientUnits="userSpaceOnUse" x1="245" y1="100" x2="435" y2="320">
+              <stop offset="0%" stopColor="#A78BFA"/>
+              <stop offset="100%" stopColor="#22D3EE"/>
+            </linearGradient>
+          </defs>
+          <circle cx="340" cy="210" r="128" fill="none" stroke="#7C3AED" strokeWidth="0.8" opacity="0.2"/>
+          <polygon points="340,100 435,155 435,265 340,320 245,265 245,155" fill="none" stroke="#1D2238" strokeWidth="1.2"/>
+          <polygon points="340,127 398,152 422,210 398,268 340,293 282,268 258,210 282,152" fill="none" stroke="#1D2238" strokeWidth="0.9"/>
+          <polygon points="340,155 379,171 395,210 379,249 340,265 301,249 285,210 301,171" fill="none" stroke="#1D2238" strokeWidth="0.9"/>
+          <line x1="340" y1="210" x2="340" y2="100" stroke="#1D2238" strokeWidth="1"/>
+          <line x1="340" y1="210" x2="435" y2="155" stroke="#1D2238" strokeWidth="1"/>
+          <line x1="340" y1="210" x2="435" y2="265" stroke="#1D2238" strokeWidth="1"/>
+          <line x1="340" y1="210" x2="340" y2="320" stroke="#1D2238" strokeWidth="1"/>
+          <line x1="340" y1="210" x2="245" y2="265" stroke="#1D2238" strokeWidth="1"/>
+          <line x1="340" y1="210" x2="245" y2="155" stroke="#1D2238" strokeWidth="1"/>
+          <polygon points="340,117 421,163 421,257 340,304 259,257 259,163" fill="url(#lgF)" stroke="url(#lgS)" strokeWidth="2.5" strokeLinejoin="round"/>
+          <polygon points="340,139 402,174 402,246 340,282 278,246 278,174" fill="none" stroke="url(#lgS)" strokeWidth="1.1" strokeLinejoin="round" opacity="0.4"/>
+          <circle cx="340" cy="117" r="5" fill="#C4B5FD"/>
+          <circle cx="421" cy="163" r="5" fill="#A78BFA"/>
+          <circle cx="421" cy="257" r="5" fill="#22D3EE"/>
+          <circle cx="340" cy="304" r="5" fill="#67E8F9"/>
+          <circle cx="259" cy="257" r="5" fill="#7DD3FC"/>
+          <circle cx="259" cy="163" r="5" fill="#93C5FD"/>
+          <circle cx="340" cy="210" r="7" fill="url(#lgS)" opacity="0.5"/>
+          <circle cx="340" cy="210" r="3.5" fill="#FFFFFF" opacity="0.95"/>
+        </svg>
+      </div>
+
       <h1 style={{ fontSize: "2rem", fontWeight: 700, color: "#fff", marginBottom: "0.5rem", lineHeight: 1.2 }}>Test de Personalidad MBTI</h1>
-      <p style={{ color: "#888", marginBottom: "0.75rem", fontSize: "0.95rem" }}>60 preguntas · ~10 minutos</p>
-      <p style={{ color: "#bbb", marginBottom: "2rem", lineHeight: 1.7, fontSize: "0.95rem" }}>
-        Responde con la primera reacción que tengas. No hay respuestas correctas o incorrectas.
-        El resultado refleja cómo realmente eres, no cómo quisieras ser.
-      </p>
-      <div style={{ background: "#111", border: "1px solid #222", borderRadius: "12px", padding: "1.25rem", marginBottom: "2rem", textAlign: "left" }}>
+      <p style={{ color: "#888", marginBottom: "2rem", fontSize: "0.95rem" }}>60 preguntas · ~10 minutos</p>
+
+      {/* Guidelines */}
+      <div style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: "14px", padding: "1.25rem", marginBottom: "2rem", textAlign: "left" }}>
+        <div style={{ color: "#555", fontSize: "0.7rem", letterSpacing: "0.12em", marginBottom: "1rem" }}>INSTRUCCIONES</div>
         {[
-          ["7 niveles de respuesta", "De 'Totalmente en desacuerdo' a 'Totalmente de acuerdo'"],
-          ["Resultados inmediatos",  "Tu tipo MBTI + porcentaje de cada dimensión"],
-          ["Análisis relacional",    "Compatibilidad, fortalezas y estrategias de atracción"],
+          ["Responde según tu opinión genuina", "No hay respuestas correctas ni incorrectas — refleja cómo realmente eres."],
+          ["No saltes preguntas", "Debes responder cada una, pero puedes volver atrás cuando quieras."],
+          ["Usa tu primera reacción", "No pienses demasiado. La respuesta instintiva es la más precisa."],
+          ["Resultados inmediatos", "Al terminar verás tu tipo MBTI con análisis detallado de personalidad."],
         ].map(([t, d]) => (
-          <div key={t} style={{ display: "flex", gap: "0.75rem", marginBottom: "0.75rem", alignItems: "flex-start" }}>
-            <span style={{ color: "#6C63FF", marginTop: "2px" }}>▸</span>
+          <div key={t} style={{ display: "flex", gap: "0.75rem", marginBottom: "0.9rem", alignItems: "flex-start" }}>
+            <span style={{ color: "#6C63FF", marginTop: "3px", fontSize: "0.8rem" }}>✓</span>
             <div>
-              <div style={{ color: "#eee", fontSize: "0.9rem", fontWeight: 600 }}>{t}</div>
-              <div style={{ color: "#666", fontSize: "0.8rem" }}>{d}</div>
+              <div style={{ color: "#eee", fontSize: "0.88rem", fontWeight: 600 }}>{t}</div>
+              <div style={{ color: "#555", fontSize: "0.78rem", lineHeight: 1.5 }}>{d}</div>
             </div>
           </div>
         ))}
       </div>
+
       <button onClick={onStart} style={{ background: "linear-gradient(135deg,#6C63FF,#ff6b6b)", color: "#fff", border: "none", borderRadius: "10px", padding: "0.9rem 2.5rem", fontSize: "1rem", fontWeight: 700, cursor: "pointer", letterSpacing: "0.05em" }}>
         COMENZAR TEST →
       </button>
