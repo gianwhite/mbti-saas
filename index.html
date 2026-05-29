@@ -121,6 +121,58 @@
         background: #1a1a1a !important;
         color: #888 !important;
       }
+
+      /* ── Mobile ── */
+      @media (max-width: 600px) {
+        /* Nav */
+        .land-nav { padding: 0.7rem 1rem !important; }
+        .land-nav-brand span.brand-name { display: none; }
+
+        /* Hero */
+        .land-hero { padding: 3.5rem 1.25rem 2.5rem !important; }
+        .land-hero-actions { flex-direction: column; align-items: stretch !important; }
+        .land-hero-actions .btn-primary { text-align: center; }
+        .land-hero-meta { display: none !important; }
+        .land-stats { gap: 1.25rem !important; margin-top: 2rem !important; }
+
+        /* Type pills — scroll horizontal */
+        .land-pills { flex-wrap: nowrap !important; overflow-x: auto; padding-bottom: 0.5rem; justify-content: flex-start !important; }
+        .land-pills::-webkit-scrollbar { display: none; }
+
+        /* Features grid → 1 col */
+        .land-features-grid { grid-template-columns: 1fr !important; }
+
+        /* How it works → stack */
+        .land-how-grid { grid-template-columns: 1fr !important; gap: 0.5rem !important; }
+
+        /* Testimonials → 1 col */
+        .land-testimonials-grid { grid-template-columns: 1fr !important; }
+
+        /* Pricing */
+        .land-pricing { padding: 3rem 1rem !important; }
+
+        /* Test question Likert buttons — bigger touch targets */
+        .likert-btn { min-width: 36px !important; max-width: 36px !important; min-height: 36px !important; }
+
+        /* Results tabs — smaller font */
+        .results-tab { font-size: 0.65rem !important; padding: 0.4rem 0.5rem !important; }
+
+        /* Results hero padding */
+        .results-hero { padding: 1.5rem 1rem 1.25rem !important; }
+
+        /* Share modal */
+        .share-modal-card { padding: 1.25rem !important; }
+
+        /* Auth/Paywall modals */
+        .modal-inner { padding: 1.5rem 1.25rem !important; max-width: 100% !important; margin: 0 0.5rem !important; }
+      }
+
+      /* Touch devices: disable hover elevation to avoid stuck states */
+      @media (hover: none) {
+        .card-hover:hover { transform: none; box-shadow: none; }
+        .btn-primary:hover { transform: none; filter: none; box-shadow: none; }
+        .btn-secondary:hover { transform: none; }
+      }
     </style>
   </head>
   <body>

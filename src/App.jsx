@@ -523,7 +523,7 @@ function LandingPage() {
       </div>
 
       {/* ── NAV ── */}
-      <nav style={{ position: "relative", zIndex: 10, borderBottom: "1px solid #111", padding: "0.85rem 2rem", display: "flex", alignItems: "center", justifyContent: "space-between", maxWidth: "1100px", margin: "0 auto" }}>
+      <nav className="land-nav" style={{ position: "relative", zIndex: 10, borderBottom: "1px solid #111", padding: "0.85rem 2rem", display: "flex", alignItems: "center", justifyContent: "space-between", maxWidth: "1100px", margin: "0 auto" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <LandingLogo />
           <div style={{ display: "flex", alignItems: "baseline", gap: "3px" }}>
@@ -548,7 +548,7 @@ function LandingPage() {
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onSuccess={() => setShowAuthModal(false)} title="Inicia sesión o crea tu cuenta" />}
 
       {/* ── HERO ── */}
-      <section style={{ position: "relative", zIndex: 1, textAlign: "center", padding: "6rem 1.5rem 5rem", maxWidth: "760px", margin: "0 auto" }}>
+      <section className="land-hero" style={{ position: "relative", zIndex: 1, textAlign: "center", padding: "6rem 1.5rem 5rem", maxWidth: "760px", margin: "0 auto" }}>
         <div style={{ display: "inline-block", background: "#6C63FF18", border: "1px solid #6C63FF44", borderRadius: "20px", padding: "5px 16px", fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.1em", color: "#A78BFA", marginBottom: "1.75rem" }}>
           TEST MBTI + ANÁLISIS DE IA · ESPAÑOL
         </div>
@@ -561,17 +561,17 @@ function LandingPage() {
         <p style={{ color: "#777", fontSize: "1.1rem", lineHeight: 1.75, maxWidth: "540px", margin: "0 auto 2.5rem" }}>
           60 preguntas calibradas. Tu tipo MBTI exacto con análisis profundo de funciones cognitivas, compatibilidad, estilo de apego y cómo operas en relaciones y liderazgo.
         </p>
-        <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
+        <div className="land-hero-actions" style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
           <button className="btn-primary" onClick={handleCTA} style={{ background: "linear-gradient(135deg,#6C63FF,#ff6b6b)", color: "#fff", border: "none", borderRadius: "12px", padding: "1rem 2.5rem", fontSize: "1.05rem", fontWeight: 700, cursor: "pointer", letterSpacing: "0.04em" }}>
             {hasResult ? "Ver mi análisis →" : "Hacer el test gratis →"}
           </button>
-          <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#444", fontSize: "0.82rem" }}>
+          <div className="land-hero-meta" style={{ display: "flex", alignItems: "center", gap: "6px", color: "#444", fontSize: "0.82rem" }}>
             <span style={{ color: "#6C63FF" }}>✓</span> 60 preguntas · ~10 min
             <span style={{ color: "#6C63FF", marginLeft: "8px" }}>✓</span> Resultados inmediatos
           </div>
         </div>
         {/* Social proof strip */}
-        <div style={{ marginTop: "3rem", display: "flex", justifyContent: "center", gap: "2rem", flexWrap: "wrap" }}>
+        <div className="land-stats" style={{ marginTop: "3rem", display: "flex", justifyContent: "center", gap: "2rem", flexWrap: "wrap" }}>
           {[["4 800+", "análisis completados"], ["16", "tipos de personalidad"], ["6", "dimensiones de análisis"]].map(([n, l]) => (
             <div key={l} style={{ textAlign: "center" }}>
               <div style={{ fontSize: "1.5rem", fontWeight: 900, background: "linear-gradient(90deg,#A78BFA,#22D3EE)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{n}</div>
@@ -583,7 +583,7 @@ function LandingPage() {
 
       {/* ── TYPE PILLS ── */}
       <section style={{ position: "relative", zIndex: 1, padding: "0 1.5rem 4rem", maxWidth: "900px", margin: "0 auto" }}>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", justifyContent: "center" }}>
+        <div className="land-pills" style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", justifyContent: "center" }}>
           {[
             ["INTJ", "#6C63FF", "El Arquitecto"],
             ["ENFP", "#f97316", "El Inspirador"],
@@ -611,7 +611,7 @@ function LandingPage() {
             <h2 style={{ fontSize: "clamp(1.6rem,4vw,2.2rem)", fontWeight: 800, color: "#fff" }}>Análisis que va más allá del tipo</h2>
             <p style={{ color: "#555", marginTop: "0.75rem", fontSize: "0.9rem" }}>No solo una letra. Entiende el sistema completo que te define.</p>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "1rem" }}>
+          <div className="land-features-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "1rem" }}>
             {[
               ["🧠", "Advisor IA personalizado", "Habla con una IA entrenada en tu tipo. Preguntas sobre relaciones, decisiones, carrera — respuestas contextualizadas a tu perfil."],
               ["⚡", "Funciones cognitivas", "Las 8 funciones de Jung ordenadas por tu tipo: cuáles son tu motor, cuáles tu talón de Aquiles."],
@@ -636,7 +636,7 @@ function LandingPage() {
           <div style={{ color: "#555", fontSize: "0.7rem", letterSpacing: "0.15em", marginBottom: "0.75rem" }}>CÓMO FUNCIONA</div>
           <h2 style={{ fontSize: "clamp(1.6rem,4vw,2.2rem)", fontWeight: 800, color: "#fff" }}>Simple. Tres pasos.</h2>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1.5rem" }}>
+        <div className="land-how-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1.5rem" }}>
           {[
             ["01", "#6C63FF", "Haz el test gratis", "60 preguntas diseñadas para detectar tu tipo con precisión. Toma ~10 minutos."],
             ["02", "#22D3EE", "Recibe tu tipo", "Resultado inmediato: tu tipo MBTI con perfil básico de personalidad — sin costo."],
@@ -660,7 +660,7 @@ function LandingPage() {
             <div style={{ color: "#555", fontSize: "0.7rem", letterSpacing: "0.15em", marginBottom: "0.75rem" }}>TESTIMONIOS</div>
             <h2 style={{ fontSize: "clamp(1.4rem,3.5vw,2rem)", fontWeight: 800, color: "#fff" }}>Lo que dicen los usuarios</h2>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "1rem" }}>
+          <div className="land-testimonials-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "1rem" }}>
             {[
               ["INTJ", "#6C63FF", "Finalmente un análisis que no suena a horóscopo. El apartado de funciones cognitivas describe exactamente cómo proceso decisiones bajo presión.", "Alejandro R., México"],
               ["ENFP", "#f97316", "El Advisor IA es lo que hace la diferencia. Le pregunté sobre cómo manejar conflictos con mi pareja ISTJ y la respuesta fue sorprendentemente precisa.", "Valentina M., Colombia"],
@@ -1166,6 +1166,73 @@ function TabAdvisor({ type, typeColor }) {
 }
 
 // ─────────────────────────────────────────────
+// SHARE MODAL
+// ─────────────────────────────────────────────
+function ShareModal({ type, info, onClose }) {
+  const [copied, setCopied] = useState(false);
+  const url = `https://16personalidades.app`;
+  const text = `Soy ${type} — ${info.name}. Descubre tu tipo de personalidad MBTI:`;
+  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`;
+  const twitterUrl  = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+
+  const handleNativeShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: `Soy ${type} — ${info.name}`, text, url });
+      } catch {}
+    }
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(`${text} ${url}`).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    });
+  };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.9)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000, padding: "1rem" }} onClick={onClose}>
+      <div className="share-modal-card" onClick={e => e.stopPropagation()} style={{ background: "#111", border: `1px solid ${info.color}44`, borderRadius: "20px", padding: "2rem", maxWidth: "420px", width: "100%", position: "relative" }}>
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: `linear-gradient(90deg,transparent,${info.color},transparent)`, borderRadius: "20px 20px 0 0" }} />
+        <button onClick={onClose} style={{ position: "absolute", top: "1rem", right: "1rem", background: "none", border: "none", color: "#444", cursor: "pointer", fontSize: "1.2rem" }}>✕</button>
+
+        <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
+          <div style={{ color: "#555", fontSize: "0.7rem", letterSpacing: "0.12em", marginBottom: "1rem" }}>COMPARTIR MI TIPO</div>
+          {/* Visual card */}
+          <div style={{ background: `linear-gradient(160deg, #0d0d0d, ${info.color}18)`, border: `1px solid ${info.color}33`, borderRadius: "16px", padding: "1.5rem", marginBottom: "1.25rem" }}>
+            <div style={{ fontSize: "0.65rem", color: "#444", letterSpacing: "0.18em", marginBottom: "0.5rem" }}>MI TIPO MBTI</div>
+            <div style={{ fontSize: "2.8rem", fontWeight: 900, letterSpacing: "0.1em", background: `linear-gradient(90deg,${info.color},#fff,${info.color})`, backgroundSize: "200% auto", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", animation: "shimmer 3s linear infinite", lineHeight: 1, marginBottom: "0.4rem" }}>{type}</div>
+            <div style={{ color: "#ccc", fontWeight: 700, fontSize: "1rem", marginBottom: "0.3rem" }}>{info.name}</div>
+            <div style={{ color: "#555", fontSize: "0.78rem", fontStyle: "italic" }}>"{info.tagline}"</div>
+            <div style={{ marginTop: "0.85rem", color: "#333", fontSize: "0.68rem", letterSpacing: "0.06em" }}>16personalidades.app</div>
+          </div>
+        </div>
+
+        {/* Share buttons */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+          {navigator.share && (
+            <button onClick={handleNativeShare} className="btn-primary" style={{ width: "100%", background: `linear-gradient(135deg,${info.color},#6C63FF)`, color: "#fff", border: "none", borderRadius: "10px", padding: "0.85rem", fontSize: "0.9rem", fontWeight: 700, cursor: "pointer" }}>
+              📤 Compartir
+            </button>
+          )}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.6rem" }}>
+            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" style={{ display: "block", background: "#0f0f0f", border: "1px solid #25D36622", borderRadius: "10px", padding: "0.75rem", textAlign: "center", textDecoration: "none", color: "#25D366", fontSize: "0.85rem", fontWeight: 600 }}>
+              WhatsApp
+            </a>
+            <a href={twitterUrl} target="_blank" rel="noopener noreferrer" style={{ display: "block", background: "#0f0f0f", border: "1px solid #1DA1F222", borderRadius: "10px", padding: "0.75rem", textAlign: "center", textDecoration: "none", color: "#1DA1F2", fontSize: "0.85rem", fontWeight: 600 }}>
+              Twitter / X
+            </a>
+          </div>
+          <button onClick={handleCopy} style={{ width: "100%", background: "none", border: "1px solid #222", borderRadius: "10px", padding: "0.75rem", color: copied ? info.color : "#555", cursor: "pointer", fontSize: "0.85rem", fontWeight: 600, transition: "color 0.2s" }}>
+            {copied ? "✓ Copiado" : "Copiar enlace"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
 // RESULTS SCREEN
 // ─────────────────────────────────────────────
 function ResultsScreen({ type, display, onRetake }) {
@@ -1191,7 +1258,7 @@ function ResultsScreen({ type, display, onRetake }) {
             localStorage.setItem('mbti_customer_id', data.customerId);
             setIsPaid(true);
           }
-          window.history.replaceState({}, '', '/');
+          window.history.replaceState({}, '', '/test');
         })
         .catch(() => {});
     } else if (storedCustomerId) {
@@ -1228,26 +1295,16 @@ function ResultsScreen({ type, display, onRetake }) {
     setTab(tabId);
   };
 
-  const handleShare = () => {
-    const txt = `Mi tipo de personalidad MBTI es ${type} — ${info.name}\n"${info.tagline}"`;
-    navigator.clipboard.writeText(txt).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    });
-  };
+  const [showShare, setShowShare] = useState(false);
+  const handleShare = () => setShowShare(true);
 
   return (
     <div style={{ maxWidth: "640px", margin: "0 auto", padding: "1.5rem 1rem 3rem" }}>
-      {showPaywall && (
-        <PaywallModal
-          type={type}
-          onClose={() => setShowPaywall(false)}
-          onPay={() => {}}
-        />
-      )}
+      {showPaywall && <PaywallModal type={type} onClose={() => setShowPaywall(false)} onPay={() => {}} />}
+      {showShare   && <ShareModal type={type} info={info} onClose={() => setShowShare(false)} />}
 
       {/* Hero */}
-      <div style={{ background: `linear-gradient(160deg, #111 60%, ${info.color}0d)`, border: `1px solid ${info.color}44`, borderRadius: "24px", padding: "2rem 1.75rem 1.75rem", textAlign: "center", marginBottom: "1.25rem", position: "relative", overflow: "hidden" }}>
+      <div className="results-hero" style={{ background: `linear-gradient(160deg, #111 60%, ${info.color}0d)`, border: `1px solid ${info.color}44`, borderRadius: "24px", padding: "2rem 1.75rem 1.75rem", textAlign: "center", marginBottom: "1.25rem", position: "relative", overflow: "hidden" }}>
         {/* Top glow bar */}
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: `linear-gradient(90deg, transparent, ${info.color}, transparent)` }} />
         {/* Background glow */}
@@ -1287,7 +1344,7 @@ function ResultsScreen({ type, display, onRetake }) {
           const isActive  = tab === t.id;
           const isLocked  = !t.free && !isPaid;
           return (
-            <button key={t.id} onClick={() => handleTabClick(t.id, t.free)} style={{ flex: 1, minWidth: "fit-content", padding: "0.5rem 0.65rem", borderRadius: "10px", border: "none", background: isActive ? `linear-gradient(135deg, ${info.color}cc, ${info.color}88)` : "transparent", color: isActive ? "#fff" : isLocked ? "#333" : "#555", fontSize: "0.72rem", fontWeight: isActive ? 700 : 400, cursor: "pointer", transition: "all 0.2s", whiteSpace: "nowrap", letterSpacing: isActive ? "0.02em" : 0 }}>
+            <button key={t.id} onClick={() => handleTabClick(t.id, t.free)} className="results-tab" style={{ flex: 1, minWidth: "fit-content", padding: "0.5rem 0.65rem", borderRadius: "10px", border: "none", background: isActive ? `linear-gradient(135deg, ${info.color}cc, ${info.color}88)` : "transparent", color: isActive ? "#fff" : isLocked ? "#333" : "#555", fontSize: "0.72rem", fontWeight: isActive ? 700 : 400, cursor: "pointer", transition: "all 0.2s", whiteSpace: "nowrap", letterSpacing: isActive ? "0.02em" : 0 }}>
               {isLocked ? "🔒 " : ""}{t.label}
             </button>
           );
@@ -1308,10 +1365,10 @@ function ResultsScreen({ type, display, onRetake }) {
 
       {/* Actions */}
       <div style={{ display: "flex", gap: "0.75rem", marginTop: "1.75rem" }}>
-        <button onClick={handleShare} style={{ flex: 1, background: "#111", border: "1px solid #1e1e1e", borderRadius: "12px", padding: "0.8rem", color: copied ? info.color : "#666", cursor: "pointer", fontSize: "0.82rem", fontWeight: 600, transition: "all 0.2s" }}>
-          {copied ? "✓ Copiado al portapapeles" : "Compartir resultado"}
+        <button onClick={handleShare} className="btn-secondary" style={{ flex: 1, background: "#111", border: "1px solid #1e1e1e", borderRadius: "12px", padding: "0.8rem", color: "#666", cursor: "pointer", fontSize: "0.82rem", fontWeight: 600, transition: "all 0.2s" }}>
+          ↗ Compartir resultado
         </button>
-        <button onClick={onRetake} style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: "12px", padding: "0.8rem 1.2rem", color: "#444", cursor: "pointer", fontSize: "0.82rem", fontWeight: 600 }}>
+        <button onClick={onRetake} className="btn-secondary" style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: "12px", padding: "0.8rem 1.2rem", color: "#444", cursor: "pointer", fontSize: "0.82rem", fontWeight: 600 }}>
           ↺
         </button>
       </div>

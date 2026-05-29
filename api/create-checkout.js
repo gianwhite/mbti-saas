@@ -21,8 +21,8 @@ export default async function handler(req, res) {
       line_items: [{ price: priceId, quantity: 1 }],
       customer_email: email || undefined,
       allow_promotion_codes: true,
-      success_url: `${appUrl}/?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${appUrl}/`,
+      success_url: `${appUrl}/test?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${appUrl}/test`,
       subscription_data: {
         metadata: { source: 'mbti-saas' },
       },
