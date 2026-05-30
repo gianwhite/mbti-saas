@@ -1,0 +1,139 @@
+/* ── Google Fonts ─────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+
+/* ── Reset & Base ─────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: #080612;
+  color: #F0EBF8;
+  font-family: 'Outfit', 'Inter', 'Segoe UI', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+}
+
+/* ── Brand tokens ──────────────────────────────── */
+:root {
+  --bg:          #080612;
+  --bg-card:     rgba(255,255,255,0.032);
+  --bg-card-alt: rgba(255,255,255,0.018);
+  --border:      rgba(255,255,255,0.072);
+  --border-dim:  rgba(255,255,255,0.038);
+  --violet:      #6C3FC8;
+  --violet-light:#A78BFA;
+  --violet-dim:  rgba(108,63,200,0.18);
+  --text:        #F0EBF8;
+  --text-muted:  #8878A0;
+  --text-faint:  #3D3550;
+  --surface:     #130F20;
+}
+
+/* ── Glass card ────────────────────────────────── */
+.glass-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+
+/* ── Hover lift ────────────────────────────────── */
+.card-hover {
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(108,63,200,0.14);
+  border-color: rgba(167,139,250,0.18) !important;
+}
+
+/* ── Buttons ───────────────────────────────────── */
+.btn-primary {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  transition: opacity 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+.btn-primary:hover:not(:disabled) {
+  opacity: 0.92;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(108,63,200,0.35);
+}
+.btn-primary:active:not(:disabled) { transform: translateY(0); }
+
+.btn-secondary {
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.btn-secondary:hover { border-color: #3D3550 !important; color: #A78BFA !important; }
+
+/* ── Serif display ─────────────────────────────── */
+.serif { font-family: 'DM Serif Display', Georgia, serif; }
+
+/* ── Dimension bar colors ──────────────────────── */
+.dim-bar-EI { background: linear-gradient(90deg, #7C3AED, #A78BFA); }
+.dim-bar-SN { background: linear-gradient(90deg, #4338CA, #818CF8); }
+.dim-bar-TF { background: linear-gradient(90deg, #0E7490, #22D3EE); }
+.dim-bar-JP { background: linear-gradient(90deg, #065F46, #34D399); }
+
+.dim-glow-EI { box-shadow: 0 0 12px rgba(167,139,250,0.4); }
+.dim-glow-SN { box-shadow: 0 0 12px rgba(129,140,248,0.4); }
+.dim-glow-TF { box-shadow: 0 0 12px rgba(34,211,238,0.4); }
+.dim-glow-JP { box-shadow: 0 0 12px rgba(52,211,153,0.4); }
+
+/* ── Animations ────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
+@keyframes hexPulse {
+  0%, 100% { opacity: 0.85; transform: scale(1);    }
+  50%       { opacity: 1;    transform: scale(1.06); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(108,63,200,0.2); }
+  50%       { box-shadow: 0 0 36px rgba(108,63,200,0.42); }
+}
+
+.fade-up  { animation: fadeUp 0.45s ease forwards; }
+.glow-pulse { animation: glowPulse 3s ease infinite; }
+
+/* ── Scrollbar ─────────────────────────────────── */
+::-webkit-scrollbar       { width: 6px; }
+::-webkit-scrollbar-track { background: #080612; }
+::-webkit-scrollbar-thumb { background: #2A2040; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #3D3060; }
+
+/* ── Radar chart text ──────────────────────────── */
+.radar-label {
+  font-family: 'Outfit', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  fill: #A78BFA;
+  letter-spacing: 0.08em;
+}
+
+/* ── Input focus ───────────────────────────────── */
+input:focus { border-color: rgba(167,139,250,0.5) !important; outline: none; }
+
+/* ── Responsive helpers ────────────────────────── */
+@media (max-width: 480px) {
+  .land-nav    { padding: 0.75rem 1rem !important; }
+  .land-hero   { padding: 4rem 1rem 3.5rem !important; }
+  .land-stats  { gap: 1.25rem !important; }
+  .land-pills  { gap: 0.4rem !important; }
+  .land-features-grid { grid-template-columns: 1fr !important; }
+  .land-how-grid { grid-template-columns: 1fr !important; }
+  .land-testimonials-grid { grid-template-columns: 1fr !important; }
+  .land-hero-actions { flex-direction: column; align-items: center; }
+  .land-hero-meta { justify-content: center; }
+}

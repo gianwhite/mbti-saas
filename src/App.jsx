@@ -83,10 +83,10 @@ function AuthModal({ onClose, onSuccess, title = "Crea tu cuenta", initialMode =
   const [loading, setLoading] = useState(false);
 
   const inputStyle = {
-    width: "100%", background: "#0f0f0f", border: "1px solid #222",
-    borderRadius: "8px", padding: "0.75rem 1rem", color: "#fff",
+    width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
+    borderRadius: "8px", padding: "0.75rem 1rem", color: "#F0EBF8",
     fontSize: "0.9rem", marginBottom: "0.65rem", outline: "none",
-    boxSizing: "border-box",
+    boxSizing: "border-box", fontFamily: "'Outfit',sans-serif",
   };
 
   const handleSubmit = async () => {
@@ -136,7 +136,7 @@ function AuthModal({ onClose, onSuccess, title = "Crea tu cuenta", initialMode =
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000, padding: "1rem" }} onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} style={{ background: "#111", border: "1px solid #2a2a2a", borderRadius: "20px", padding: "2rem", maxWidth: "400px", width: "100%", position: "relative" }}>
+      <div onClick={e => e.stopPropagation()} className="glass-card" style={{ borderRadius: "20px", padding: "2rem", maxWidth: "400px", width: "100%", position: "relative" }}>
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: "linear-gradient(90deg,transparent,#6C63FF,transparent)", borderRadius: "20px 20px 0 0" }} />
         <button onClick={onClose} style={{ position: "absolute", top: "1rem", right: "1rem", background: "none", border: "none", color: "#444", cursor: "pointer", fontSize: "1.2rem" }}>✕</button>
 
@@ -223,9 +223,8 @@ function Tag({ children, color = "#6C63FF" }) {
 
 function Card({ children, style = {} }) {
   return (
-    <div className="card-hover" style={{
-      background: "#111", border: "1px solid #1e1e1e",
-      borderRadius: "14px", padding: "1.25rem", marginBottom: "0.85rem", ...style,
+    <div className="card-hover glass-card" style={{
+      borderRadius: "16px", padding: "1.25rem", marginBottom: "0.85rem", ...style,
     }}>{children}</div>
   );
 }
@@ -248,15 +247,15 @@ function ProgressBar({ current, total }) {
 function DimensionBar({ dim, data }) {
   const labels = { EI: "Energía", SN: "Percepción", TF: "Decisiones", JP: "Estructura" };
   return (
-    <div style={{ marginBottom: "1.25rem" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
-        <span style={{ color: "#aaa", fontSize: "0.8rem", flexShrink: 0 }}>{labels[dim]}</span>
-        <span style={{ color: "#fff", fontSize: "0.85rem", fontWeight: 600, flexShrink: 0 }}>{data.letter} — {data.pct}%</span>
+    <div style={{ marginBottom: "1.35rem" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "7px" }}>
+        <span style={{ color: "#8878A0", fontSize: "0.78rem", letterSpacing: "0.06em", textTransform: "uppercase" }}>{labels[dim]}</span>
+        <span style={{ color: "#F0EBF8", fontSize: "0.84rem", fontWeight: 700 }}>{data.letter} <span style={{ color: "#8878A0", fontWeight: 400 }}>{data.pct}%</span></span>
       </div>
-      <div style={{ height: "6px", background: "#1e1e1e", borderRadius: "4px" }}>
-        <div style={{ height: "100%", width: `${data.pct}%`, background: "linear-gradient(90deg,#6C63FF,#ff6b6b)", borderRadius: "4px", transition: "width 1s ease" }} />
+      <div style={{ height: "5px", background: "rgba(255,255,255,0.06)", borderRadius: "3px" }}>
+        <div className={`dim-bar-${dim} dim-glow-${dim}`} style={{ height: "100%", width: `${data.pct}%`, borderRadius: "3px", transition: "width 1.1s cubic-bezier(0.4,0,0.2,1)" }} />
       </div>
-      <span style={{ color: "#555", fontSize: "0.75rem" }}>{data.label}</span>
+      <span style={{ color: "#3D3550", fontSize: "0.73rem", marginTop: "4px", display: "block" }}>{data.label}</span>
     </div>
   );
 }
@@ -311,7 +310,7 @@ function PaywallModal({ type, onClose }) {
       display: "flex", alignItems: "center", justifyContent: "center",
       zIndex: 1000, padding: "1rem",
     }} onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} style={{ background: "#111", border: `1px solid ${info.color}44`, borderRadius: "20px", padding: "2rem", maxWidth: "460px", width: "100%", position: "relative" }}>
+      <div onClick={e => e.stopPropagation()} className="glass-card" style={{ border: `1px solid ${info.color}33`, borderRadius: "20px", padding: "2rem", maxWidth: "460px", width: "100%", position: "relative" }}>
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: `linear-gradient(90deg, transparent, ${info.color}, transparent)`, borderRadius: "20px 20px 0 0" }} />
         <button onClick={onClose} style={{ position: "absolute", top: "1rem", right: "1rem", background: "none", border: "none", color: "#444", cursor: "pointer", fontSize: "1.2rem" }}>✕</button>
 
@@ -396,15 +395,12 @@ function NeuralCanvas() {
           const dy = nodes[i].y - nodes[j].y;
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < 130) {
-            const alpha = (1 - dist / 130) * 0.18;
+            const alpha = (1 - dist / 130) * 0.13;
             ctx.beginPath();
             ctx.moveTo(nodes[i].x, nodes[i].y);
             ctx.lineTo(nodes[j].x, nodes[j].y);
-            // Alternate violet/cyan
-            ctx.strokeStyle = j % 2 === 0
-              ? `rgba(167,139,250,${alpha})`
-              : `rgba(34,211,238,${alpha})`;
-            ctx.lineWidth = 0.6;
+            ctx.strokeStyle = `rgba(108,63,200,${alpha})`;
+            ctx.lineWidth = 0.5;
             ctx.stroke();
           }
         }
@@ -414,7 +410,7 @@ function NeuralCanvas() {
       nodes.forEach((n, i) => {
         ctx.beginPath();
         ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
-        ctx.fillStyle = i % 2 === 0 ? 'rgba(167,139,250,0.45)' : 'rgba(34,211,238,0.35)';
+        ctx.fillStyle = i % 3 === 0 ? 'rgba(167,139,250,0.5)' : i % 3 === 1 ? 'rgba(108,63,200,0.38)' : 'rgba(196,181,253,0.3)';
         ctx.fill();
       });
 
@@ -556,14 +552,14 @@ function LandingPage() {
   const handleCTA = () => navigate('/test');
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", color: "#fff", fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", overflowX: "hidden" }}>
+    <div style={{ minHeight: "100vh", background: "#080612", color: "#F0EBF8", overflowX: "hidden" }}>
       {/* Neural bg — only top portion */}
       <div style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none" }}>
         <NeuralCanvas />
       </div>
 
       {/* ── NAV ── */}
-      <nav className="land-nav" style={{ position: "relative", zIndex: 10, borderBottom: "1px solid #111", padding: "0.85rem 2rem", display: "flex", alignItems: "center", justifyContent: "space-between", maxWidth: "1100px", margin: "0 auto" }}>
+      <nav className="land-nav" style={{ position: "relative", zIndex: 10, borderBottom: "1px solid rgba(255,255,255,0.05)", padding: "0.85rem 2rem", display: "flex", alignItems: "center", justifyContent: "space-between", maxWidth: "1100px", margin: "0 auto" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <LandingLogo />
           <div style={{ display: "flex", alignItems: "baseline", gap: "3px" }}>
@@ -592,9 +588,9 @@ function LandingPage() {
         <div style={{ display: "inline-block", background: "#6C63FF18", border: "1px solid #6C63FF44", borderRadius: "20px", padding: "5px 16px", fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.1em", color: "#A78BFA", marginBottom: "1.75rem" }}>
           TEST MBTI + ANÁLISIS DE IA · ESPAÑOL
         </div>
-        <h1 style={{ fontSize: "clamp(2.2rem, 6vw, 3.6rem)", fontWeight: 900, lineHeight: 1.1, marginBottom: "1.25rem", letterSpacing: "-0.02em" }}>
-          Entender cómo piensas<br />
-          <span style={{ background: "linear-gradient(90deg,#A78BFA,#22D3EE,#A78BFA)", backgroundSize: "200% auto", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", animation: "shimmer 4s linear infinite" }}>
+        <h1 style={{ fontSize: "clamp(2.2rem, 6vw, 3.6rem)", lineHeight: 1.1, marginBottom: "1.25rem", letterSpacing: "-0.02em" }}>
+          <span style={{ fontFamily: "'Outfit',sans-serif", fontWeight: 900, color: "#F0EBF8" }}>Entender cómo piensas</span><br />
+          <span className="serif" style={{ fontStyle: "italic", background: "linear-gradient(90deg,#A78BFA,#C4B5FD,#A78BFA)", backgroundSize: "200% auto", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", animation: "shimmer 5s linear infinite" }}>
             es tu mayor ventaja.
           </span>
         </h1>
@@ -644,7 +640,7 @@ function LandingPage() {
       </section>
 
       {/* ── WHAT YOU GET ── */}
-      <section style={{ position: "relative", zIndex: 1, padding: "4rem 1.5rem", background: "#0d0d0d", borderTop: "1px solid #111", borderBottom: "1px solid #111" }}>
+      <section style={{ position: "relative", zIndex: 1, padding: "4rem 1.5rem", background: "rgba(255,255,255,0.018)", borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
         <div style={{ maxWidth: "900px", margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "3rem" }}>
             <div style={{ color: "#555", fontSize: "0.7rem", letterSpacing: "0.15em", marginBottom: "0.75rem" }}>QUÉ OBTIENES</div>
@@ -660,7 +656,7 @@ function LandingPage() {
               ["🔥", "Atracción & química", "Qué tipos te atraen y por qué. Cómo funciona la tensión entre tipos y qué esperar a largo plazo."],
               ["🤝", "Compatibilidad top 3", "Los tres tipos más y menos compatibles contigo, con análisis de dinámica real de pareja."],
             ].map(([icon, title, desc]) => (
-              <div key={title} className="card-hover" style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: "14px", padding: "1.5rem" }}>
+              <div key={title} className="card-hover glass-card" style={{ borderRadius: "16px", padding: "1.5rem" }}>
                 <div style={{ fontSize: "1.5rem", marginBottom: "0.75rem" }}>{icon}</div>
                 <div style={{ color: "#eee", fontWeight: 700, fontSize: "0.95rem", marginBottom: "0.5rem" }}>{title}</div>
                 <div style={{ color: "#555", fontSize: "0.82rem", lineHeight: 1.65 }}>{desc}</div>
@@ -694,7 +690,7 @@ function LandingPage() {
       </section>
 
       {/* ── TESTIMONIALS ── */}
-      <section style={{ position: "relative", zIndex: 1, padding: "4rem 1.5rem", background: "#0d0d0d", borderTop: "1px solid #111", borderBottom: "1px solid #111" }}>
+      <section style={{ position: "relative", zIndex: 1, padding: "4rem 1.5rem", background: "rgba(255,255,255,0.018)", borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
         <div style={{ maxWidth: "900px", margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "3rem" }}>
             <div style={{ color: "#555", fontSize: "0.7rem", letterSpacing: "0.15em", marginBottom: "0.75rem" }}>TESTIMONIOS</div>
@@ -706,7 +702,7 @@ function LandingPage() {
               ["ENFP", "#f97316", "El Advisor IA es lo que hace la diferencia. Le pregunté sobre cómo manejar conflictos con mi pareja ISTJ y la respuesta fue sorprendentemente precisa.", "Valentina M., Colombia"],
               ["INFJ", "#8b5cf6", "Llevaba años sabiendo mi tipo pero nunca había entendido bien los patrones de atracción que tengo. El análisis de compatibilidad lo explica con claridad brutal.", "Diego F., Argentina"],
             ].map(([type, color, quote, name]) => (
-              <div key={name} className="card-hover" style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: "14px", padding: "1.5rem" }}>
+              <div key={name} className="card-hover glass-card" style={{ borderRadius: "16px", padding: "1.5rem" }}>
                 <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "1rem" }}>
                   <div style={{ background: color + "15", border: `1px solid ${color}33`, borderRadius: "6px", padding: "2px 8px", fontSize: "0.75rem", fontWeight: 800, color }}>{type}</div>
                   <div style={{ display: "flex", gap: "2px" }}>{"★★★★★".split("").map((s, i) => <span key={i} style={{ color: "#f59e0b", fontSize: "0.7rem" }}>{s}</span>)}</div>
@@ -723,7 +719,7 @@ function LandingPage() {
       <section style={{ position: "relative", zIndex: 1, padding: "5rem 1.5rem", maxWidth: "480px", margin: "0 auto", textAlign: "center" }}>
         <div style={{ color: "#555", fontSize: "0.7rem", letterSpacing: "0.15em", marginBottom: "0.75rem" }}>PRECIO</div>
         <h2 style={{ fontSize: "clamp(1.6rem,4vw,2.2rem)", fontWeight: 800, color: "#fff", marginBottom: "2rem" }}>Un plan. Sin complicaciones.</h2>
-        <div style={{ background: "#111", border: "1px solid #6C63FF44", borderRadius: "20px", padding: "2.5rem 2rem", position: "relative" }}>
+        <div className="glass-card glow-pulse" style={{ borderRadius: "20px", padding: "2.5rem 2rem", position: "relative", border: "1px solid rgba(108,63,200,0.3)" }}>
           <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: "linear-gradient(90deg,transparent,#6C63FF,#22D3EE,transparent)", borderRadius: "20px 20px 0 0" }} />
           <div style={{ color: "#A78BFA", fontSize: "0.72rem", letterSpacing: "0.1em", fontWeight: 700, marginBottom: "0.5rem" }}>MEMBERSHIP COMPLETA</div>
           <div style={{ fontSize: "3.5rem", fontWeight: 900, color: "#fff", lineHeight: 1 }}>$19<span style={{ fontSize: "1rem", color: "#555", fontWeight: 400 }}>/mes</span></div>
@@ -744,7 +740,7 @@ function LandingPage() {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer style={{ position: "relative", zIndex: 1, borderTop: "1px solid #111", padding: "2rem 1.5rem", textAlign: "center" }}>
+      <footer style={{ position: "relative", zIndex: 1, borderTop: "1px solid rgba(255,255,255,0.05)", padding: "2rem 1.5rem", textAlign: "center" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", marginBottom: "0.75rem" }}>
           <span style={{ fontWeight: 900, fontSize: "0.95rem", background: "linear-gradient(90deg,#A78BFA,#22D3EE)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>16 Personalidades</span>
           <sup style={{ color: "#A78BFA", fontSize: "0.5rem", fontWeight: 700 }}>AI</sup>
@@ -768,7 +764,7 @@ function TestIntro({ onStart }) {
       <div style={{ position: "relative", zIndex: 1 }}>
         <h1 style={{ fontSize: "1.8rem", fontWeight: 800, color: "#fff", marginBottom: "0.5rem", lineHeight: 1.2 }}>Test de Personalidad MBTI</h1>
         <p style={{ color: "#888", marginBottom: "2rem", fontSize: "0.92rem" }}>60 preguntas · ~10 minutos · Resultados inmediatos</p>
-        <div style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: "14px", padding: "1.25rem", marginBottom: "2rem", textAlign: "left" }}>
+        <div className="glass-card" style={{ borderRadius: "14px", padding: "1.25rem", marginBottom: "2rem", textAlign: "left" }}>
           <div style={{ color: "#555", fontSize: "0.68rem", letterSpacing: "0.12em", marginBottom: "1rem" }}>INSTRUCCIONES</div>
           {[
             ["Responde según tu opinión genuina", "No hay respuestas correctas — refleja cómo realmente eres."],
@@ -802,7 +798,7 @@ function QuestionScreen({ question, index, total, selected, onAnswer, onPrev }) 
   return (
     <div style={{ maxWidth: "600px", margin: "0 auto", padding: "1.5rem 1rem" }}>
       <ProgressBar current={index + 1} total={total} />
-      <div style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: "16px", padding: "2rem", marginBottom: "2rem", minHeight: "90px", display: "flex", alignItems: "center" }}>
+      <div className="glass-card" style={{ borderRadius: "16px", padding: "2rem", marginBottom: "2rem", minHeight: "90px", display: "flex", alignItems: "center" }}>
         <p style={{ color: "#f0f0f0", fontSize: "1.1rem", lineHeight: 1.65, margin: 0, textAlign: "center", width: "100%" }}>{question.text}</p>
       </div>
       <div style={{ marginBottom: "2rem" }}>
@@ -1922,7 +1918,7 @@ function ResultsScreen({ type: initialType, display: initialDisplay, onRetake })
       {showTypeSelector && <TypeSelectorModal currentType={type} onSelect={handleTypeChange} onClose={() => setShowTypeSelector(false)} />}
 
       {/* Hero */}
-      <div className="results-hero" style={{ background: `linear-gradient(160deg, #111 60%, ${info.color}0d)`, border: `1px solid ${info.color}44`, borderRadius: "24px", padding: "2rem 1.75rem 1.75rem", textAlign: "center", marginBottom: "1.25rem", position: "relative", overflow: "hidden" }}>
+      <div className="results-hero glass-card" style={{ background: `linear-gradient(160deg, rgba(255,255,255,0.03) 60%, ${info.color}0a)`, border: `1px solid ${info.color}33`, borderRadius: "24px", padding: "2rem 1.75rem 1.75rem", textAlign: "center", marginBottom: "1.25rem", position: "relative", overflow: "hidden" }}>
         {/* Top glow bar */}
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: `linear-gradient(90deg, transparent, ${info.color}, transparent)` }} />
         {/* Background glow */}
@@ -1943,8 +1939,8 @@ function ResultsScreen({ type: initialType, display: initialDisplay, onRetake })
           <span className="shimmer-text" style={{ fontSize: "3.2rem", fontWeight: 900, letterSpacing: "0.12em", lineHeight: 1, background: `linear-gradient(90deg, ${info.color}, #fff, ${info.color})`, backgroundSize: "200% auto", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{type}</span>
         </div>
 
-        <div style={{ fontSize: "1.25rem", color: "#f0f0f0", fontWeight: 700, marginBottom: "0.4rem" }}>{info.name}</div>
-        <div style={{ color: "#555", fontSize: "0.85rem", lineHeight: 1.6, fontStyle: "italic", maxWidth: "380px", margin: "0 auto" }}>"{info.tagline}"</div>
+        <div className="serif" style={{ fontSize: "1.55rem", color: "#F0EBF8", fontWeight: 400, marginBottom: "0.4rem", letterSpacing: "0.01em" }}>{info.name}</div>
+        <div style={{ color: "#8878A0", fontSize: "0.84rem", lineHeight: 1.65, fontStyle: "italic", maxWidth: "380px", margin: "0 auto" }}>"{info.tagline}"</div>
 
         <button onClick={() => setShowTypeSelector(true)} style={{ background: "none", border: "none", color: "#383838", cursor: "pointer", fontSize: "0.7rem", marginTop: "0.75rem", textDecoration: "underline", padding: 0 }}>
           ¿No es tu tipo? Cámbiarlo
@@ -2020,10 +2016,9 @@ function ResultsScreen({ type: initialType, display: initialDisplay, onRetake })
               <button
                 key={t.id}
                 onClick={() => handleTabClick(t.id, t.free)}
-                className="card-hover"
+                className="card-hover glass-card"
                 style={{
-                  background: "#111",
-                  border: `1px solid ${isLocked ? "#1a1a1a" : info.color + "33"}`,
+                  border: `1px solid ${isLocked ? "rgba(255,255,255,0.03)" : info.color + "2a"}`,
                   borderRadius: "16px",
                   padding: "1rem 1rem 0.9rem",
                   textAlign: "left",
@@ -2031,21 +2026,22 @@ function ResultsScreen({ type: initialType, display: initialDisplay, onRetake })
                   position: "relative",
                   overflow: "hidden",
                   transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                  opacity: isLocked ? 0.5 : 1,
                 }}
               >
                 {/* top accent line for unlocked */}
                 {!isLocked && (
-                  <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: `linear-gradient(90deg, transparent, ${info.color}99, transparent)` }} />
+                  <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: `linear-gradient(90deg, transparent, ${info.color}88, transparent)` }} />
                 )}
-                <div style={{ fontSize: "1.4rem", marginBottom: "0.45rem", lineHeight: 1 }}>{t.icon}</div>
-                <div style={{ fontSize: "0.85rem", fontWeight: 700, color: isLocked ? "#444" : "#e8e8e8", marginBottom: "0.25rem", letterSpacing: "0.01em" }}>
+                <div style={{ fontSize: "1.3rem", marginBottom: "0.45rem", lineHeight: 1, filter: isLocked ? "grayscale(1)" : "none" }}>{t.icon}</div>
+                <div style={{ fontSize: "0.84rem", fontWeight: 700, color: isLocked ? "#3D3550" : "#F0EBF8", marginBottom: "0.25rem", letterSpacing: "0.01em" }}>
                   {t.label}
                 </div>
-                <div style={{ fontSize: "0.7rem", color: isLocked ? "#333" : "#666", lineHeight: 1.4 }}>
+                <div style={{ fontSize: "0.69rem", color: isLocked ? "#2A2040" : "#8878A0", lineHeight: 1.4 }}>
                   {t.desc}
                 </div>
                 {isLocked && (
-                  <div style={{ position: "absolute", top: "0.75rem", right: "0.75rem", fontSize: "0.65rem", color: "#333" }}>🔒</div>
+                  <div style={{ position: "absolute", top: "0.75rem", right: "0.75rem", fontSize: "0.6rem", color: "#2A2040" }}>🔒</div>
                 )}
               </button>
             );
@@ -2185,8 +2181,8 @@ function AppInner() {
   const handleRetake = () => { setAnswers({}); setIndex(0); setResult(null); setScreen("test-intro"); };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", color: "#fff", display: "flex", flexDirection: "column" }}>
-      <header style={{ borderBottom: "1px solid #111", padding: "0.75rem 1.5rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+    <div style={{ minHeight: "100vh", background: "#080612", color: "#F0EBF8", display: "flex", flexDirection: "column" }}>
+      <header style={{ borderBottom: "1px solid rgba(255,255,255,0.05)", padding: "0.75rem 1.5rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <a href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none" }}>
           <LandingLogo />
           <div style={{ display: "flex", alignItems: "baseline", gap: "3px" }}>
@@ -2221,7 +2217,7 @@ function AppInner() {
         )}
         </ErrorBoundary>
       </main>
-      <footer style={{ borderTop: "1px solid #111", padding: "1rem", textAlign: "center" }}>
+      <footer style={{ borderTop: "1px solid rgba(255,255,255,0.05)", padding: "1rem", textAlign: "center" }}>
         <span style={{ color: "#333", fontSize: "0.75rem" }}>Basado en el modelo MBTI · Myers-Briggs Type Indicator</span>
       </footer>
     </div>
