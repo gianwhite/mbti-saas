@@ -1,6 +1,7 @@
 // v2.1
 import { useState, useCallback, useEffect, useRef, Component, createContext, useContext } from 'react';
 import { Routes, Route, useNavigate, Navigate, useParams } from 'react-router-dom';
+import CogTest from './CogTest.jsx';
 import { supabase } from './supabase.js';
 import {
   identifyUser, resetUser,
@@ -3243,6 +3244,7 @@ export default function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/test" element={<AppInner />} />
         <Route path="/compat/:type" element={<CompatPage />} />
+        <Route path="/test-v2" element={<CogTest />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AuthProvider>
