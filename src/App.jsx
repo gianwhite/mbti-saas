@@ -63,10 +63,15 @@ function AuthProvider({ children }) {
   const signIn = (email, password) =>
     supabase.auth.signInWithPassword({ email, password });
 
+  const resetPassword = (email) =>
+    supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+
   const signOut = () => supabase.auth.signOut();
 
   return (
-    <AuthContext.Provider value={{ user, ready, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, ready, signUp, signIn, signOut, resetPassword }}>
       {children}
     </AuthContext.Provider>
   );
@@ -76,12 +81,13 @@ function AuthProvider({ children }) {
 // AUTH MODAL  (Login / Signup)
 // ─────────────────────────────────────────────
 function AuthModal({ onClose, onSuccess, title = "Crea tu cuenta", initialMode = "signup" }) {
-  const { signIn, signUp } = useAuth();
-  const [mode, setMode]       = useState(initialMode); // "signup" | "login"
+  const { signIn, signUp, resetPassword } = useAuth();
+  const [mode, setMode]       = useState(initialMode); // "signup" | "login" | "forgot"
   const [email, setEmail]     = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError]     = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
   const inputStyle = {
@@ -91,8 +97,18 @@ function AuthModal({ onClose, onSuccess, title = "Crea tu cuenta", initialMode =
     boxSizing: "border-box", fontFamily: "'Outfit',sans-serif",
   };
 
+  const handleForgot = async () => {
+    setError(""); setSuccess("");
+    if (!email || !email.includes("@")) { setError("Ingresa tu email primero"); return; }
+    setLoading(true);
+    const { error: err } = await resetPassword(email);
+    setLoading(false);
+    if (err) setError(err.message);
+    else setSuccess("✓ Te enviamos un link para restablecer tu contraseña. Revisa tu correo.");
+  };
+
   const handleSubmit = async () => {
-    setError("");
+    setError(""); setSuccess("");
     if (!email || !email.includes("@")) { setError("Email inválido"); return; }
     if (password.length < 6) { setError("La contraseña debe tener al menos 6 caracteres"); return; }
     if (mode === "signup" && password !== confirm) { setError("Las contraseñas no coinciden"); return; }
@@ -143,16 +159,23 @@ function AuthModal({ onClose, onSuccess, title = "Crea tu cuenta", initialMode =
         <button onClick={onClose} style={{ position: "absolute", top: "1rem", right: "1rem", background: "none", border: "none", color: "#444", cursor: "pointer", fontSize: "1.2rem" }}>✕</button>
 
         <h2 style={{ color: "#fff", fontWeight: 700, fontSize: "1.2rem", marginBottom: "0.3rem", textAlign: "center" }}>
-          {mode === "signup" ? title : "Iniciar sesión"}
+          {mode === "signup" ? title : mode === "forgot" ? "Recuperar acceso" : "Iniciar sesión"}
         </h2>
         <p style={{ color: "#555", fontSize: "0.8rem", textAlign: "center", marginBottom: "1.5rem" }}>
-          {mode === "signup" ? "Crea tu cuenta para acceder a tu análisis" : "Bienvenido de vuelta"}
+          {mode === "signup" ? "Crea tu cuenta para acceder a tu análisis" : mode === "forgot" ? "Te enviamos un link a tu correo" : "Bienvenido de vuelta"}
         </p>
 
         <input type="email" placeholder="tu@email.com" value={email}
-          onChange={e => setEmail(e.target.value)} style={inputStyle} />
-        <input type="password" placeholder={mode === "signup" ? "Contraseña (mín. 6 caracteres)" : "Contraseña"} value={password}
-          onChange={e => setPassword(e.target.value)} style={inputStyle} />
+          onChange={e => setEmail(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && (mode === "forgot" ? handleForgot() : handleSubmit())}
+          style={inputStyle} />
+
+        {mode !== "forgot" && (
+          <input type="password" placeholder={mode === "signup" ? "Contraseña (mín. 6 caracteres)" : "Contraseña"} value={password}
+            onChange={e => setPassword(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && handleSubmit()}
+            style={inputStyle} />
+        )}
         {mode === "signup" && (
           <input type="password" placeholder="Confirmar contraseña" value={confirm}
             onChange={e => setConfirm(e.target.value)}
@@ -160,20 +183,30 @@ function AuthModal({ onClose, onSuccess, title = "Crea tu cuenta", initialMode =
             style={{ ...inputStyle, marginBottom: "1rem" }} />
         )}
         {mode === "login" && (
-          <div style={{ marginBottom: "1rem" }} />
+          <div style={{ textAlign: "right", marginBottom: "1rem", marginTop: "-0.35rem" }}>
+            <button onClick={() => { setMode("forgot"); setError(""); setSuccess(""); }}
+              style={{ background: "none", border: "none", color: "#555", cursor: "pointer", fontSize: "0.75rem", textDecoration: "underline" }}>
+              Olvidé mi contraseña
+            </button>
+          </div>
         )}
 
         {error && <p style={{ color: "#ff6b6b", fontSize: "0.8rem", marginBottom: "0.75rem" }}>{error}</p>}
+        {success && <p style={{ color: "#4ADE80", fontSize: "0.8rem", marginBottom: "0.75rem" }}>{success}</p>}
 
-        <button onClick={handleSubmit} disabled={loading} className="btn-primary" style={{ width: "100%", background: loading ? "#333" : "linear-gradient(135deg,#6C3FC8,#9B6FE8)", color: "#fff", border: "none", borderRadius: "10px", padding: "0.9rem", fontSize: "1rem", fontWeight: 700, cursor: loading ? "not-allowed" : "pointer" }}>
-          {loading ? "Procesando..." : mode === "signup" ? "Crear cuenta →" : "Entrar →"}
+        <button
+          onClick={mode === "forgot" ? handleForgot : handleSubmit}
+          disabled={loading}
+          className="btn-primary"
+          style={{ width: "100%", background: loading ? "#333" : "linear-gradient(135deg,#6C3FC8,#9B6FE8)", color: "#fff", border: "none", borderRadius: "10px", padding: "0.9rem", fontSize: "1rem", fontWeight: 700, cursor: loading ? "not-allowed" : "pointer" }}>
+          {loading ? "Procesando..." : mode === "signup" ? "Crear cuenta →" : mode === "forgot" ? "Enviar link →" : "Entrar →"}
         </button>
 
         <p style={{ color: "#555", fontSize: "0.78rem", textAlign: "center", marginTop: "1rem" }}>
-          {mode === "signup" ? "¿Ya tienes cuenta? " : "¿No tienes cuenta? "}
-          <button onClick={() => { setMode(mode === "signup" ? "login" : "signup"); setError(""); }}
+          {mode === "forgot" ? "¿Ya recuerdas tu contraseña? " : mode === "signup" ? "¿Ya tienes cuenta? " : "¿No tienes cuenta? "}
+          <button onClick={() => { setMode(mode === "signup" ? "login" : mode === "forgot" ? "login" : "signup"); setError(""); setSuccess(""); }}
             style={{ background: "none", border: "none", color: "#6C63FF", cursor: "pointer", fontSize: "0.78rem", textDecoration: "underline" }}>
-            {mode === "signup" ? "Inicia sesión" : "Regístrate"}
+            {mode === "signup" ? "Inicia sesión" : mode === "forgot" ? "Volver al login" : "Regístrate"}
           </button>
         </p>
       </div>
@@ -3237,6 +3270,56 @@ function AppInner() {
   );
 }
 
+// ─────────────────────────────────────────────
+// RESET PASSWORD PAGE
+// ─────────────────────────────────────────────
+function ResetPasswordPage() {
+  const navigate = useNavigate();
+  const [password, setPassword] = useState('');
+  const [confirm, setConfirm]   = useState('');
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState('');
+  const [done, setDone]         = useState(false);
+
+  const handleReset = async () => {
+    setError('');
+    if (password.length < 6) { setError('Mínimo 6 caracteres'); return; }
+    if (password !== confirm) { setError('Las contraseñas no coinciden'); return; }
+    setLoading(true);
+    const { error: err } = await supabase.auth.updateUser({ password });
+    setLoading(false);
+    if (err) { setError(err.message); return; }
+    setDone(true);
+    setTimeout(() => navigate('/'), 2500);
+  };
+
+  return (
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg,#080612,#0d0820)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+      <div style={{ maxWidth: '380px', width: '100%', background: 'rgba(255,255,255,0.032)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '20px', padding: '2rem' }}>
+        <h2 style={{ color: '#fff', fontWeight: 700, fontSize: '1.2rem', marginBottom: '0.4rem', textAlign: 'center' }}>Nueva contraseña</h2>
+        <p style={{ color: '#555', fontSize: '0.8rem', textAlign: 'center', marginBottom: '1.5rem' }}>Elige una contraseña segura para tu cuenta</p>
+
+        {done ? (
+          <p style={{ color: '#4ADE80', textAlign: 'center', fontSize: '0.9rem' }}>✓ Contraseña actualizada. Redirigiendo…</p>
+        ) : (
+          <>
+            <input type="password" placeholder="Nueva contraseña" value={password} onChange={e => setPassword(e.target.value)}
+              style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '0.75rem 1rem', color: '#F0EBF8', fontSize: '0.9rem', marginBottom: '0.65rem', outline: 'none', boxSizing: 'border-box' }} />
+            <input type="password" placeholder="Confirmar contraseña" value={confirm} onChange={e => setConfirm(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleReset()}
+              style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '0.75rem 1rem', color: '#F0EBF8', fontSize: '0.9rem', marginBottom: '1rem', outline: 'none', boxSizing: 'border-box' }} />
+            {error && <p style={{ color: '#ff6b6b', fontSize: '0.8rem', marginBottom: '0.75rem' }}>{error}</p>}
+            <button onClick={handleReset} disabled={loading}
+              style={{ width: '100%', background: loading ? '#333' : 'linear-gradient(135deg,#6C3FC8,#9B6FE8)', color: '#fff', border: 'none', borderRadius: '10px', padding: '0.9rem', fontSize: '1rem', fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer' }}>
+              {loading ? 'Guardando…' : 'Guardar contraseña →'}
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   return (
     <AuthProvider>
@@ -3245,6 +3328,7 @@ export default function App() {
         <Route path="/test" element={<AppInner />} />
         <Route path="/compat/:type" element={<CompatPage />} />
         <Route path="/test-v2" element={<CogTest />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AuthProvider>
