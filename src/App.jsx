@@ -2096,6 +2096,58 @@ function TypeSelectorModal({ currentType, onSelect, onClose }) {
   );
 }
 
+// ── Exit Intent Trial Modal ───────────────────────────────────
+function ExitIntentModal({ type, info, onClose, onTrial }) {
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4000, padding: "1rem" }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} className="glass-card" style={{ borderRadius: "24px", padding: "2rem 1.75rem", maxWidth: "420px", width: "100%", position: "relative", textAlign: "center" }}>
+        {/* Top glow */}
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: `linear-gradient(90deg, transparent, ${info.color}, transparent)`, borderRadius: "24px 24px 0 0" }} />
+        <button onClick={onClose} style={{ position: "absolute", top: "1rem", right: "1rem", background: "none", border: "none", color: "#3D3550", cursor: "pointer", fontSize: "1.1rem" }}>✕</button>
+
+        {/* Icon */}
+        <div style={{ fontSize: "2.5rem", marginBottom: "0.75rem" }}>⏳</div>
+
+        {/* Headline */}
+        <div style={{ color: "#3D3550", fontSize: "0.68rem", letterSpacing: "0.15em", marginBottom: "0.5rem" }}>ANTES DE IRTE</div>
+        <h2 className="serif" style={{ color: "#F0EBF8", fontSize: "1.6rem", fontWeight: 400, marginBottom: "0.6rem", lineHeight: 1.2 }}>
+          Prueba tu análisis completo gratis
+        </h2>
+        <p style={{ color: "#8878A0", fontSize: "0.84rem", lineHeight: 1.65, marginBottom: "1.5rem" }}>
+          7 días sin costo. Accede a todo el análisis {type} — funciones cognitivas, compatibilidad, atracción, Advisor IA. Cancela antes y no se cobra nada.
+        </p>
+
+        {/* What they get */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px", marginBottom: "1.5rem", textAlign: "left" }}>
+          {["Advisor IA ilimitado", "Funciones cognitivas", "Compatibilidad top 3", "Estilo de apego", "Atracción y vínculos", "Carrera y liderazgo"].map(item => (
+            <div key={item} style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+              <span style={{ color: info.color, fontSize: "0.75rem" }}>✓</span>
+              <span style={{ color: "#8878A0", fontSize: "0.75rem" }}>{item}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* CTA */}
+        <button onClick={onTrial} className="btn-primary" style={{
+          width: "100%", background: `linear-gradient(135deg, ${info.color}, #9B6FE8)`,
+          color: "#fff", border: "none", borderRadius: "14px", padding: "1rem",
+          fontSize: "1rem", fontWeight: 700, cursor: "pointer", marginBottom: "0.75rem",
+        }}>
+          Empezar 7 días gratis →
+        </button>
+
+        <div style={{ color: "#3D3550", fontSize: "0.7rem" }}>
+          Sin cargo hasta el día 8 · Cancela cuando quieras
+        </div>
+
+        <button onClick={onClose} style={{ background: "none", border: "none", color: "#2A2040", cursor: "pointer", fontSize: "0.72rem", marginTop: "0.75rem", textDecoration: "underline" }}>
+          No, prefiero perderme el análisis
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function ResultsScreen({ type: initialType, display: initialDisplay, onRetake }) {
   const [type, setType]   = useState(initialType);
   const [display, setDisplay] = useState(initialDisplay);
@@ -2215,14 +2267,49 @@ function ResultsScreen({ type: initialType, display: initialDisplay, onRetake })
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const [showShare, setShowShare] = useState(false);
+  const [showShare, setShowShare]           = useState(false);
+  const [showExitIntent, setShowExitIntent] = useState(false);
   const handleShare = () => { setShowShare(true); trackShareClicked(type); };
+
+  // ── Exit intent detection (only for non-paid users) ──
+  useEffect(() => {
+    if (isPaid) return;
+    const shown = sessionStorage.getItem('exit_intent_shown');
+    if (shown) return;
+
+    const handleMouseLeave = (e) => {
+      if (e.clientY < 10) {
+        sessionStorage.setItem('exit_intent_shown', '1');
+        setShowExitIntent(true);
+      }
+    };
+    document.addEventListener('mouseleave', handleMouseLeave);
+    return () => document.removeEventListener('mouseleave', handleMouseLeave);
+  }, [isPaid]);
+
+  const handleTrialCheckout = async () => {
+    setShowExitIntent(false);
+    trackCheckoutStarted(type);
+    try {
+      const res = await fetch('/api/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user?.email, mbtiType: type, trial: true }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        localStorage.setItem('mbti_type', type);
+        window.location.href = data.url;
+      }
+    } catch {}
+  };
 
   return (
     <div style={{ maxWidth: "640px", width: "100%", margin: "0 auto", padding: "1.5rem 1rem 3rem", boxSizing: "border-box" }}>
-      {showPaywall && <PaywallModal type={type} onClose={() => setShowPaywall(false)} onPay={() => {}} />}
-      {showShare   && <ShareModal type={type} info={info} onClose={() => setShowShare(false)} />}
+      {showPaywall    && <PaywallModal type={type} onClose={() => setShowPaywall(false)} onPay={() => {}} />}
+      {showShare      && <ShareModal type={type} info={info} onClose={() => setShowShare(false)} />}
       {showTypeSelector && <TypeSelectorModal currentType={type} onSelect={handleTypeChange} onClose={() => setShowTypeSelector(false)} />}
+      {showExitIntent && !isPaid && <ExitIntentModal type={type} info={info} onClose={() => setShowExitIntent(false)} onTrial={handleTrialCheckout} />}
 
       {/* Hero */}
       <div className="results-hero glass-card" style={{ background: `linear-gradient(160deg, rgba(255,255,255,0.03) 60%, ${info.color}0a)`, border: `1px solid ${info.color}33`, borderRadius: "24px", padding: "2rem 1.75rem 1.75rem", textAlign: "center", marginBottom: "1.25rem", position: "relative", overflow: "hidden" }}>

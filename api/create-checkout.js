@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   }
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-  const { email, mbtiType } = req.body;
+  const { email, mbtiType, trial } = req.body;
   const appUrl = process.env.VITE_APP_URL || `https://${req.headers.host}`;
   const priceId = process.env.STRIPE_PRICE_ID;
 
@@ -25,7 +25,8 @@ export default async function handler(req, res) {
       cancel_url: `${appUrl}/test`,
       metadata: { mbti_type: mbtiType || '' },
       subscription_data: {
-        metadata: { source: 'mbti-saas', mbti_type: mbtiType || '' },
+        trial_period_days: trial ? 7 : undefined,
+        metadata: { source: 'mbti-saas', mbti_type: mbtiType || '', trial: trial ? 'true' : 'false' },
       },
     });
 
