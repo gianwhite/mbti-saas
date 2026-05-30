@@ -1541,10 +1541,13 @@ function JarvisOrb({ active = false, size = 72, color = "#A78BFA" }) {
 }
 
 function TabAdvisor({ type, typeColor }) {
-  const [messages, setMessages]     = useState([]);
-  const [input, setInput]           = useState('');
-  const [loading, setLoading]       = useState(false);
-  const [histLoading, setHistLoading] = useState(true);
+  const [messages, setMessages]         = useState([]);
+  const [sessions, setSessions]         = useState([]);   // past sessions list
+  const [sessionId, setSessionId]       = useState(() => crypto.randomUUID());
+  const [input, setInput]               = useState('');
+  const [loading, setLoading]           = useState(false);
+  const [histLoading, setHistLoading]   = useState(true);
+  const [showHistory, setShowHistory]   = useState(false);
   const bottomRef = useRef(null);
   const { user } = useAuth();
 
@@ -1555,18 +1558,43 @@ function TabAdvisor({ type, typeColor }) {
     "¿Cómo manejo el conflicto en una relación?",
   ];
 
-  // ── Load history from Supabase on mount ──
+  // ── Load latest session + sessions list on mount ──
   useEffect(() => {
     if (!user) { setHistLoading(false); return; }
     supabase
       .from('advisor_messages')
-      .select('role, content')
+      .select('role, content, session_id, created_at')
       .eq('user_id', user.id)
       .eq('mbti_type', type)
       .order('created_at', { ascending: true })
-      .limit(60)
+      .limit(200)
       .then(({ data }) => {
-        if (data && data.length > 0) setMessages(data);
+        if (!data || data.length === 0) { setHistLoading(false); return; }
+
+        // Group by session_id
+        const grouped = {};
+        data.forEach(m => {
+          const sid = m.session_id || 'legacy';
+          if (!grouped[sid]) grouped[sid] = { messages: [], created_at: m.created_at };
+          grouped[sid].messages.push({ role: m.role, content: m.content });
+        });
+
+        const sids = Object.keys(grouped);
+        const latestSid = sids[sids.length - 1];
+
+        // Load latest session into chat
+        setSessionId(latestSid);
+        setMessages(grouped[latestSid].messages);
+
+        // Build sessions list (all except latest, reversed)
+        const pastSessions = sids.slice(0, -1).reverse().map(sid => ({
+          id: sid,
+          preview: grouped[sid].messages.find(m => m.role === 'user')?.content || '…',
+          date: new Date(grouped[sid].created_at).toLocaleDateString('es', { day: 'numeric', month: 'short' }),
+          count: grouped[sid].messages.length,
+          messages: grouped[sid].messages,
+        }));
+        setSessions(pastSessions);
         setHistLoading(false);
       });
   }, [user, type]);
@@ -1582,19 +1610,42 @@ function TabAdvisor({ type, typeColor }) {
     supabase.from('advisor_messages').insert({
       user_id: user.id,
       mbti_type: type,
+      session_id: sessionId,
       role,
       content,
     }).then(() => {});
   };
 
-  // ── Clear history ──
-  const clearHistory = async () => {
-    if (!user) return;
-    await supabase.from('advisor_messages')
-      .delete()
-      .eq('user_id', user.id)
-      .eq('mbti_type', type);
+  // ── Nueva conversación ──
+  const newConversation = () => {
+    const newSid = crypto.randomUUID();
+    // Save current session to history list if it has messages
+    if (messages.length > 0) {
+      setSessions(prev => [{
+        id: sessionId,
+        preview: messages.find(m => m.role === 'user')?.content || '…',
+        date: new Date().toLocaleDateString('es', { day: 'numeric', month: 'short' }),
+        count: messages.length,
+        messages: [...messages],
+      }, ...prev]);
+    }
+    setSessionId(newSid);
     setMessages([]);
+    setShowHistory(false);
+  };
+
+  // ── Resume a past session ──
+  const resumeSession = (session) => {
+    // Save current if has messages
+    if (messages.length > 0) {
+      setSessions(prev => {
+        const filtered = prev.filter(s => s.id !== session.id);
+        return [{ id: sessionId, preview: messages.find(m => m.role === 'user')?.content || '…', date: new Date().toLocaleDateString('es', { day: 'numeric', month: 'short' }), count: messages.length, messages: [...messages] }, ...filtered];
+      });
+    }
+    setSessionId(session.id);
+    setMessages(session.messages);
+    setShowHistory(false);
   };
 
   const sendMessage = async (text) => {
@@ -1646,15 +1697,49 @@ function TabAdvisor({ type, typeColor }) {
           <div style={{ color: "#8878A0", fontSize: "0.74rem" }}>
             {histLoading ? "Cargando historial…" : loading ? (
               <span style={{ color: typeColor, opacity: 0.8 }}>Procesando…</span>
-            ) : messages.length === 0 ? "¿Qué quieres saber sobre ti?" : (
-              <span>
-                Sistema activo
-                {user && <button onClick={clearHistory} style={{ background: "none", border: "none", color: "#3D3550", cursor: "pointer", fontSize: "0.7rem", marginLeft: "10px", textDecoration: "underline" }}>Nueva conversación</button>}
-              </span>
-            )}
+            ) : messages.length === 0 ? "¿Qué quieres saber sobre ti?" : "Sistema activo"}
           </div>
+          {user && !histLoading && (
+            <div style={{ display: "flex", gap: "0.75rem", justifyContent: "center", marginTop: "0.5rem" }}>
+              <button onClick={newConversation} style={{ background: "none", border: "none", color: "#3D3550", cursor: "pointer", fontSize: "0.68rem", textDecoration: "underline" }}>
+                + Nueva conversación
+              </button>
+              {sessions.length > 0 && (
+                <button onClick={() => setShowHistory(h => !h)} style={{ background: "none", border: "none", color: showHistory ? typeColor : "#3D3550", cursor: "pointer", fontSize: "0.68rem", textDecoration: "underline" }}>
+                  {showHistory ? "Ocultar historial" : `Conversaciones anteriores (${sessions.length})`}
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
+
+      {/* ── Conversaciones anteriores panel ── */}
+      {showHistory && sessions.length > 0 && (
+        <div className="glass-card" style={{ borderRadius: "14px", padding: "1rem", marginBottom: "0.25rem" }}>
+          <div style={{ color: "#8878A0", fontSize: "0.68rem", letterSpacing: "0.12em", marginBottom: "0.75rem" }}>CONVERSACIONES ANTERIORES</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+            {sessions.map((s, i) => (
+              <button key={s.id} onClick={() => resumeSession(s)} style={{
+                background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)",
+                borderRadius: "10px", padding: "0.75rem 1rem", cursor: "pointer",
+                textAlign: "left", transition: "border-color 0.2s",
+              }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = typeColor + "44"}
+                onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.3rem" }}>
+                  <span style={{ color: "#3D3550", fontSize: "0.65rem", letterSpacing: "0.06em" }}>{s.date} · {s.count} mensajes</span>
+                  <span style={{ color: typeColor, fontSize: "0.65rem", fontWeight: 700 }}>Reanudar →</span>
+                </div>
+                <div style={{ color: "#8878A0", fontSize: "0.8rem", lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "100%" }}>
+                  "{s.preview.slice(0, 80)}{s.preview.length > 80 ? '…' : ''}"
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Suggestions (only when no messages) */}
       {messages.length === 0 && (
