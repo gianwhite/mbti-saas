@@ -2271,20 +2271,33 @@ function ResultsScreen({ type: initialType, display: initialDisplay, onRetake })
   const [showExitIntent, setShowExitIntent] = useState(false);
   const handleShare = () => { setShowShare(true); trackShareClicked(type); };
 
-  // ── Exit intent detection (only for non-paid users) ──
+  // ── Exit intent detection — desktop + mobile ──
   useEffect(() => {
     if (isPaid) return;
-    const shown = sessionStorage.getItem('exit_intent_shown');
-    if (shown) return;
+    if (sessionStorage.getItem('exit_intent_shown')) return;
 
-    const handleMouseLeave = (e) => {
-      if (e.clientY < 10) {
-        sessionStorage.setItem('exit_intent_shown', '1');
-        setShowExitIntent(true);
-      }
+    const trigger = () => {
+      if (sessionStorage.getItem('exit_intent_shown')) return;
+      sessionStorage.setItem('exit_intent_shown', '1');
+      setShowExitIntent(true);
     };
-    document.addEventListener('mouseleave', handleMouseLeave);
-    return () => document.removeEventListener('mouseleave', handleMouseLeave);
+
+    // Desktop: mouse leaving toward browser bar
+    const onMouseLeave = (e) => { if (e.clientY < 10) trigger(); };
+    document.addEventListener('mouseleave', onMouseLeave);
+
+    // Mobile: user switches app / goes to home screen / swipes away
+    const onVisibilityChange = () => { if (document.visibilityState === 'hidden') trigger(); };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    // Mobile fallback: 75s on page without paying
+    const timer = setTimeout(trigger, 75000);
+
+    return () => {
+      document.removeEventListener('mouseleave', onMouseLeave);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      clearTimeout(timer);
+    };
   }, [isPaid]);
 
   const handleTrialCheckout = async () => {
