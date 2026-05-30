@@ -1541,10 +1541,12 @@ function JarvisOrb({ active = false, size = 72, color = "#A78BFA" }) {
 }
 
 function TabAdvisor({ type, typeColor }) {
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [messages, setMessages]     = useState([]);
+  const [input, setInput]           = useState('');
+  const [loading, setLoading]       = useState(false);
+  const [histLoading, setHistLoading] = useState(true);
   const bottomRef = useRef(null);
+  const { user } = useAuth();
 
   const SUGGESTIONS = [
     "¿Cuáles son mis mayores errores al socializar?",
@@ -1553,9 +1555,47 @@ function TabAdvisor({ type, typeColor }) {
     "¿Cómo manejo el conflicto en una relación?",
   ];
 
+  // ── Load history from Supabase on mount ──
+  useEffect(() => {
+    if (!user) { setHistLoading(false); return; }
+    supabase
+      .from('advisor_messages')
+      .select('role, content')
+      .eq('user_id', user.id)
+      .eq('mbti_type', type)
+      .order('created_at', { ascending: true })
+      .limit(60)
+      .then(({ data }) => {
+        if (data && data.length > 0) setMessages(data);
+        setHistLoading(false);
+      });
+  }, [user, type]);
+
+  // ── Auto-scroll ──
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
+
+  // ── Save a single message to Supabase ──
+  const saveMsg = (role, content) => {
+    if (!user) return;
+    supabase.from('advisor_messages').insert({
+      user_id: user.id,
+      mbti_type: type,
+      role,
+      content,
+    }).then(() => {});
+  };
+
+  // ── Clear history ──
+  const clearHistory = async () => {
+    if (!user) return;
+    await supabase.from('advisor_messages')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('mbti_type', type);
+    setMessages([]);
+  };
 
   const sendMessage = async (text) => {
     const userMsg = text || input.trim();
@@ -1565,25 +1605,22 @@ function TabAdvisor({ type, typeColor }) {
 
     const newMessages = [...messages, { role: 'user', content: userMsg }];
     setMessages(newMessages);
+    saveMsg('user', userMsg);
     setLoading(true);
 
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          mbtiType: type,
-          messages: newMessages,
-        }),
+        body: JSON.stringify({ mbtiType: type, messages: newMessages }),
       });
       const data = await res.json();
-      if (data.reply) {
-        setMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
-      } else {
-        setMessages(prev => [...prev, { role: 'assistant', content: 'Error al conectar. Intenta de nuevo.' }]);
-      }
+      const reply = data.reply || 'Error al conectar. Intenta de nuevo.';
+      setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
+      saveMsg('assistant', reply);
     } catch {
-      setMessages(prev => [...prev, { role: 'assistant', content: 'Error de conexión. Intenta de nuevo.' }]);
+      const err = 'Error de conexión. Intenta de nuevo.';
+      setMessages(prev => [...prev, { role: 'assistant', content: err }]);
     }
     setLoading(false);
   };
@@ -1607,9 +1644,14 @@ function TabAdvisor({ type, typeColor }) {
             ADVISOR {type}
           </div>
           <div style={{ color: "#8878A0", fontSize: "0.74rem" }}>
-            {loading ? (
+            {histLoading ? "Cargando historial…" : loading ? (
               <span style={{ color: typeColor, opacity: 0.8 }}>Procesando…</span>
-            ) : messages.length === 0 ? "¿Qué quieres saber sobre ti?" : "Sistema activo"}
+            ) : messages.length === 0 ? "¿Qué quieres saber sobre ti?" : (
+              <span>
+                Sistema activo
+                {user && <button onClick={clearHistory} style={{ background: "none", border: "none", color: "#3D3550", cursor: "pointer", fontSize: "0.7rem", marginLeft: "10px", textDecoration: "underline" }}>Nueva conversación</button>}
+              </span>
+            )}
           </div>
         </div>
       </div>
