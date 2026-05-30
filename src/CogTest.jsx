@@ -40,19 +40,27 @@ const FUNC_META = {
 };
 
 export function deriveType(scores) {
-  let bestType = null;
-  let bestScore = -Infinity;
   const typeScores = {};
 
   for (const [type, stack] of Object.entries(TYPE_STACKS)) {
+    // Base score: weighted sum by stack position
     let s = 0;
     stack.forEach((fn, i) => { s += (scores[fn] || 0) * STACK_WEIGHTS[i]; });
+
+    // Bonus: reward types whose dominant function matches the user's highest-scoring function
+    // This corrects cases where dominant/auxiliary are close (e.g. INFJ vs ENFJ)
+    const userTopFn = Object.entries(scores).sort((a, b) => b[1] - a[1])[0]?.[0];
+    if (stack[0] === userTopFn) s += 15;
+
+    // Secondary bonus: auxiliary matches user's 2nd highest
+    const userSecondFn = Object.entries(scores).sort((a, b) => b[1] - a[1])[1]?.[0];
+    if (stack[1] === userSecondFn) s += 8;
+
     typeScores[type] = s;
-    if (s > bestScore) { bestScore = s; bestType = type; }
   }
 
-  // Top 3 matches
   const sorted = Object.entries(typeScores).sort((a, b) => b[1] - a[1]);
+  const bestType = sorted[0][0];
   return { type: bestType, ranking: sorted.slice(0, 3).map(([t]) => t), typeScores };
 }
 
