@@ -1180,7 +1180,7 @@ function TabAtraccion({ analysis, typeColor }) {
 
 const ALL_TYPES = ["INTJ","INTP","ENTJ","ENTP","INFJ","INFP","ENFJ","ENFP","ISTJ","ISFJ","ESTJ","ESFJ","ISTP","ISFP","ESTP","ESFP"];
 
-function TabCompatibilidad({ analysis, myType, typeColor }) {
+function TabCompatibilidad({ analysis, myType, typeColor, onOpenAdvisor }) {
   const c = analysis.compatibilidad;
   const [selected, setSelected] = useState(null);
 
@@ -1304,6 +1304,16 @@ function TabCompatibilidad({ analysis, myType, typeColor }) {
                 <p style={{ color: "#666", fontSize: "0.84rem", lineHeight: 1.65, margin: 0 }}>
                   Este tipo no aparece en tu lista de mayor compatibilidad ni en la de mayor fricción. La dinámica dependerá más del desarrollo individual de cada persona que del tipo en sí.
                 </p>
+              )}
+
+              {/* Advisor CTA */}
+              {onOpenAdvisor && (
+                <button
+                  onClick={() => onOpenAdvisor(`Analiza en profundidad la dinámica entre ${myType} y ${sel}. ¿Cómo es la atracción, la comunicación, los conflictos y el potencial a largo plazo entre estos dos tipos?`)}
+                  style={{ marginTop: "1rem", width: "100%", background: `linear-gradient(135deg, ${typeColor}22, #6C63FF22)`, border: `1px solid ${typeColor}44`, borderRadius: "12px", padding: "0.85rem", color: typeColor, fontSize: "0.85rem", fontWeight: 700, cursor: "pointer", letterSpacing: "0.02em" }}
+                >
+                  Analizar dinámica con el Advisor →
+                </button>
               )}
             </Card>
 
@@ -1862,7 +1872,7 @@ function QuickCompatWidget({ myType, typeColor, onAskAdvisor }) {
   );
 }
 
-function TabAdvisor({ type, typeColor }) {
+function TabAdvisor({ type, typeColor, initialMessage }) {
   const [messages, setMessages]         = useState([]);
   const [sessions, setSessions]         = useState([]);   // past sessions list
   const [sessionId, setSessionId]       = useState(() => crypto.randomUUID());
@@ -1925,6 +1935,17 @@ function TabAdvisor({ type, typeColor }) {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
+
+  // ── Auto-send initialMessage (from compat tab) ──
+  const initialSent = useRef(false);
+  useEffect(() => {
+    if (!initialMessage || histLoading || initialSent.current) return;
+    initialSent.current = true;
+    // Start a fresh session so it doesn't mix with history
+    setSessionId(crypto.randomUUID());
+    setMessages([]);
+    setTimeout(() => sendMessage(initialMessage), 100);
+  }, [initialMessage, histLoading]); // eslint-disable-line
 
   // ── Save a single message to Supabase ──
   const saveMsg = (role, content) => {
@@ -2062,9 +2083,6 @@ function TabAdvisor({ type, typeColor }) {
           </div>
         </div>
       )}
-
-      {/* Quick Compatibility Widget */}
-      <QuickCompatWidget myType={type} typeColor={typeColor} onAskAdvisor={sendMessage} />
 
       {/* Suggestions (only when no messages) */}
       {messages.length === 0 && (
@@ -2718,6 +2736,7 @@ function ResultsScreen({ type: initialType, display: initialDisplay, onRetake, o
   const info     = TYPES[type] || { name: "Tipo desconocido", color: "#888", tagline: "" };
   const analysis = TYPE_ANALYSIS[type];
   const [tab, setTab]         = useState(null); // null = hub grid, string = open section
+  const [advisorInitialMessage, setAdvisorInitialMessage] = useState(null);
   const [copied, setCopied]   = useState(false);
   const [isPaid, setIsPaid]   = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
@@ -3032,14 +3051,14 @@ function ResultsScreen({ type: initialType, display: initialDisplay, onRetake, o
           </button>
 
           {tab === "perfil"         && <TabPerfil type={type} display={display} info={info} />}
-          {tab === "advisor"        && <TabAdvisor type={type} typeColor={info.color} />}
+          {tab === "advisor"        && <TabAdvisor type={type} typeColor={info.color} initialMessage={advisorInitialMessage} />}
           {tab === "psicologia"     && analysis && <TabPsicologia analysis={analysis} typeColor={info.color} />}
           {tab === "profesional"    && <TabProfesional type={type} typeColor={info.color} />}
           {tab === "vinculos"       && analysis && <TabVinculos analysis={analysis} typeColor={info.color} />}
           {tab === "social"         && analysis && <TabSocial analysis={analysis} />}
           {tab === "fortalezas"     && analysis && <TabFortalezas analysis={analysis} />}
           {tab === "atraccion"      && analysis && <TabAtraccion analysis={analysis} typeColor={info.color} />}
-          {tab === "compatibilidad" && analysis && <TabCompatibilidad analysis={analysis} myType={type} typeColor={info.color} />}
+          {tab === "compatibilidad" && analysis && <TabCompatibilidad analysis={analysis} myType={type} typeColor={info.color} onOpenAdvisor={(msg) => { setAdvisorInitialMessage(msg); setTab("advisor"); }} />}
 
           {/* Bottom back button */}
           <button
