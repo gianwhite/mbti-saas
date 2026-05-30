@@ -1654,7 +1654,12 @@ function TabAdvisor({ type, typeColor }) {
                 fontSize: "0.87rem",
                 lineHeight: 1.75,
                 whiteSpace: "pre-wrap",
-              }}>{m.content}</div>
+              }} dangerouslySetInnerHTML={{ __html: m.content
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                .replace(/^(\d+)\.\s/gm, '<br/><strong style="color:#A78BFA">$1.</strong> ')
+                .replace(/^[-•]\s/gm, '<br/>· ')
+              }} />
             </div>
           ))}
           {loading && (
