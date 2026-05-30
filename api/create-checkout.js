@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   }
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-  const { email } = req.body;
+  const { email, mbtiType } = req.body;
   const appUrl = process.env.VITE_APP_URL || `https://${req.headers.host}`;
   const priceId = process.env.STRIPE_PRICE_ID;
 
@@ -23,8 +23,9 @@ export default async function handler(req, res) {
       allow_promotion_codes: true,
       success_url: `${appUrl}/test?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/test`,
+      metadata: { mbti_type: mbtiType || '' },
       subscription_data: {
-        metadata: { source: 'mbti-saas' },
+        metadata: { source: 'mbti-saas', mbti_type: mbtiType || '' },
       },
     });
 

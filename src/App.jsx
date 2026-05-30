@@ -282,7 +282,7 @@ function PaywallModal({ type, onClose }) {
       const res = await fetch('/api/create-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user?.email }),
+        body: JSON.stringify({ email: user?.email, mbtiType: localStorage.getItem('mbti_type') || '' }),
       });
       const data = await res.json();
       if (data.url) {
