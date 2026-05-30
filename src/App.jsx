@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef, Component, createContext, useContext } from 'react';
-import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
+import { Routes, Route, useNavigate, Navigate, useParams } from 'react-router-dom';
 import { supabase } from './supabase.js';
 import {
   identifyUser, resetUser,
@@ -1362,28 +1362,276 @@ function TabCompatibilidad({ analysis, myType, typeColor }) {
             <p style={{ color: "#bbb", fontSize: "0.85rem", lineHeight: 1.65, margin: 0 }}>{c.evitar.razon}</p>
           </Card>
 
-          {/* Share CTA always visible */}
-          <Card style={{ borderColor: "#2a2a2a", textAlign: "center", marginTop: "0.5rem" }}>
-            <div style={{ fontSize: "1.1rem", marginBottom: "0.4rem" }}>🤔</div>
-            <div style={{ color: "#ccc", fontWeight: 600, fontSize: "0.9rem", marginBottom: "0.3rem" }}>
-              ¿No sabes el tipo de tu pareja o amigo?
-            </div>
-            <div style={{ color: "#555", fontSize: "0.78rem", marginBottom: "1rem", lineHeight: 1.5 }}>
-              Envíales el test y descubre al instante si son compatibles
-            </div>
-            <button
-              onClick={handleShareTest}
-              className="btn-primary"
-              style={{ width: "100%", background: `linear-gradient(135deg, ${typeColor}, #6C63FF)`, color: "#fff", border: "none", borderRadius: "12px", padding: "0.85rem", fontSize: "0.9rem", fontWeight: 700, cursor: "pointer" }}
-            >
-              ↗ Enviar test a alguien
-            </button>
-            <div style={{ marginTop: "0.5rem", fontSize: "0.68rem", color: "#444" }}>
-              Comparte por WhatsApp, Instagram o donde quieras
-            </div>
-          </Card>
+          {/* Viral compatibility link */}
+          <CompatLinkCard myType={myType} typeColor={typeColor} />
         </div>
       )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// COMPAT LINK CARD — viral share button inside TabCompatibilidad
+// ─────────────────────────────────────────────
+function CompatLinkCard({ myType, typeColor }) {
+  const [copied, setCopied] = useState(false);
+  const appUrl = 'https://16personalidades.app';
+  const link   = `${appUrl}/compat/${myType}`;
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(link).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    });
+  };
+
+  const handleWhatsApp = () => {
+    const text = `Soy ${myType} — descubre si somos compatibles haciendo el test 👇\n${link}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  const handleNative = async () => {
+    const text = `Soy ${myType} — descubre si somos compatibles`;
+    if (navigator.share) {
+      try { await navigator.share({ title: '¿Somos compatibles?', text, url: link }); return; } catch {}
+    }
+    handleCopy();
+  };
+
+  return (
+    <Card style={{ borderColor: typeColor + "33", background: `linear-gradient(135deg, #0d0d0d, ${typeColor}08)`, textAlign: "center", marginTop: "0.5rem" }}>
+      <div style={{ marginBottom: "0.75rem" }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: typeColor + "18", border: `1px solid ${typeColor}33`, borderRadius: "20px", padding: "4px 14px", marginBottom: "0.75rem" }}>
+          <span style={{ color: typeColor, fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.1em" }}>NUEVO · FEATURE VIRAL</span>
+        </div>
+        <div style={{ color: "#F0EBF8", fontWeight: 700, fontSize: "0.95rem", marginBottom: "0.3rem" }}>
+          ¿Eres compatible con alguien específico?
+        </div>
+        <div style={{ color: "#8878A0", fontSize: "0.78rem", lineHeight: 1.6 }}>
+          Manda tu link personalizado. Cuando hagan el test, ven al instante si son compatibles contigo.
+        </div>
+      </div>
+
+      {/* Link preview */}
+      <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "10px", padding: "0.6rem 0.85rem", display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.85rem", gap: "0.5rem" }}>
+        <span style={{ color: "#555", fontSize: "0.75rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          16personalidades.app/compat/<span style={{ color: typeColor, fontWeight: 700 }}>{myType}</span>
+        </span>
+        <button onClick={handleCopy} style={{ background: "none", border: "none", color: copied ? "#22c55e" : "#555", cursor: "pointer", fontSize: "0.72rem", fontWeight: 700, flexShrink: 0 }}>
+          {copied ? "✓ Copiado" : "Copiar"}
+        </button>
+      </div>
+
+      {/* Share buttons */}
+      <div style={{ display: "flex", gap: "0.5rem" }}>
+        <button onClick={handleWhatsApp} className="btn-primary" style={{ flex: 1, background: "#25D366", border: "none", borderRadius: "10px", padding: "0.75rem", color: "#fff", fontWeight: 700, fontSize: "0.82rem", cursor: "pointer" }}>
+          WhatsApp
+        </button>
+        <button onClick={handleNative} className="btn-primary" style={{ flex: 1, background: `linear-gradient(135deg, ${typeColor}, #6C3FC8)`, border: "none", borderRadius: "10px", padding: "0.75rem", color: "#fff", fontWeight: 700, fontSize: "0.82rem", cursor: "pointer" }}>
+          ↗ Compartir
+        </button>
+      </div>
+    </Card>
+  );
+}
+
+// ─────────────────────────────────────────────
+// COMPAT PAGE — /compat/:type
+// ─────────────────────────────────────────────
+function CompatPage() {
+  const { type: senderType } = useParams();
+  const navigate = useNavigate();
+  const senderInfo = TYPES[senderType?.toUpperCase()] || null;
+  const upperType  = senderType?.toUpperCase();
+
+  const [step, setStep]         = useState('select'); // 'select' | 'result'
+  const [myType, setMyType]     = useState(null);
+  const [hovered, setHovered]   = useState(null);
+
+  // Redirect if invalid type
+  if (!senderInfo) {
+    return (
+      <div style={{ minHeight: "100vh", background: "#080612", display: "flex", alignItems: "center", justifyContent: "center", color: "#555", flexDirection: "column", gap: "1rem" }}>
+        <div>Link inválido</div>
+        <button onClick={() => navigate('/')} style={{ color: "#A78BFA", background: "none", border: "none", cursor: "pointer", fontSize: "0.85rem" }}>← Ir al inicio</button>
+      </div>
+    );
+  }
+
+  // Compute compatibility
+  const getCompat = (typeA, typeB) => {
+    if (!typeA || !typeB) return null;
+    const aData = TYPE_ANALYSIS[typeA];
+    const bData = TYPE_ANALYSIS[typeB];
+    if (!aData || !bData) return null;
+    const aTop    = aData.compatibilidad?.top?.find(m => m.tipo === typeB);
+    const bTop    = bData.compatibilidad?.top?.find(m => m.tipo === typeA);
+    const aEvitar = aData.compatibilidad?.evitar?.tipo === typeB;
+    const bEvitar = bData.compatibilidad?.evitar?.tipo === typeA;
+
+    if (aTop && bTop)   return { level: "alta",    score: 92, emoji: "🔥", label: "Alta compatibilidad",        color: "#22c55e", desc: aTop.detalle || "Match natural — sus funciones cognitivas se complementan." };
+    if (aTop || bTop)   return { level: "media",   score: 68, emoji: "✨", label: "Compatibilidad interesante",  color: "#A78BFA", desc: (aTop || bTop)?.detalle || "Hay química real con algo de fricción creativa." };
+    if (aEvitar || bEvitar) return { level: "baja", score: 34, emoji: "⚠️", label: "Alta fricción potencial",   color: "#ff6b6b", desc: "Visiones del mundo muy distintas. Puede funcionar con consciencia y trabajo." };
+    return { level: "neutral", score: 55, emoji: "◈", label: "Compatibilidad neutral", color: "#888", desc: "Ni natural ni problemático — depende del contexto y la madurez de ambos." };
+  };
+
+  const compat    = myType ? getCompat(upperType, myType) : null;
+  const myInfo    = myType ? TYPES[myType] : null;
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#080612", color: "#F0EBF8" }}>
+      {/* Header */}
+      <header style={{ borderBottom: "1px solid rgba(255,255,255,0.05)", padding: "0.75rem 1.5rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <a href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none" }}>
+          <LandingLogo />
+          <div style={{ display: "flex", alignItems: "baseline", gap: "3px" }}>
+            <span style={{ fontWeight: 900, fontSize: "1.1rem", background: "linear-gradient(90deg,#C4B5FD,#A78BFA)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>16</span>
+            <span style={{ fontWeight: 700, fontSize: "1rem", color: "#e0e0e0" }}>Personalidades</span>
+            <sup style={{ color: "#A78BFA", fontSize: "0.55rem", fontWeight: 700, marginLeft: "1px" }}>AI</sup>
+          </div>
+        </a>
+      </header>
+
+      <div style={{ maxWidth: "520px", margin: "0 auto", padding: "2rem 1rem 4rem" }}>
+
+        {step === 'select' && (
+          <>
+            {/* Sender reveal */}
+            <div className="glass-card" style={{ border: `1px solid ${senderInfo.color}33`, borderRadius: "24px", padding: "2rem 1.75rem", textAlign: "center", marginBottom: "1.5rem", position: "relative", overflow: "hidden" }}>
+              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: `linear-gradient(90deg, transparent, ${senderInfo.color}, transparent)` }} />
+
+              <div style={{ fontSize: "0.7rem", color: "#555", letterSpacing: "0.15em", marginBottom: "0.75rem" }}>ALGUIEN QUIERE SABER SI SON COMPATIBLES</div>
+
+              <div style={{ display: "inline-block", background: senderInfo.color + "22", border: `2px solid ${senderInfo.color}55`, borderRadius: "12px", padding: "6px 24px", marginBottom: "0.5rem" }}>
+                <span style={{ fontSize: "2.8rem", fontWeight: 900, color: senderInfo.color, letterSpacing: "0.1em" }}>{upperType}</span>
+              </div>
+              <div style={{ fontWeight: 700, fontSize: "1rem", marginBottom: "0.25rem" }}>{senderInfo.name}</div>
+              <div style={{ color: "#8878A0", fontSize: "0.78rem", fontStyle: "italic", marginBottom: "1.5rem" }}>"{senderInfo.tagline}"</div>
+
+              <div style={{ background: "rgba(255,255,255,0.02)", borderRadius: "10px", padding: "0.85rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                <div style={{ color: "#8878A0", fontSize: "0.82rem", lineHeight: 1.65 }}>
+                  Para descubrir vuestra compatibilidad, selecciona tu tipo abajo. Si no lo sabes, haz el test — tarda unos 8 minutos.
+                </div>
+              </div>
+            </div>
+
+            {/* Type selector */}
+            <div className="glass-card" style={{ borderRadius: "20px", padding: "1.5rem", marginBottom: "1rem" }}>
+              <div style={{ color: "#555", fontSize: "0.7rem", letterSpacing: "0.12em", marginBottom: "1rem" }}>¿CUÁL ES TU TIPO?</div>
+
+              {/* Groups */}
+              {[
+                { label: "Analistas", types: ["INTJ","INTP","ENTJ","ENTP"] },
+                { label: "Diplomáticos", types: ["INFJ","INFP","ENFJ","ENFP"] },
+                { label: "Centinelas", types: ["ISTJ","ISFJ","ESTJ","ESFJ"] },
+                { label: "Exploradores", types: ["ISTP","ISFP","ESTP","ESFP"] },
+              ].map(group => (
+                <div key={group.label} style={{ marginBottom: "1rem" }}>
+                  <div style={{ color: "#3D3550", fontSize: "0.65rem", letterSpacing: "0.1em", marginBottom: "0.5rem" }}>{group.label.toUpperCase()}</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "6px" }}>
+                    {group.types.map(t => {
+                      const ti = TYPES[t] || { color: "#888" };
+                      const isSel = t === myType;
+                      const isHov = t === hovered;
+                      return (
+                        <button
+                          key={t}
+                          onClick={() => { setMyType(t); setStep('result'); }}
+                          onMouseEnter={() => setHovered(t)}
+                          onMouseLeave={() => setHovered(null)}
+                          style={{
+                            background: isSel || isHov ? ti.color + "22" : "rgba(255,255,255,0.03)",
+                            border: `1px solid ${isSel || isHov ? ti.color + "55" : "rgba(255,255,255,0.07)"}`,
+                            borderRadius: "10px", padding: "0.6rem 0.4rem",
+                            color: isSel || isHov ? ti.color : "#8878A0",
+                            fontSize: "0.78rem", fontWeight: isSel ? 800 : 600,
+                            cursor: "pointer", transition: "all 0.15s",
+                            textAlign: "center",
+                          }}
+                        >
+                          {t}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Take the test CTA */}
+            <div style={{ textAlign: "center" }}>
+              <div style={{ color: "#555", fontSize: "0.78rem", marginBottom: "0.75rem" }}>¿No sabes tu tipo?</div>
+              <button onClick={() => navigate('/test')} style={{ background: `linear-gradient(135deg, ${senderInfo.color}, #6C3FC8)`, border: "none", borderRadius: "12px", padding: "0.85rem 2rem", color: "#fff", fontWeight: 700, fontSize: "0.9rem", cursor: "pointer" }}>
+                Hacer el test completo →
+              </button>
+              <div style={{ color: "#3D3550", fontSize: "0.7rem", marginTop: "0.5rem" }}>~8 minutos · Gratis</div>
+            </div>
+          </>
+        )}
+
+        {step === 'result' && compat && myInfo && (
+          <div className="fade-up">
+            {/* Result header */}
+            <div className="glass-card" style={{ border: `1px solid ${compat.color}33`, borderRadius: "24px", padding: "2rem 1.75rem", textAlign: "center", marginBottom: "1.25rem", position: "relative", overflow: "hidden" }}>
+              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: `linear-gradient(90deg, transparent, ${compat.color}, transparent)` }} />
+
+              {/* Types */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "1rem", marginBottom: "1.25rem" }}>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ background: senderInfo.color + "22", border: `1px solid ${senderInfo.color}44`, borderRadius: "10px", padding: "6px 16px", fontWeight: 900, fontSize: "1.5rem", color: senderInfo.color, marginBottom: "0.3rem" }}>{upperType}</div>
+                  <div style={{ fontSize: "0.7rem", color: "#555" }}>{senderInfo.name}</div>
+                </div>
+                <div style={{ color: "#3D3550", fontSize: "1.5rem" }}>×</div>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ background: myInfo.color + "22", border: `1px solid ${myInfo.color}44`, borderRadius: "10px", padding: "6px 16px", fontWeight: 900, fontSize: "1.5rem", color: myInfo.color, marginBottom: "0.3rem" }}>{myType}</div>
+                  <div style={{ fontSize: "0.7rem", color: "#555" }}>{myInfo.name}</div>
+                </div>
+              </div>
+
+              {/* Score bar */}
+              <div style={{ marginBottom: "1rem" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.4rem" }}>
+                  <span style={{ color: compat.color, fontWeight: 700, fontSize: "0.82rem" }}>{compat.emoji} {compat.label}</span>
+                  <span style={{ color: compat.color, fontWeight: 900, fontSize: "1.1rem" }}>{compat.score}%</span>
+                </div>
+                <div style={{ height: "6px", background: "rgba(255,255,255,0.06)", borderRadius: "3px" }}>
+                  <div style={{ height: "100%", width: `${compat.score}%`, background: compat.color, borderRadius: "3px", transition: "width 1.2s cubic-bezier(0.4,0,0.2,1)", boxShadow: `0 0 10px ${compat.color}55` }} />
+                </div>
+              </div>
+
+              <p style={{ color: "#bbb", fontSize: "0.85rem", lineHeight: 1.7, margin: 0 }}>{compat.desc}</p>
+            </div>
+
+            {/* Locked deep analysis teaser */}
+            <div className="glass-card" style={{ borderRadius: "20px", padding: "1.5rem", marginBottom: "1.25rem" }}>
+              <div style={{ color: "#555", fontSize: "0.68rem", letterSpacing: "0.12em", marginBottom: "1rem" }}>ANÁLISIS PROFUNDO {upperType} × {myType}</div>
+              {[
+                `Por qué ${upperType} y ${myType} se atraen (y qué lo complica)`,
+                `El patrón de conflicto más común entre estos dos tipos`,
+                `Cómo se complementan en funciones cognitivas`,
+                `Qué necesita cada tipo para que la relación funcione`,
+              ].map((item, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.65rem", padding: "0.55rem 0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                  <div style={{ width: "18px", height: "18px", borderRadius: "5px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <svg width="8" height="10" viewBox="0 0 8 10" fill="none"><path d="M5.5 4V3C5.5 2.17 4.83 1.5 4 1.5C3.17 1.5 2.5 2.17 2.5 3V4M2 4H6C6.55 4 7 4.45 7 5V8C7 8.55 6.55 9 6 9H2C1.45 9 1 8.55 1 8V5C1 4.45 1.45 4 2 4Z" stroke="#3D3550" strokeWidth="1.2" strokeLinecap="round"/></svg>
+                  </div>
+                  <span style={{ color: "#555", fontSize: "0.82rem" }}>{item}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* CTAs */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+              <button onClick={() => navigate('/test')} className="btn-primary" style={{ width: "100%", background: `linear-gradient(135deg, ${compat.color === "#888" ? "#A78BFA" : compat.color}, #6C3FC8)`, border: "none", borderRadius: "12px", padding: "1rem", color: "#fff", fontWeight: 700, fontSize: "0.95rem", cursor: "pointer" }}>
+                Ver mi análisis {myType} completo →
+              </button>
+              <button onClick={() => setStep('select')} style={{ background: "none", border: "none", color: "#555", fontSize: "0.78rem", cursor: "pointer", padding: "0.25rem" }}>
+                ← Cambiar mi tipo
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -2977,6 +3225,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/test" element={<AppInner />} />
+        <Route path="/compat/:type" element={<CompatPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AuthProvider>
