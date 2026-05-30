@@ -2813,7 +2813,7 @@ function ResultsScreen({ type: initialType, display: initialDisplay, onRetake, o
         <button onClick={onRetake} className="btn-secondary" style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: "12px", padding: "0.8rem 1.2rem", color: "#444", cursor: "pointer", fontSize: "0.82rem", fontWeight: 600 }}>
           ↺
         </button>
-        <button onClick={onPreviewWelcome} title="Preview modal" style={{ background: "none", border: "none", color: "#3D3550", cursor: "pointer", fontSize: "0.75rem", padding: "0.5rem" }}>
+        <button onClick={onPreviewWelcome} title="Preview modal" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#8878A0", cursor: "pointer", fontSize: "0.75rem", padding: "0.5rem 0.7rem" }}>
           ✦
         </button>
       </div>
