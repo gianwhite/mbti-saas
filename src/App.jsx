@@ -1402,9 +1402,6 @@ function CompatLinkCard({ myType, typeColor }) {
   return (
     <Card style={{ borderColor: typeColor + "33", background: `linear-gradient(135deg, #0d0d0d, ${typeColor}08)`, textAlign: "center", marginTop: "0.5rem" }}>
       <div style={{ marginBottom: "0.75rem" }}>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: typeColor + "18", border: `1px solid ${typeColor}33`, borderRadius: "20px", padding: "4px 14px", marginBottom: "0.75rem" }}>
-          <span style={{ color: typeColor, fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.1em" }}>NUEVO · FEATURE VIRAL</span>
-        </div>
         <div style={{ color: "#F0EBF8", fontWeight: 700, fontSize: "0.95rem", marginBottom: "0.3rem" }}>
           ¿Eres compatible con alguien específico?
         </div>
