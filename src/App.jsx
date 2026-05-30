@@ -206,10 +206,17 @@ const TAB_ICONS = {
     </svg>
   ),
   advisor: (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 2a7 7 0 0 1 7 7c0 2.5-1.3 4.7-3.2 6L15 18H9l-.8-3C6.3 13.7 5 11.5 5 9a7 7 0 0 1 7-7z"/>
-      <path d="M9 21h6" strokeOpacity="0.5"/><path d="M10 18v3m4-3v3" strokeOpacity="0.5"/>
-      <circle cx="12" cy="9" r="1.5" fill="currentColor" strokeWidth="0"/>
+    <svg width="22" height="22" viewBox="228 88 224 254" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="340,100 435,155 435,265 340,320 245,265 245,155" fill="none" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3"/>
+      <polygon points="340,117 421,163 421,257 340,304 259,257 259,163" fill="currentColor" fillOpacity="0.12" stroke="currentColor" strokeWidth="3.5" strokeLinejoin="round"/>
+      <polygon points="340,148 400,182 400,248 340,282 280,248 280,182" fill="none" stroke="currentColor" strokeWidth="2" strokeOpacity="0.35"/>
+      <circle cx="340" cy="210" r="14" fill="currentColor" fillOpacity="0.9"/>
+      <circle cx="340" cy="117" r="6" fill="currentColor" fillOpacity="0.7"/>
+      <circle cx="421" cy="163" r="6" fill="currentColor" fillOpacity="0.5"/>
+      <circle cx="421" cy="257" r="6" fill="currentColor" fillOpacity="0.5"/>
+      <circle cx="340" cy="304" r="6" fill="currentColor" fillOpacity="0.7"/>
+      <circle cx="259" cy="257" r="6" fill="currentColor" fillOpacity="0.5"/>
+      <circle cx="259" cy="163" r="6" fill="currentColor" fillOpacity="0.5"/>
     </svg>
   ),
   psicologia: (
@@ -1453,11 +1460,91 @@ function TabProfesional({ type, typeColor }) {
   );
 }
 
+// ── Jarvis Orb — animated canvas orb for advisor ──
+function JarvisOrb({ active = false, size = 72, color = "#A78BFA" }) {
+  const canvasRef = useRef(null);
+  const stateRef  = useRef({ phase: 0, rings: [] });
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width  = size * dpr;
+    canvas.height = size * dpr;
+    ctx.scale(dpr, dpr);
+
+    // Init rings
+    stateRef.current.rings = Array.from({ length: 3 }, (_, i) => ({
+      r: size * 0.18 + i * size * 0.1,
+      speed: 0.012 + i * 0.007,
+      offset: (i * Math.PI * 2) / 3,
+    }));
+
+    let animId;
+    const draw = () => {
+      const { phase } = stateRef.current;
+      ctx.clearRect(0, 0, size, size);
+      const cx = size / 2, cy = size / 2;
+
+      // Outer glow
+      const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, size * 0.45);
+      grd.addColorStop(0, color + (active ? "30" : "15"));
+      grd.addColorStop(1, "transparent");
+      ctx.fillStyle = grd;
+      ctx.beginPath();
+      ctx.arc(cx, cy, size * 0.45, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Rotating rings
+      stateRef.current.rings.forEach(ring => {
+        const r = ring.r + Math.sin(phase * ring.speed * 60 + ring.offset) * (size * 0.04);
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.strokeStyle = color + (active ? "55" : "28");
+        ctx.lineWidth = active ? 1.2 : 0.7;
+        ctx.stroke();
+      });
+
+      // Hex outline
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const a = (Math.PI / 3) * i + phase * 0.008;
+        const hr = size * 0.3;
+        const x = cx + hr * Math.cos(a), y = cy + hr * Math.sin(a);
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.strokeStyle = color + (active ? "88" : "44");
+      ctx.lineWidth = active ? 1.5 : 1;
+      ctx.stroke();
+
+      // Core dot
+      const corePulse = size * 0.055 + Math.sin(phase * 0.09) * size * 0.015;
+      const coreGrd = ctx.createRadialGradient(cx, cy, 0, cx, cy, corePulse);
+      coreGrd.addColorStop(0, "#fff");
+      coreGrd.addColorStop(0.4, color);
+      coreGrd.addColorStop(1, "transparent");
+      ctx.fillStyle = coreGrd;
+      ctx.beginPath();
+      ctx.arc(cx, cy, corePulse, 0, Math.PI * 2);
+      ctx.fill();
+
+      stateRef.current.phase++;
+      animId = requestAnimationFrame(draw);
+    };
+    draw();
+    return () => cancelAnimationFrame(animId);
+  }, [active, size, color]);
+
+  return <canvas ref={canvasRef} style={{ width: size, height: size, display: "block" }} />;
+}
+
 function TabAdvisor({ type, typeColor }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const bottomRef = useState(null);
+  const bottomRef = useRef(null);
 
   const SUGGESTIONS = [
     "¿Cuáles son mis mayores errores al socializar?",
@@ -1465,6 +1552,10 @@ function TabAdvisor({ type, typeColor }) {
     "¿Qué tipo de personalidad me complementa mejor?",
     "¿Cómo manejo el conflicto en una relación?",
   ];
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, loading]);
 
   const sendMessage = async (text) => {
     const userMsg = text || input.trim();
@@ -1499,14 +1590,29 @@ function TabAdvisor({ type, typeColor }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-      {/* Header */}
-      <Card style={{ borderColor: typeColor + "33", background: typeColor + "08", marginBottom: 0 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div>
-            <div style={{ color: typeColor, fontWeight: 700, fontSize: "0.9rem", marginBottom: "0.2rem" }}>Advisor {type}</div>
-            <div style={{ color: "#666", fontSize: "0.78rem" }}>Consejos anclados en tu tipo · Preguntas ilimitadas</div>
+      {/* Jarvis Header */}
+      <Card style={{ borderColor: typeColor + "33", background: `linear-gradient(160deg, rgba(255,255,255,0.03) 60%, ${typeColor}08)`, marginBottom: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <div style={{ flexShrink: 0 }}>
+            <JarvisOrb active={loading} size={64} color={typeColor || "#A78BFA"} />
           </div>
-          <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: `linear-gradient(135deg, ${typeColor}, #6C63FF)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.1rem" }}>🧠</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ color: typeColor, fontWeight: 700, fontSize: "0.95rem", marginBottom: "0.15rem", letterSpacing: "0.04em" }}>
+              ADVISOR {type}
+            </div>
+            <div style={{ color: "#8878A0", fontSize: "0.76rem", lineHeight: 1.5 }}>
+              {loading ? "Procesando respuesta…" : "Sistema activo · Preguntas ilimitadas"}
+            </div>
+            <div style={{ display: "flex", gap: "4px", marginTop: "0.4rem" }}>
+              {[0,1,2].map(i => (
+                <div key={i} style={{
+                  width: loading ? "18px" : "6px", height: "3px", borderRadius: "2px",
+                  background: loading ? `linear-gradient(90deg, ${typeColor}, #A78BFA)` : typeColor + "44",
+                  transition: `width 0.3s ease ${i * 0.1}s`,
+                }} />
+              ))}
+            </div>
+          </div>
         </div>
       </Card>
 
@@ -1529,27 +1635,41 @@ function TabAdvisor({ type, typeColor }) {
 
       {/* Message history */}
       {messages.length > 0 && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", maxHeight: "420px", overflowY: "auto", paddingRight: "2px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem", maxHeight: "440px", overflowY: "auto", paddingRight: "2px" }}>
           {messages.map((m, i) => (
-            <div key={i} style={{ display: "flex", justifyContent: m.role === 'user' ? "flex-end" : "flex-start" }}>
+            <div key={i} style={{ display: "flex", justifyContent: m.role === 'user' ? "flex-end" : "flex-start", gap: "0.55rem", alignItems: "flex-end" }}>
+              {/* Hex avatar for assistant */}
+              {m.role === 'assistant' && (
+                <div style={{ flexShrink: 0, marginBottom: "2px" }}>
+                  <JarvisOrb active={false} size={32} color={typeColor || "#A78BFA"} />
+                </div>
+              )}
               <div style={{
-                maxWidth: "88%",
-                background: m.role === 'user' ? `linear-gradient(135deg, ${typeColor}33, #6C63FF33)` : "#111",
-                border: `1px solid ${m.role === 'user' ? typeColor + "44" : "#1e1e1e"}`,
-                borderRadius: m.role === 'user' ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
-                padding: "0.75rem 1rem",
-                color: m.role === 'user' ? "#eee" : "#ccc",
+                maxWidth: "84%",
+                background: m.role === 'user'
+                  ? `linear-gradient(135deg, ${typeColor}22, rgba(108,63,200,0.18))`
+                  : "rgba(255,255,255,0.04)",
+                border: `1px solid ${m.role === 'user' ? typeColor + "33" : "rgba(255,255,255,0.07)"}`,
+                borderRadius: m.role === 'user' ? "16px 16px 4px 16px" : "4px 16px 16px 16px",
+                padding: "0.8rem 1rem",
+                color: m.role === 'user' ? "#F0EBF8" : "#C4B5FD",
                 fontSize: "0.87rem",
-                lineHeight: 1.7,
+                lineHeight: 1.75,
                 whiteSpace: "pre-wrap",
               }}>{m.content}</div>
             </div>
           ))}
           {loading && (
-            <div style={{ display: "flex", justifyContent: "flex-start" }}>
-              <HexLoader />
+            <div style={{ display: "flex", alignItems: "center", gap: "0.55rem" }}>
+              <JarvisOrb active={true} size={32} color={typeColor || "#A78BFA"} />
+              <div style={{ display: "flex", gap: "5px", padding: "0.6rem 0.9rem", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "4px 16px 16px 16px" }}>
+                {[0,1,2].map(i => (
+                  <div key={i} style={{ width: "6px", height: "6px", borderRadius: "50%", background: typeColor || "#A78BFA", opacity: 0.7, animation: `hexPulse 1.2s ease-in-out ${i * 0.2}s infinite` }} />
+                ))}
+              </div>
             </div>
           )}
+          <div ref={bottomRef} />
         </div>
       )}
 
