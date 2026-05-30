@@ -1735,15 +1735,92 @@ function ShareModal({ type, info, onClose }) {
 // ─────────────────────────────────────────────
 // RESULTS SCREEN
 // ─────────────────────────────────────────────
-function ResultsScreen({ type, display, onRetake }) {
+// ── Type selector modal ──────────────────────────────────────
+const TYPE_GROUPS = [
+  { label: "Analistas",    types: ["INTJ","INTP","ENTJ","ENTP"] },
+  { label: "Diplomáticos", types: ["INFJ","INFP","ENFJ","ENFP"] },
+  { label: "Centinelas",   types: ["ISTJ","ISFJ","ESTJ","ESFJ"] },
+  { label: "Exploradores", types: ["ISTP","ISFP","ESTP","ESFP"] },
+];
+
+function TypeSelectorModal({ currentType, onSelect, onClose }) {
+  const [hovered, setHovered] = useState(null);
+  return (
+    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.85)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:3000, padding:"1rem" }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{ background:"#111", border:"1px solid #2a2a2a", borderRadius:"22px", padding:"1.75rem", maxWidth:"420px", width:"100%", position:"relative" }}>
+        <div style={{ position:"absolute", top:0, left:0, right:0, height:"3px", background:"linear-gradient(90deg,transparent,#6C63FF,transparent)", borderRadius:"22px 22px 0 0" }} />
+        <button onClick={onClose} style={{ position:"absolute", top:"1rem", right:"1rem", background:"none", border:"none", color:"#444", cursor:"pointer", fontSize:"1.2rem" }}>✕</button>
+
+        <h2 style={{ color:"#fff", fontWeight:700, fontSize:"1.1rem", marginBottom:"0.25rem" }}>Selecciona tu tipo</h2>
+        <p style={{ color:"#555", fontSize:"0.78rem", marginBottom:"1.5rem" }}>¿Ya conoces tu tipo real? Cámbialo manualmente.</p>
+
+        {TYPE_GROUPS.map(group => (
+          <div key={group.label} style={{ marginBottom:"1.1rem" }}>
+            <div style={{ fontSize:"0.65rem", color:"#444", letterSpacing:"0.15em", marginBottom:"0.5rem" }}>{group.label.toUpperCase()}</div>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"6px" }}>
+              {group.types.map(t => {
+                const tInfo = TYPES[t] || { color:"#6C63FF" };
+                const isActive = t === currentType;
+                return (
+                  <button
+                    key={t}
+                    onClick={() => onSelect(t)}
+                    onMouseEnter={() => setHovered(t)}
+                    onMouseLeave={() => setHovered(null)}
+                    style={{
+                      background: isActive ? `${tInfo.color}22` : hovered === t ? "#1a1a1a" : "#0f0f0f",
+                      border: `1px solid ${isActive ? tInfo.color + "66" : "#222"}`,
+                      borderRadius:"10px", padding:"0.6rem 0.3rem",
+                      color: isActive ? tInfo.color : hovered === t ? "#ccc" : "#555",
+                      fontSize:"0.78rem", fontWeight: isActive ? 800 : 500,
+                      cursor:"pointer", transition:"all 0.15s",
+                      fontFamily:"inherit",
+                    }}
+                  >
+                    {t}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+
+        <p style={{ color:"#333", fontSize:"0.7rem", marginTop:"1rem", textAlign:"center" }}>
+          Esto sobreescribe tu resultado actual
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function ResultsScreen({ type: initialType, display: initialDisplay, onRetake }) {
+  const [type, setType]   = useState(initialType);
+  const [display, setDisplay] = useState(initialDisplay);
   const info     = TYPES[type] || { name: "Tipo desconocido", color: "#888", tagline: "" };
   const analysis = TYPE_ANALYSIS[type];
   const [tab, setTab]         = useState(null); // null = hub grid, string = open section
   const [copied, setCopied]   = useState(false);
   const [isPaid, setIsPaid]   = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
+  const [showTypeSelector, setShowTypeSelector] = useState(false);
 
   const { user } = useAuth();
+
+  const handleTypeChange = async (newType) => {
+    setType(newType);
+    setDisplay(null); // reset display scores
+    setTab(null);
+    setShowTypeSelector(false);
+    // Save to localStorage
+    localStorage.setItem('mbti_type', newType);
+    localStorage.removeItem('mbti_display');
+    // Save to Supabase if logged in
+    if (user) {
+      try {
+        await supabase.auth.updateUser({ data: { mbti_type: newType, mbti_display: null } });
+      } catch {}
+    }
+  };
 
   // Check subscription on mount (and whenever user changes)
   useEffect(() => {
@@ -1842,6 +1919,7 @@ function ResultsScreen({ type, display, onRetake }) {
     <div style={{ maxWidth: "640px", width: "100%", margin: "0 auto", padding: "1.5rem 1rem 3rem", boxSizing: "border-box" }}>
       {showPaywall && <PaywallModal type={type} onClose={() => setShowPaywall(false)} onPay={() => {}} />}
       {showShare   && <ShareModal type={type} info={info} onClose={() => setShowShare(false)} />}
+      {showTypeSelector && <TypeSelectorModal currentType={type} onSelect={handleTypeChange} onClose={() => setShowTypeSelector(false)} />}
 
       {/* Hero */}
       <div className="results-hero" style={{ background: `linear-gradient(160deg, #111 60%, ${info.color}0d)`, border: `1px solid ${info.color}44`, borderRadius: "24px", padding: "2rem 1.75rem 1.75rem", textAlign: "center", marginBottom: "1.25rem", position: "relative", overflow: "hidden" }}>
@@ -1867,6 +1945,10 @@ function ResultsScreen({ type, display, onRetake }) {
 
         <div style={{ fontSize: "1.25rem", color: "#f0f0f0", fontWeight: 700, marginBottom: "0.4rem" }}>{info.name}</div>
         <div style={{ color: "#555", fontSize: "0.85rem", lineHeight: 1.6, fontStyle: "italic", maxWidth: "380px", margin: "0 auto" }}>"{info.tagline}"</div>
+
+        <button onClick={() => setShowTypeSelector(true)} style={{ background: "none", border: "none", color: "#383838", cursor: "pointer", fontSize: "0.7rem", marginTop: "0.75rem", textDecoration: "underline", padding: 0 }}>
+          ¿No es tu tipo? Cámbiarlo
+        </button>
 
         {/* Dimension pills */}
         <div style={{ display: "flex", justifyContent: "center", gap: "6px", marginTop: "1.25rem", flexWrap: "wrap" }}>
