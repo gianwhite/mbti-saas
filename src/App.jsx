@@ -2466,7 +2466,7 @@ function ExitIntentModal({ type, info, onClose, onTrial }) {
   );
 }
 
-function ResultsScreen({ type: initialType, display: initialDisplay, onRetake }) {
+function ResultsScreen({ type: initialType, display: initialDisplay, onRetake, onPreviewWelcome }) {
   const [type, setType]   = useState(initialType);
   const [display, setDisplay] = useState(initialDisplay);
   const info     = TYPES[type] || { name: "Tipo desconocido", color: "#888", tagline: "" };
@@ -2813,6 +2813,9 @@ function ResultsScreen({ type: initialType, display: initialDisplay, onRetake })
         <button onClick={onRetake} className="btn-secondary" style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: "12px", padding: "0.8rem 1.2rem", color: "#444", cursor: "pointer", fontSize: "0.82rem", fontWeight: 600 }}>
           ↺
         </button>
+        <button onClick={onPreviewWelcome} title="Preview modal" style={{ background: "none", border: "none", color: "#1a1a1a", cursor: "pointer", fontSize: "0.7rem", padding: "0.5rem" }}>
+          ✦
+        </button>
       </div>
     </div>
   );
@@ -2959,7 +2962,7 @@ function AppInner() {
             {screen === "test-intro"     && <TestIntro onStart={handleStart} />}
             {screen === "test-questions" && <QuestionScreen question={QUESTIONS[index]} index={index} total={QUESTIONS.length} selected={answers[QUESTIONS[index].id]} onAnswer={handleAnswer} onPrev={handlePrev} />}
             {screen === "email-gate"     && result && <EmailGateScreen result={result} onContinue={handleEmailGateContinue} />}
-            {screen === "results"        && result && <ResultsScreen type={result.type} display={result.display} onRetake={handleRetake} />}
+            {screen === "results"        && result && <ResultsScreen type={result.type} display={result.display} onRetake={handleRetake} onPreviewWelcome={() => setShowWelcomeModal(true)} />}
           </>
         )}
         </ErrorBoundary>
