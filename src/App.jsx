@@ -73,9 +73,9 @@ function AuthProvider({ children }) {
 // ─────────────────────────────────────────────
 // AUTH MODAL  (Login / Signup)
 // ─────────────────────────────────────────────
-function AuthModal({ onClose, onSuccess, title = "Crea tu cuenta" }) {
+function AuthModal({ onClose, onSuccess, title = "Crea tu cuenta", initialMode = "signup" }) {
   const { signIn, signUp } = useAuth();
-  const [mode, setMode]       = useState("signup"); // "signup" | "login"
+  const [mode, setMode]       = useState(initialMode); // "signup" | "login"
   const [email, setEmail]     = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -525,6 +525,7 @@ function LandingPage() {
   const navigate = useNavigate();
   const { user, ready, signOut } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authInitialMode, setAuthInitialMode] = useState("signup");
 
   // Result exists in localStorage OR in Supabase user metadata
   const localResult = !!localStorage.getItem('mbti_type');
@@ -570,12 +571,12 @@ function LandingPage() {
               <button onClick={signOut} style={{ background: "none", border: "1px solid #222", borderRadius: "6px", color: "#555", cursor: "pointer", fontSize: "0.72rem", padding: "4px 10px" }}>Salir</button>
             </>
           ) : (
-            <button onClick={() => setShowAuthModal(true)} style={{ background: "none", border: "1px solid #222", borderRadius: "6px", color: "#777", cursor: "pointer", fontSize: "0.78rem", padding: "5px 14px" }}>Iniciar sesión</button>
+            <button onClick={() => { setAuthInitialMode("login"); setShowAuthModal(true); }} style={{ background: "none", border: "1px solid #222", borderRadius: "6px", color: "#777", cursor: "pointer", fontSize: "0.78rem", padding: "5px 14px" }}>Iniciar sesión</button>
           )}
         </div>
       </nav>
 
-      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onSuccess={() => setShowAuthModal(false)} title="Inicia sesión o crea tu cuenta" />}
+      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onSuccess={() => setShowAuthModal(false)} title="Inicia sesión o crea tu cuenta" initialMode={authInitialMode} />}
 
       {/* ── HERO ── */}
       <section className="land-hero" style={{ position: "relative", zIndex: 1, textAlign: "center", padding: "6rem 1.5rem 5rem", maxWidth: "760px", margin: "0 auto" }}>
@@ -1939,6 +1940,7 @@ function AppInner() {
   const [index, setIndex]     = useState(0);
   const [answers, setAnswers] = useState({});
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authInitialMode, setAuthInitialMode] = useState("signup");
 
   // Save result to Supabase user metadata
   const saveResultToSupabase = async (type, display) => {
@@ -2026,11 +2028,11 @@ function AppInner() {
               <button onClick={signOut} style={{ background: "none", border: "1px solid #222", borderRadius: "6px", color: "#555", cursor: "pointer", fontSize: "0.72rem", padding: "3px 8px" }}>Salir</button>
             </div>
           ) : (
-            <button onClick={() => setShowAuthModal(true)} style={{ background: "none", border: "1px solid #222", borderRadius: "6px", color: "#777", cursor: "pointer", fontSize: "0.78rem", padding: "4px 12px" }}>Iniciar sesión</button>
+            <button onClick={() => { setAuthInitialMode("login"); setShowAuthModal(true); }} style={{ background: "none", border: "1px solid #222", borderRadius: "6px", color: "#777", cursor: "pointer", fontSize: "0.78rem", padding: "4px 12px" }}>Iniciar sesión</button>
           )}
         </div>
       </header>
-      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onSuccess={() => setShowAuthModal(false)} title="Inicia sesión o crea tu cuenta" />}
+      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onSuccess={() => setShowAuthModal(false)} title="Inicia sesión o crea tu cuenta" initialMode={authInitialMode} />}
       <main style={{ flex: 1, display: "flex", alignItems: screen === "results" ? "flex-start" : "center", justifyContent: "center", padding: screen === "results" ? "0" : "1rem", width: "100%" }}>
         <ErrorBoundary>
         {!ready ? (
