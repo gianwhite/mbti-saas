@@ -513,7 +513,23 @@ function LandingPage() {
   const navigate = useNavigate();
   const { user, ready, signOut } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const hasResult = !!localStorage.getItem('mbti_type');
+
+  // Result exists in localStorage OR in Supabase user metadata
+  const localResult = !!localStorage.getItem('mbti_type');
+  const cloudResult = !!(user?.user_metadata?.mbti_type);
+  const hasResult   = localResult || cloudResult;
+
+  // If logged-in user already has a result, sync it to localStorage and go to /test
+  useEffect(() => {
+    if (!ready) return;
+    if (user?.user_metadata?.mbti_type && !localResult) {
+      localStorage.setItem('mbti_type', user.user_metadata.mbti_type);
+      if (user.user_metadata.mbti_display) {
+        localStorage.setItem('mbti_display', user.user_metadata.mbti_display);
+      }
+      navigate('/test');
+    }
+  }, [user, ready]);
 
   const handleCTA = () => navigate('/test');
 
