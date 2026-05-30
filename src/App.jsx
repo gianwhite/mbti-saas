@@ -1453,7 +1453,9 @@ function ResultsScreen({ type, display, onRetake }) {
   const [isPaid, setIsPaid]   = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
 
-  // Check subscription on mount
+  const { user } = useAuth();
+
+  // Check subscription on mount (and whenever user changes)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get('session_id');
@@ -1472,16 +1474,41 @@ function ResultsScreen({ type, display, onRetake }) {
         })
         .catch(() => {});
     } else if (storedCustomerId) {
-      // Returning user — re-verify subscription is still active
+      // Returning user with stored customer ID — re-verify
       fetch(`/api/verify-access?customer_id=${storedCustomerId}`)
         .then(r => r.json())
         .then(data => {
           if (data.active) setIsPaid(true);
-          else localStorage.removeItem('mbti_customer_id');
+          else {
+            localStorage.removeItem('mbti_customer_id');
+            // Fallback: try by email if logged in
+            if (user?.email) {
+              fetch(`/api/verify-access?email=${encodeURIComponent(user.email)}`)
+                .then(r => r.json())
+                .then(d => {
+                  if (d.active) {
+                    if (d.customerId) localStorage.setItem('mbti_customer_id', d.customerId);
+                    setIsPaid(true);
+                  }
+                })
+                .catch(() => {});
+            }
+          }
+        })
+        .catch(() => {});
+    } else if (user?.email) {
+      // No stored customer ID but user is logged in — look up by email
+      fetch(`/api/verify-access?email=${encodeURIComponent(user.email)}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.active) {
+            if (data.customerId) localStorage.setItem('mbti_customer_id', data.customerId);
+            setIsPaid(true);
+          }
         })
         .catch(() => {});
     }
-  }, []);
+  }, [user]);
 
   const handleManageSubscription = async () => {
     const customerId = localStorage.getItem('mbti_customer_id');

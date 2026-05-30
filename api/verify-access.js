@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   }
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-  const { session_id, customer_id } = req.query;
+  const { session_id, customer_id, email } = req.query;
 
   try {
     // Path 1: fresh return from Stripe checkout — verify session and extract customer
@@ -49,7 +49,28 @@ export default async function handler(req, res) {
       return res.json({ active });
     }
 
-    return res.status(400).json({ active: false, error: 'Missing session_id or customer_id' });
+    // Path 3: lookup by email — cross-device login
+    if (email) {
+      const customers = await stripe.customers.list({ email, limit: 5 });
+      for (const customer of customers.data) {
+        const subs = await stripe.subscriptions.list({
+          customer: customer.id,
+          status: 'active',
+          limit: 1,
+        });
+        const trial = await stripe.subscriptions.list({
+          customer: customer.id,
+          status: 'trialing',
+          limit: 1,
+        });
+        if (subs.data.length > 0 || trial.data.length > 0) {
+          return res.json({ active: true, customerId: customer.id });
+        }
+      }
+      return res.json({ active: false });
+    }
+
+    return res.status(400).json({ active: false, error: 'Missing session_id, customer_id or email' });
   } catch (err) {
     console.error('Verify access error:', err.message);
     res.status(400).json({ active: false, error: err.message });
