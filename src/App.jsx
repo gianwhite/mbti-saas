@@ -1477,7 +1477,7 @@ function JarvisOrb({ active = false, size = 72, color = "#A78BFA" }) {
     // Init rings
     stateRef.current.rings = Array.from({ length: 3 }, (_, i) => ({
       r: size * 0.18 + i * size * 0.1,
-      speed: 0.012 + i * 0.007,
+      speed: 0.003 + i * 0.002,
       offset: (i * Math.PI * 2) / 3,
     }));
 
@@ -1498,7 +1498,7 @@ function JarvisOrb({ active = false, size = 72, color = "#A78BFA" }) {
 
       // Rotating rings
       stateRef.current.rings.forEach(ring => {
-        const r = ring.r + Math.sin(phase * ring.speed * 60 + ring.offset) * (size * 0.04);
+        const r = ring.r + Math.sin(phase * ring.speed * 8 + ring.offset) * (size * 0.03);
         ctx.beginPath();
         ctx.arc(cx, cy, r, 0, Math.PI * 2);
         ctx.strokeStyle = color + (active ? "55" : "28");
@@ -1509,7 +1509,7 @@ function JarvisOrb({ active = false, size = 72, color = "#A78BFA" }) {
       // Hex outline
       ctx.beginPath();
       for (let i = 0; i < 6; i++) {
-        const a = (Math.PI / 3) * i + phase * 0.008;
+        const a = (Math.PI / 3) * i + phase * 0.002;
         const hr = size * 0.3;
         const x = cx + hr * Math.cos(a), y = cy + hr * Math.sin(a);
         i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
@@ -1520,7 +1520,7 @@ function JarvisOrb({ active = false, size = 72, color = "#A78BFA" }) {
       ctx.stroke();
 
       // Core dot
-      const corePulse = size * 0.055 + Math.sin(phase * 0.09) * size * 0.015;
+      const corePulse = size * 0.055 + Math.sin(phase * 0.022) * size * 0.015;
       const coreGrd = ctx.createRadialGradient(cx, cy, 0, cx, cy, corePulse);
       coreGrd.addColorStop(0, "#fff");
       coreGrd.addColorStop(0.4, color);
