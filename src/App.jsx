@@ -1031,38 +1031,213 @@ function TabAtraccion({ analysis, typeColor }) {
   );
 }
 
-function TabCompatibilidad({ analysis }) {
+const ALL_TYPES = ["INTJ","INTP","ENTJ","ENTP","INFJ","INFP","ENFJ","ENFP","ISTJ","ISFJ","ESTJ","ESFJ","ISTP","ISFP","ESTP","ESFP"];
+
+function TabCompatibilidad({ analysis, myType, typeColor }) {
   const c = analysis.compatibilidad;
+  const [selected, setSelected] = useState(null);
+
+  // Share test link
+  const shareUrl = typeof window !== 'undefined' ? window.location.origin : 'https://16personalidades.app';
+  const shareText = `¿Cuál es tu tipo de personalidad? Haz el test y descubre si somos compatibles 👇`;
+
+  const handleShareTest = async () => {
+    const shareData = { title: '16 Personalidades AI', text: shareText, url: shareUrl };
+    if (navigator.canShare?.(shareData)) {
+      try { await navigator.share(shareData); return; } catch {}
+    }
+    try { await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`); alert('¡Link copiado! Pégalo donde quieras compartirlo.'); } catch {}
+  };
+
+  // Build cross-analysis for selected type
+  const getCompatInfo = (targetType) => {
+    const topMatch = c.top.find(m => m.tipo === targetType);
+    const isEvitar  = c.evitar.tipo === targetType;
+    // Check reverse: does target type list myType in their top?
+    const targetAnalysis = TYPE_ANALYSIS[targetType];
+    const reverseMatch = targetAnalysis?.compatibilidad?.top?.find(m => m.tipo === myType);
+    const reverseEvitar = targetAnalysis?.compatibilidad?.evitar?.tipo === myType;
+    return { topMatch, isEvitar, reverseMatch, reverseEvitar };
+  };
+
+  const sel = selected;
+  const selInfo = sel ? TYPES[sel] || { color: "#888", name: sel } : null;
+  const compat = sel ? getCompatInfo(sel) : null;
+
+  // Compatibility score label
+  const getLevel = (compat) => {
+    if (!compat) return null;
+    if (compat.topMatch && compat.reverseMatch) return { label: "Compatibilidad alta", color: "#22c55e", emoji: "🔥" };
+    if (compat.topMatch || compat.reverseMatch) return { label: "Compatibilidad media-alta", color: "#A78BFA", emoji: "✨" };
+    if (compat.isEvitar || compat.reverseEvitar) return { label: "Alta fricción potencial", color: "#ff6b6b", emoji: "⚠️" };
+    return { label: "Compatibilidad neutral", color: "#888", emoji: "◈" };
+  };
+
   return (
     <div>
-      <div style={{ color: "#555", fontSize: "0.7rem", letterSpacing: "0.12em", marginBottom: "0.85rem" }}>TOP 3 TIPOS MÁS COMPATIBLES</div>
-      {c.top.map((match, i) => {
-        const mi = TYPES[match.tipo] || { color: "#888", name: match.tipo };
+      {/* ── Selector header ── */}
+      <Card>
+        <div style={{ color: "#555", fontSize: "0.7rem", letterSpacing: "0.12em", marginBottom: "0.75rem" }}>
+          ¿CON QUIÉN QUIERES COMPARARTE?
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+          {ALL_TYPES.map(t => {
+            const ti = TYPES[t] || { color: "#888" };
+            const isMe = t === myType;
+            const isSel = t === selected;
+            return (
+              <button
+                key={t}
+                disabled={isMe}
+                onClick={() => setSelected(isSel ? null : t)}
+                style={{
+                  background: isSel ? ti.color + "33" : "#0f0f0f",
+                  border: `1px solid ${isSel ? ti.color : isMe ? "#222" : "#2a2a2a"}`,
+                  borderRadius: "8px", padding: "5px 10px",
+                  color: isMe ? "#333" : isSel ? ti.color : "#777",
+                  fontSize: "0.78rem", fontWeight: isSel ? 700 : 500,
+                  cursor: isMe ? "default" : "pointer",
+                  transition: "all 0.15s",
+                }}
+              >
+                {t}{isMe ? " (tú)" : ""}
+              </button>
+            );
+          })}
+        </div>
+      </Card>
+
+      {/* ── Cross analysis result ── */}
+      {sel && compat && (() => {
+        const level = getLevel(compat);
         return (
-          <Card key={i} style={{ borderColor: mi.color + "33" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.6rem" }}>
-              <div style={{ display: "flex", gap: "0.6rem", alignItems: "center" }}>
-                <div style={{ background: mi.color + "22", border: `1px solid ${mi.color}55`, borderRadius: "8px", padding: "4px 10px", fontWeight: 900, fontSize: "1rem", color: mi.color }}>{match.tipo}</div>
-                <div style={{ color: "#888", fontSize: "0.8rem" }}>{mi.name}</div>
+          <div className="fade-up">
+            {/* Header card */}
+            <Card style={{ borderColor: selInfo.color + "44", background: `linear-gradient(135deg, #111 60%, ${selInfo.color}08)` }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.85rem" }}>
+                <div style={{ background: selInfo.color + "22", border: `1px solid ${selInfo.color}55`, borderRadius: "10px", padding: "6px 14px", fontWeight: 900, fontSize: "1.25rem", color: selInfo.color }}>{sel}</div>
+                <div>
+                  <div style={{ color: "#eee", fontWeight: 600, fontSize: "0.9rem" }}>{selInfo.name || sel}</div>
+                  <div style={{ color: level.color, fontSize: "0.75rem", fontWeight: 600, marginTop: "2px" }}>{level.emoji} {level.label}</div>
+                </div>
               </div>
-              <Tag color={mi.color}>#{i + 1}</Tag>
+
+              {/* From your analysis */}
+              {compat.topMatch && (
+                <div style={{ marginBottom: "0.75rem" }}>
+                  <div style={{ color: "#555", fontSize: "0.68rem", letterSpacing: "0.1em", marginBottom: "0.4rem" }}>DESDE TU PERSPECTIVA ({myType})</div>
+                  <p style={{ color: "#bbb", fontSize: "0.84rem", lineHeight: 1.65, margin: 0 }}>{compat.topMatch.por_que}</p>
+                </div>
+              )}
+              {compat.isEvitar && (
+                <div style={{ background: "#ff6b6b11", border: "1px solid #ff6b6b33", borderRadius: "8px", padding: "0.65rem 0.85rem", marginBottom: "0.75rem" }}>
+                  <div style={{ color: "#ff6b6b", fontSize: "0.68rem", letterSpacing: "0.1em", marginBottom: "0.4rem" }}>ALERTA DE FRICCIÓN</div>
+                  <p style={{ color: "#cc8888", fontSize: "0.84rem", lineHeight: 1.65, margin: 0 }}>{c.evitar.razon}</p>
+                </div>
+              )}
+
+              {/* From their analysis */}
+              {compat.reverseMatch && (
+                <div style={{ background: "#0f0f0f", borderRadius: "8px", padding: "0.65rem 0.85rem", marginBottom: "0.75rem" }}>
+                  <div style={{ color: selInfo.color, fontSize: "0.68rem", letterSpacing: "0.1em", marginBottom: "0.4rem" }}>DESDE SU PERSPECTIVA ({sel})</div>
+                  <p style={{ color: "#aaa", fontSize: "0.84rem", lineHeight: 1.65, margin: 0 }}>{compat.reverseMatch.por_que}</p>
+                </div>
+              )}
+
+              {/* How to connect */}
+              {compat.topMatch?.como_conectar && (
+                <div style={{ background: "#6C63FF11", border: "1px solid #6C63FF33", borderRadius: "8px", padding: "0.65rem 0.85rem" }}>
+                  <div style={{ color: "#6C63FF", fontSize: "0.68rem", letterSpacing: "0.1em", marginBottom: "0.4rem" }}>CÓMO CONECTAR</div>
+                  <p style={{ color: "#aaa", fontSize: "0.84rem", lineHeight: 1.65, margin: 0 }}>{compat.topMatch.como_conectar}</p>
+                </div>
+              )}
+
+              {/* Neutral fallback */}
+              {!compat.topMatch && !compat.isEvitar && !compat.reverseMatch && (
+                <p style={{ color: "#666", fontSize: "0.84rem", lineHeight: 1.65, margin: 0 }}>
+                  Este tipo no aparece en tu lista de mayor compatibilidad ni en la de mayor fricción. La dinámica dependerá más del desarrollo individual de cada persona que del tipo en sí.
+                </p>
+              )}
+            </Card>
+
+            {/* ── Share CTA ── */}
+            <Card style={{ borderColor: "#2a2a2a", textAlign: "center" }}>
+              <div style={{ fontSize: "1.1rem", marginBottom: "0.4rem" }}>🤔</div>
+              <div style={{ color: "#ccc", fontWeight: 600, fontSize: "0.9rem", marginBottom: "0.3rem" }}>
+                ¿No sabes el tipo de tu pareja o amigo?
+              </div>
+              <div style={{ color: "#555", fontSize: "0.78rem", marginBottom: "1rem", lineHeight: 1.5 }}>
+                Envíales el test y descubre al instante si son compatibles
+              </div>
+              <button
+                onClick={handleShareTest}
+                className="btn-primary"
+                style={{ width: "100%", background: `linear-gradient(135deg, ${typeColor}, #6C63FF)`, color: "#fff", border: "none", borderRadius: "12px", padding: "0.85rem", fontSize: "0.9rem", fontWeight: 700, cursor: "pointer" }}
+              >
+                ↗ Enviar test a alguien
+              </button>
+              <div style={{ marginTop: "0.5rem", fontSize: "0.68rem", color: "#444" }}>
+                Comparte por WhatsApp, Instagram o donde quieras
+              </div>
+            </Card>
+          </div>
+        );
+      })()}
+
+      {/* ── Default view (no type selected) ── */}
+      {!sel && (
+        <div>
+          <div style={{ color: "#555", fontSize: "0.7rem", letterSpacing: "0.12em", marginBottom: "0.85rem" }}>TUS TOP 3 MÁS COMPATIBLES</div>
+          {c.top.map((match, i) => {
+            const mi = TYPES[match.tipo] || { color: "#888", name: match.tipo };
+            return (
+              <Card key={i} style={{ borderColor: mi.color + "33", cursor: "pointer" }} onClick={() => setSelected(match.tipo)}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.6rem" }}>
+                  <div style={{ display: "flex", gap: "0.6rem", alignItems: "center" }}>
+                    <div style={{ background: mi.color + "22", border: `1px solid ${mi.color}55`, borderRadius: "8px", padding: "4px 10px", fontWeight: 900, fontSize: "1rem", color: mi.color }}>{match.tipo}</div>
+                    <div style={{ color: "#888", fontSize: "0.8rem" }}>{mi.name}</div>
+                  </div>
+                  <Tag color={mi.color}>#{i + 1}</Tag>
+                </div>
+                <p style={{ color: "#bbb", fontSize: "0.85rem", lineHeight: 1.65, margin: "0 0 0.6rem" }}>{match.por_que}</p>
+                <div style={{ background: "#0f0f0f", borderRadius: "8px", padding: "0.65rem 0.85rem" }}>
+                  <div style={{ color: "#6C63FF", fontSize: "0.68rem", letterSpacing: "0.1em", marginBottom: "0.3rem" }}>CÓMO CONECTAR</div>
+                  <div style={{ color: "#aaa", fontSize: "0.83rem", lineHeight: 1.6 }}>{match.como_conectar}</div>
+                </div>
+              </Card>
+            );
+          })}
+          <div style={{ color: "#ff6b6b", fontSize: "0.7rem", letterSpacing: "0.12em", margin: "1.25rem 0 0.85rem" }}>TIPO A EVITAR</div>
+          <Card style={{ borderColor: "#ff6b6b33", cursor: "pointer" }} onClick={() => setSelected(c.evitar.tipo)}>
+            <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", marginBottom: "0.6rem" }}>
+              <div style={{ background: "#ff6b6b22", border: "1px solid #ff6b6b55", borderRadius: "8px", padding: "4px 10px", fontWeight: 900, fontSize: "1rem", color: "#ff6b6b" }}>{c.evitar.tipo}</div>
+              <Tag color="#ff6b6b">Fricción alta</Tag>
             </div>
-            <p style={{ color: "#bbb", fontSize: "0.85rem", lineHeight: 1.65, margin: "0 0 0.6rem" }}>{match.por_que}</p>
-            <div style={{ background: "#0f0f0f", borderRadius: "8px", padding: "0.65rem 0.85rem" }}>
-              <div style={{ color: "#6C63FF", fontSize: "0.68rem", letterSpacing: "0.1em", marginBottom: "0.3rem" }}>CÓMO CONECTAR</div>
-              <div style={{ color: "#aaa", fontSize: "0.83rem", lineHeight: 1.6 }}>{match.como_conectar}</div>
+            <p style={{ color: "#bbb", fontSize: "0.85rem", lineHeight: 1.65, margin: 0 }}>{c.evitar.razon}</p>
+          </Card>
+
+          {/* Share CTA always visible */}
+          <Card style={{ borderColor: "#2a2a2a", textAlign: "center", marginTop: "0.5rem" }}>
+            <div style={{ fontSize: "1.1rem", marginBottom: "0.4rem" }}>🤔</div>
+            <div style={{ color: "#ccc", fontWeight: 600, fontSize: "0.9rem", marginBottom: "0.3rem" }}>
+              ¿No sabes el tipo de tu pareja o amigo?
+            </div>
+            <div style={{ color: "#555", fontSize: "0.78rem", marginBottom: "1rem", lineHeight: 1.5 }}>
+              Envíales el test y descubre al instante si son compatibles
+            </div>
+            <button
+              onClick={handleShareTest}
+              className="btn-primary"
+              style={{ width: "100%", background: `linear-gradient(135deg, ${typeColor}, #6C63FF)`, color: "#fff", border: "none", borderRadius: "12px", padding: "0.85rem", fontSize: "0.9rem", fontWeight: 700, cursor: "pointer" }}
+            >
+              ↗ Enviar test a alguien
+            </button>
+            <div style={{ marginTop: "0.5rem", fontSize: "0.68rem", color: "#444" }}>
+              Comparte por WhatsApp, Instagram o donde quieras
             </div>
           </Card>
-        );
-      })}
-      <div style={{ color: "#ff6b6b", fontSize: "0.7rem", letterSpacing: "0.12em", margin: "1.25rem 0 0.85rem" }}>TIPO A EVITAR</div>
-      <Card style={{ borderColor: "#ff6b6b33" }}>
-        <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", marginBottom: "0.6rem" }}>
-          <div style={{ background: "#ff6b6b22", border: "1px solid #ff6b6b55", borderRadius: "8px", padding: "4px 10px", fontWeight: 900, fontSize: "1rem", color: "#ff6b6b" }}>{c.evitar.tipo}</div>
-          <Tag color="#ff6b6b">Fricción alta</Tag>
         </div>
-        <p style={{ color: "#bbb", fontSize: "0.85rem", lineHeight: 1.65, margin: 0 }}>{c.evitar.razon}</p>
-      </Card>
+      )}
     </div>
   );
 }
@@ -1680,7 +1855,7 @@ function ResultsScreen({ type, display, onRetake }) {
         {tab === "social"         && analysis && <TabSocial analysis={analysis} />}
         {tab === "fortalezas"     && analysis && <TabFortalezas analysis={analysis} />}
         {tab === "atraccion"      && analysis && <TabAtraccion analysis={analysis} typeColor={info.color} />}
-        {tab === "compatibilidad" && analysis && <TabCompatibilidad analysis={analysis} />}
+        {tab === "compatibilidad" && analysis && <TabCompatibilidad analysis={analysis} myType={type} typeColor={info.color} />}
       </div>
 
       {/* Actions */}
