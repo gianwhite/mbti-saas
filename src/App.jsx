@@ -2096,6 +2096,141 @@ function TypeSelectorModal({ currentType, onSelect, onClose }) {
   );
 }
 
+// ── Email Gate Screen — after test, before results ────────────
+function EmailGateScreen({ result, onContinue }) {
+  const { signUp, signIn } = useAuth();
+  const info = TYPES[result.type] || { color: "#A78BFA", name: result.type, tagline: "" };
+
+  const [email, setEmail]     = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState("");
+
+  // Teaser traits based on type
+  const TEASERS = {
+    INTJ: ["Tu patrón de dominancia cognitiva","Cómo te perciben en las relaciones","Tu mayor punto ciego social"],
+    INTP: ["Por qué desconectas emocionalmente","Tu estilo de atracción oculto","Cómo tomar decisiones bajo presión"],
+    ENTJ: ["Tu vulnerabilidad que nadie ve","Compatibilidad con tipos opuestos","Cómo te comportas en el amor"],
+    ENTP: ["Por qué aburres en relaciones largas","Tu patrón de sabotaje","Quién realmente te complementa"],
+    INFJ: ["La paradoja de tu perfeccionismo","Tu lenguaje del amor real","Cómo detectas manipulación"],
+    INFP: ["Por qué te cierras emocionalmente","Tu estilo de seducción auténtico","Con quién realmente conectas"],
+    ENFJ: ["Tu necesidad de control disfrazada","Cómo atraes sin intentarlo","Tu punto de colapso en relaciones"],
+    ENFP: ["Por qué pierdes el interés rápido","Tu contradicción interior","Con quién duras más de 6 meses"],
+    ISTJ: ["Por qué pareces frío sin serlo","Tu forma de demostrar amor","Quién te desestabiliza"],
+    ISFJ: ["Tu patrón de relaciones tóxicas","Cómo salir del rol de cuidador","Tu atracción real vs tu atracción segura"],
+    ESTJ: ["Tu miedo más profundo en pareja","Cómo lideras sin darte cuenta","Quién realmente te reta"],
+    ESFJ: ["Por qué priorizas a otros sobre ti","Tu necesidad de validación","Con quién eres tú de verdad"],
+    ISTP: ["Por qué evitas el compromiso","Tu estilo de comunicación íntima","Quién activa tu lado emocional"],
+    ISFP: ["Tu intensidad que escondes","Cómo seduce tu tipo sin palabras","Por qué te enamoras rápido y huyes"],
+    ESTP: ["Tu patrón de conquista y abandono","Cómo crear profundidad real","Quién te hace quedarte"],
+    ESFP: ["Por qué te aburren las relaciones estables","Tu talento social que no aprovechas","Quién te ancla sin limitarte"],
+  };
+  const teasers = TEASERS[result.type] || ["Tu perfil psicológico completo","Compatibilidad y atracción","Fortalezas y puntos ciegos"];
+
+  const handleSubmit = async () => {
+    if (!email || !email.includes("@")) { setError("Email inválido"); return; }
+    setLoading(true);
+    setError("");
+
+    // Generate a random password — user can reset later if they want
+    const tempPass = crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+
+    try {
+      // Try signup first
+      const { error: signUpErr } = await signUp(email, tempPass);
+      if (!signUpErr || signUpErr.message?.includes("already registered")) {
+        // Either created or already exists — try sign in
+        // (if already registered, login will fail without correct pass, but email is captured)
+        if (!signUpErr) {
+          await signIn(email, tempPass);
+        }
+        // Regardless of auth result, proceed to results — email was captured
+        localStorage.setItem('lead_email', email);
+        // Fire welcome email best-effort
+        const mbtiType = result.type;
+        fetch('/api/send-welcome', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, mbtiType }),
+        }).catch(() => {});
+      }
+    } catch {}
+
+    setLoading(false);
+    onContinue();
+  };
+
+  const inputStyle = {
+    width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
+    borderRadius: "10px", padding: "0.85rem 1rem", color: "#F0EBF8", fontSize: "1rem",
+    outline: "none", boxSizing: "border-box", fontFamily: "'Outfit',sans-serif",
+    marginBottom: "0.75rem",
+  };
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#080612", display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }}>
+      <div style={{ maxWidth: "480px", width: "100%", textAlign: "center" }}>
+
+        {/* Type reveal */}
+        <div className="glass-card" style={{ border: `1px solid ${info.color}33`, borderRadius: "24px", padding: "2rem 1.75rem 1.75rem", marginBottom: "1.25rem", position: "relative", overflow: "hidden" }}>
+          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: `linear-gradient(90deg, transparent, ${info.color}, transparent)` }} />
+
+          <div style={{ display: "inline-block", background: info.color + "22", border: `1px solid ${info.color}55`, borderRadius: "8px", padding: "3px 12px", fontSize: "0.72rem", fontWeight: 700, color: info.color, letterSpacing: "0.12em", marginBottom: "1rem" }}>
+            TU TIPO
+          </div>
+
+          <div className="serif" style={{ fontSize: "clamp(2.8rem, 8vw, 4rem)", fontWeight: 700, color: info.color, lineHeight: 1, marginBottom: "0.35rem" }}>
+            {result.type}
+          </div>
+          <div style={{ fontSize: "1.2rem", fontWeight: 700, color: "#F0EBF8", marginBottom: "0.4rem" }}>{info.name}</div>
+          <div style={{ fontSize: "0.88rem", color: "#8878A0", marginBottom: "1.5rem" }}>{info.tagline}</div>
+
+          {/* Teaser locked sections */}
+          <div style={{ textAlign: "left", marginBottom: "1.5rem" }}>
+            <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#3D3550", letterSpacing: "0.1em", marginBottom: "0.65rem" }}>TU ANÁLISIS INCLUYE</div>
+            {teasers.map((t, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.6rem", padding: "0.55rem 0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                <div style={{ width: "20px", height: "20px", borderRadius: "6px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <svg width="10" height="12" viewBox="0 0 10 12" fill="none"><path d="M7.5 5V3.5C7.5 2.12 6.38 1 5 1C3.62 1 2.5 2.12 2.5 3.5V5M2 5H8C8.55 5 9 5.45 9 6V10C9 10.55 8.55 11 8 11H2C1.45 11 1 10.55 1 10V6C1 5.45 1.45 5 2 5Z" stroke="#3D3550" strokeWidth="1.2" strokeLinecap="round"/></svg>
+                </div>
+                <span style={{ fontSize: "0.85rem", color: "#8878A0" }}>{t}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Email capture */}
+          <div style={{ background: "rgba(255,255,255,0.02)", borderRadius: "12px", padding: "1.25rem", border: "1px solid rgba(255,255,255,0.06)" }}>
+            <div style={{ fontWeight: 700, fontSize: "0.95rem", marginBottom: "0.3rem" }}>Recibe tu análisis completo</div>
+            <div style={{ fontSize: "0.8rem", color: "#8878A0", marginBottom: "1rem" }}>Gratis · Sin tarjeta · Resultados en segundos</div>
+            <input
+              type="email"
+              placeholder="tu@email.com"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && handleSubmit()}
+              style={inputStyle}
+            />
+            {error && <div style={{ color: "#ff6b6b", fontSize: "0.78rem", marginBottom: "0.5rem" }}>{error}</div>}
+            <button
+              onClick={handleSubmit}
+              disabled={loading}
+              className="btn-primary"
+              style={{ width: "100%", background: `linear-gradient(135deg, ${info.color}, #6C3FC8)`, border: "none", borderRadius: "10px", padding: "0.9rem", color: "#fff", fontWeight: 700, fontSize: "0.95rem", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1 }}
+            >
+              {loading ? "Un momento…" : `Ver mi análisis ${result.type} →`}
+            </button>
+            <button
+              onClick={onContinue}
+              style={{ background: "none", border: "none", color: "#3D3550", fontSize: "0.78rem", cursor: "pointer", marginTop: "0.6rem", display: "block", width: "100%", padding: "0.25rem" }}
+            >
+              Continuar sin guardar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Exit Intent Trial Modal ───────────────────────────────────
 function ExitIntentModal({ type, info, onClose, onTrial }) {
   return (
@@ -2579,15 +2714,27 @@ function AppInner() {
     } else {
       const res = calculateResult(newAnswers);
       localStorage.setItem('mbti_display', JSON.stringify(res.display));
+      localStorage.setItem('mbti_type', res.type);
       setResult(res);
-      setScreen("results");
       trackTestCompleted(res.type);
-      if (user) saveResultToSupabase(res.type, res.display);
+      if (user) {
+        // Already logged in — skip email gate
+        saveResultToSupabase(res.type, res.display);
+        setScreen("results");
+      } else {
+        // Show email capture before results
+        setScreen("email-gate");
+      }
     }
   }, [index, answers, user]);
 
   const handlePrev  = () => { if (index > 0) setIndex(i => i - 1); };
   const handleRetake = () => { setAnswers({}); setIndex(0); setResult(null); setScreen("test-intro"); };
+
+  const handleEmailGateContinue = () => {
+    if (result) saveResultToSupabase(result.type, result.display);
+    setScreen("results");
+  };
 
   return (
     <div style={{ minHeight: "100vh", background: "#080612", color: "#F0EBF8", display: "flex", flexDirection: "column" }}>
@@ -2613,7 +2760,7 @@ function AppInner() {
         </div>
       </header>
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onSuccess={() => setShowAuthModal(false)} title="Inicia sesión o crea tu cuenta" initialMode={authInitialMode} />}
-      <main style={{ flex: 1, display: "flex", alignItems: screen === "results" ? "flex-start" : "center", justifyContent: "center", padding: screen === "results" ? "0" : "1rem", width: "100%" }}>
+      <main style={{ flex: 1, display: "flex", alignItems: screen === "results" ? "flex-start" : "center", justifyContent: "center", padding: (screen === "results" || screen === "email-gate") ? "0" : "1rem", width: "100%" }}>
         <ErrorBoundary>
         {!ready ? (
           <div style={{ color: "#333", fontSize: "0.85rem" }}>...</div>
@@ -2621,6 +2768,7 @@ function AppInner() {
           <>
             {screen === "test-intro"     && <TestIntro onStart={handleStart} />}
             {screen === "test-questions" && <QuestionScreen question={QUESTIONS[index]} index={index} total={QUESTIONS.length} selected={answers[QUESTIONS[index].id]} onAnswer={handleAnswer} onPrev={handlePrev} />}
+            {screen === "email-gate"     && result && <EmailGateScreen result={result} onContinue={handleEmailGateContinue} />}
             {screen === "results"        && result && <ResultsScreen type={result.type} display={result.display} onRetake={handleRetake} />}
           </>
         )}
