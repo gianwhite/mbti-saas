@@ -189,14 +189,14 @@ const LIKERT = [
 ];
 
 const TABS = [
-  { id: "perfil",          label: "Perfil",          free: true  },
-  { id: "advisor",         label: "Advisor IA",      free: false },
-  { id: "psicologia",      label: "Psicología",      free: false },
-  { id: "profesional",     label: "Profesional",     free: false },
-  { id: "vinculos",        label: "Vínculos",        free: false },
-  { id: "fortalezas",      label: "Fortalezas",      free: false },
-  { id: "atraccion",       label: "Atracción",       free: false },
-  { id: "compatibilidad",  label: "Compatibilidad",  free: false },
+  { id: "perfil",         label: "Perfil",         icon: "◎", desc: "Tus dimensiones y puntuaciones",   free: true  },
+  { id: "advisor",        label: "Advisor IA",     icon: "✦", desc: "Pregunta lo que quieras",          free: false },
+  { id: "psicologia",     label: "Psicología",     icon: "🧬", desc: "Funciones cognitivas profundas",   free: false },
+  { id: "vinculos",       label: "Vínculos",       icon: "💞", desc: "Apego y lenguajes del amor",       free: false },
+  { id: "fortalezas",     label: "Fortalezas",     icon: "⚡", desc: "Tus mayores activos personales",   free: false },
+  { id: "atraccion",      label: "Atracción",      icon: "🔥", desc: "Qué te hace magnético/a",          free: false },
+  { id: "compatibilidad", label: "Compatibilidad", icon: "♾", desc: "Tipos y dinámicas relacionales",   free: false },
+  { id: "profesional",    label: "Profesional",    icon: "💼", desc: "Carrera, liderazgo y entorno",     free: false },
 ];
 
 // ─────────────────────────────────────────────
@@ -1652,7 +1652,7 @@ function ShareModal({ type, info, onClose }) {
 function ResultsScreen({ type, display, onRetake }) {
   const info     = TYPES[type] || { name: "Tipo desconocido", color: "#888", tagline: "" };
   const analysis = TYPE_ANALYSIS[type];
-  const [tab, setTab]         = useState("perfil");
+  const [tab, setTab]         = useState(null); // null = hub grid, string = open section
   const [copied, setCopied]   = useState(false);
   const [isPaid, setIsPaid]   = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
@@ -1737,6 +1737,8 @@ function ResultsScreen({ type, display, onRetake }) {
     }
     setTab(tabId);
     trackTabOpened(tabId, type);
+    // Scroll to top of results when entering a section
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const [showShare, setShowShare] = useState(false);
@@ -1832,31 +1834,77 @@ function ResultsScreen({ type, display, onRetake }) {
         </div>
       )}
 
-      {/* Tabs */}
-      <div style={{ display: "flex", gap: "3px", background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: "14px", padding: "4px", marginBottom: "1.25rem", overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none", msOverflowStyle: "none" }}>
-        {TABS.map(t => {
-          const isActive  = tab === t.id;
-          const isLocked  = !t.free && !isPaid;
-          return (
-            <button key={t.id} onClick={() => handleTabClick(t.id, t.free)} className="results-tab" style={{ flex: 1, minWidth: "fit-content", padding: "0.5rem 0.65rem", borderRadius: "10px", border: "none", background: isActive ? `linear-gradient(135deg, ${info.color}cc, ${info.color}88)` : "transparent", color: isActive ? "#fff" : isLocked ? "#333" : "#555", fontSize: "0.72rem", fontWeight: isActive ? 700 : 400, cursor: "pointer", transition: "all 0.2s", whiteSpace: "nowrap", letterSpacing: isActive ? "0.02em" : 0 }}>
-              {isLocked ? "🔒 " : ""}{t.label}
-            </button>
-          );
-        })}
-      </div>
+      {/* Hub-and-spoke nav */}
+      {!tab ? (
+        /* ── Section grid (hub) ── */
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.65rem", marginBottom: "1.25rem" }}>
+          {TABS.map(t => {
+            const isLocked = !t.free && !isPaid;
+            return (
+              <button
+                key={t.id}
+                onClick={() => handleTabClick(t.id, t.free)}
+                className="card-hover"
+                style={{
+                  background: "#111",
+                  border: `1px solid ${isLocked ? "#1a1a1a" : info.color + "33"}`,
+                  borderRadius: "16px",
+                  padding: "1rem 1rem 0.9rem",
+                  textAlign: "left",
+                  cursor: "pointer",
+                  position: "relative",
+                  overflow: "hidden",
+                  transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                }}
+              >
+                {/* top accent line for unlocked */}
+                {!isLocked && (
+                  <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: `linear-gradient(90deg, transparent, ${info.color}99, transparent)` }} />
+                )}
+                <div style={{ fontSize: "1.4rem", marginBottom: "0.45rem", lineHeight: 1 }}>{t.icon}</div>
+                <div style={{ fontSize: "0.85rem", fontWeight: 700, color: isLocked ? "#444" : "#e8e8e8", marginBottom: "0.25rem", letterSpacing: "0.01em" }}>
+                  {t.label}
+                </div>
+                <div style={{ fontSize: "0.7rem", color: isLocked ? "#333" : "#666", lineHeight: 1.4 }}>
+                  {t.desc}
+                </div>
+                {isLocked && (
+                  <div style={{ position: "absolute", top: "0.75rem", right: "0.75rem", fontSize: "0.65rem", color: "#333" }}>🔒</div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      ) : (
+        /* ── Section content (spoke) ── */
+        <div>
+          {/* Back button */}
+          <button
+            onClick={() => setTab(null)}
+            style={{ display: "flex", alignItems: "center", gap: "6px", background: "none", border: "none", color: "#555", cursor: "pointer", fontSize: "0.8rem", fontWeight: 600, padding: "0 0 1rem", letterSpacing: "0.02em" }}
+          >
+            ← Volver
+          </button>
 
-      {/* Tab content */}
-      <div>
-        {tab === "perfil"         && <TabPerfil type={type} display={display} info={info} />}
-        {tab === "advisor"        && <TabAdvisor type={type} typeColor={info.color} />}
-        {tab === "psicologia"     && analysis && <TabPsicologia analysis={analysis} typeColor={info.color} />}
-        {tab === "profesional"    && <TabProfesional type={type} typeColor={info.color} />}
-        {tab === "vinculos"       && analysis && <TabVinculos analysis={analysis} typeColor={info.color} />}
-        {tab === "social"         && analysis && <TabSocial analysis={analysis} />}
-        {tab === "fortalezas"     && analysis && <TabFortalezas analysis={analysis} />}
-        {tab === "atraccion"      && analysis && <TabAtraccion analysis={analysis} typeColor={info.color} />}
-        {tab === "compatibilidad" && analysis && <TabCompatibilidad analysis={analysis} myType={type} typeColor={info.color} />}
-      </div>
+          {tab === "perfil"         && <TabPerfil type={type} display={display} info={info} />}
+          {tab === "advisor"        && <TabAdvisor type={type} typeColor={info.color} />}
+          {tab === "psicologia"     && analysis && <TabPsicologia analysis={analysis} typeColor={info.color} />}
+          {tab === "profesional"    && <TabProfesional type={type} typeColor={info.color} />}
+          {tab === "vinculos"       && analysis && <TabVinculos analysis={analysis} typeColor={info.color} />}
+          {tab === "social"         && analysis && <TabSocial analysis={analysis} />}
+          {tab === "fortalezas"     && analysis && <TabFortalezas analysis={analysis} />}
+          {tab === "atraccion"      && analysis && <TabAtraccion analysis={analysis} typeColor={info.color} />}
+          {tab === "compatibilidad" && analysis && <TabCompatibilidad analysis={analysis} myType={type} typeColor={info.color} />}
+
+          {/* Bottom back button */}
+          <button
+            onClick={() => setTab(null)}
+            style={{ display: "flex", alignItems: "center", gap: "6px", background: "#111", border: "1px solid #1e1e1e", borderRadius: "12px", color: "#555", cursor: "pointer", fontSize: "0.8rem", fontWeight: 600, padding: "0.75rem 1.2rem", marginTop: "1.5rem", letterSpacing: "0.02em" }}
+          >
+            ← Todas las secciones
+          </button>
+        </div>
+      )}
 
       {/* Actions */}
       <div style={{ display: "flex", gap: "0.75rem", marginTop: "1.75rem" }}>
