@@ -839,26 +839,102 @@ function defaultDisplay(type) {
   };
 }
 
+function RadarChart({ data, color }) {
+  const size = 220;
+  const cx = size / 2;
+  const cy = size / 2;
+  const r  = 80;
+  const levels = 4;
+
+  // 4 axes: E/I, S/N, T/F, J/P — mapped to 0..1 where 1 = dominant letter
+  const axes = [
+    { label: data.EI.letter, pct: data.EI.pct / 100, angle: -90 },
+    { label: data.SN.letter, pct: data.SN.pct / 100, angle:   0 },
+    { label: data.TF.letter, pct: data.TF.pct / 100, angle:  90 },
+    { label: data.JP.letter, pct: data.JP.pct / 100, angle: 180 },
+  ];
+
+  const toXY = (angle, radius) => {
+    const rad = (angle * Math.PI) / 180;
+    return { x: cx + radius * Math.cos(rad), y: cy + radius * Math.sin(rad) };
+  };
+
+  // Grid rings
+  const rings = Array.from({ length: levels }, (_, i) => ((i + 1) / levels) * r);
+
+  // Data polygon
+  const points = axes.map(a => toXY(a.angle, a.pct * r));
+  const polyStr = points.map(p => `${p.x},${p.y}`).join(" ");
+
+  // Label positions (slightly outside the ring)
+  const labelR = r + 22;
+
+  return (
+    <svg viewBox={`0 0 ${size} ${size}`} width="100%" style={{ maxWidth: "240px", margin: "0 auto", display: "block" }}>
+      {/* Grid rings */}
+      {rings.map((rr, i) => (
+        <circle key={i} cx={cx} cy={cy} r={rr} fill="none" stroke="#1e1e1e" strokeWidth="1" />
+      ))}
+      {/* Axis lines */}
+      {axes.map((a, i) => {
+        const end = toXY(a.angle, r);
+        return <line key={i} x1={cx} y1={cy} x2={end.x} y2={end.y} stroke="#222" strokeWidth="1" />;
+      })}
+      {/* Data polygon fill */}
+      <polygon points={polyStr} fill={color + "22"} stroke={color} strokeWidth="2" strokeLinejoin="round" />
+      {/* Data dots */}
+      {points.map((p, i) => (
+        <circle key={i} cx={p.x} cy={p.y} r="4" fill={color} />
+      ))}
+      {/* Axis labels */}
+      {axes.map((a, i) => {
+        const pos = toXY(a.angle, labelR);
+        return (
+          <text key={i} x={pos.x} y={pos.y} textAnchor="middle" dominantBaseline="middle"
+            fill={color} fontSize="13" fontWeight="800" fontFamily="system-ui, sans-serif">
+            {a.label}
+          </text>
+        );
+      })}
+      {/* Pct labels near dots */}
+      {axes.map((a, i) => {
+        const offset = 14;
+        const pos = toXY(a.angle, a.pct * r + offset);
+        return (
+          <text key={i} x={pos.x} y={pos.y} textAnchor="middle" dominantBaseline="middle"
+            fill="#666" fontSize="9" fontFamily="system-ui, sans-serif">
+            {Math.round(a.pct * 100)}%
+          </text>
+        );
+      })}
+    </svg>
+  );
+}
+
 function TabPerfil({ type, display, info }) {
   const effectiveDisplay = display || defaultDisplay(type);
   const entries = Object.entries(effectiveDisplay);
   return (
     <div>
-      <Card>
-        <div style={{ color: "#555", fontSize: "0.7rem", letterSpacing: "0.12em", marginBottom: "1rem" }}>DESGLOSE POR DIMENSIÓN</div>
-        {entries.map(([dim, data]) => <DimensionBar key={dim} dim={dim} data={data} />)}
-      </Card>
-      <Card>
-        <div style={{ color: "#555", fontSize: "0.7rem", letterSpacing: "0.12em", marginBottom: "0.75rem" }}>DISTRIBUCIÓN GLOBAL</div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.6rem" }}>
+      {/* Radar */}
+      <Card style={{ borderColor: info.color + "33" }}>
+        <div style={{ color: "#555", fontSize: "0.7rem", letterSpacing: "0.12em", marginBottom: "1rem" }}>MAPA DE PERSONALIDAD</div>
+        <RadarChart data={effectiveDisplay} color={info.color} />
+        {/* Legend */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.4rem 1rem", marginTop: "1rem" }}>
           {entries.map(([dim, data]) => (
-            <div key={dim} style={{ background: "#0f0f0f", borderRadius: "10px", padding: "0.75rem", textAlign: "center" }}>
-              <div style={{ fontSize: "1.6rem", fontWeight: 900, color: info.color }}>{data.letter}</div>
-              <div style={{ fontSize: "0.72rem", color: "#666" }}>{data.label}</div>
-              <div style={{ fontSize: "0.8rem", color: "#aaa", fontWeight: 600 }}>{data.pct}%</div>
+            <div key={dim} style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "0.72rem", color: "#666" }}>
+              <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: info.color, flexShrink: 0 }} />
+              <span style={{ color: info.color, fontWeight: 700 }}>{data.letter}</span>
+              <span>{data.label}</span>
             </div>
           ))}
         </div>
+      </Card>
+      {/* Dimension bars */}
+      <Card>
+        <div style={{ color: "#555", fontSize: "0.7rem", letterSpacing: "0.12em", marginBottom: "1rem" }}>DESGLOSE POR DIMENSIÓN</div>
+        {entries.map(([dim, data]) => <DimensionBar key={dim} dim={dim} data={data} />)}
       </Card>
     </div>
   );
