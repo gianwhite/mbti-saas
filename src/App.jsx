@@ -163,7 +163,7 @@ function AuthModal({ onClose, onSuccess, title = "Crea tu cuenta", initialMode =
 
         {error && <p style={{ color: "#ff6b6b", fontSize: "0.8rem", marginBottom: "0.75rem" }}>{error}</p>}
 
-        <button onClick={handleSubmit} disabled={loading} className="btn-primary" style={{ width: "100%", background: loading ? "#333" : "linear-gradient(135deg,#6C63FF,#9b59b6)", color: "#fff", border: "none", borderRadius: "10px", padding: "0.9rem", fontSize: "1rem", fontWeight: 700, cursor: loading ? "not-allowed" : "pointer" }}>
+        <button onClick={handleSubmit} disabled={loading} className="btn-primary" style={{ width: "100%", background: loading ? "#333" : "linear-gradient(135deg,#6C3FC8,#9B6FE8)", color: "#fff", border: "none", borderRadius: "10px", padding: "0.9rem", fontSize: "1rem", fontWeight: 700, cursor: loading ? "not-allowed" : "pointer" }}>
           {loading ? "Procesando..." : mode === "signup" ? "Crear cuenta →" : "Entrar →"}
         </button>
 
@@ -197,15 +197,72 @@ const LIKERT = [
   { value: 7, label: "Totalmente de acuerdo" },
 ];
 
+// ── SVG icons for hub sections ──────────────────
+const TAB_ICONS = {
+  perfil: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="8" r="3"/><path d="M6 20v-1a6 6 0 0 1 12 0v1"/>
+      <circle cx="12" cy="8" r="7" strokeOpacity="0.25"/>
+    </svg>
+  ),
+  advisor: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2a7 7 0 0 1 7 7c0 2.5-1.3 4.7-3.2 6L15 18H9l-.8-3C6.3 13.7 5 11.5 5 9a7 7 0 0 1 7-7z"/>
+      <path d="M9 21h6" strokeOpacity="0.5"/><path d="M10 18v3m4-3v3" strokeOpacity="0.5"/>
+      <circle cx="12" cy="9" r="1.5" fill="currentColor" strokeWidth="0"/>
+    </svg>
+  ),
+  psicologia: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9.5 2A6.5 6.5 0 0 1 16 8.5c0 1.7-.65 3.25-1.72 4.42L13 22H11l-1.28-9.08A6.5 6.5 0 0 1 9.5 2z"/>
+      <path d="M14.5 2A6.5 6.5 0 0 0 8 8.5c0 .6.08 1.18.22 1.73" strokeOpacity="0.4"/>
+      <path d="M11 22h2" strokeOpacity="0.4"/>
+    </svg>
+  ),
+  vinculos: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 21C12 21 4 14.5 4 9a5 5 0 0 1 8-4 5 5 0 0 1 8 4c0 5.5-8 12-8 12z"/>
+      <path d="M12 17C12 17 7 13 7 10a3 3 0 0 1 5-2.24A3 3 0 0 1 17 10c0 3-5 7-5 7z" strokeOpacity="0.3" fill="currentColor" fillOpacity="0.08"/>
+    </svg>
+  ),
+  fortalezas: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+      <polygon points="12 6 14 10.5 19 11.27 15.5 14.6 16.36 19.5 12 17.2 7.64 19.5 8.5 14.6 5 11.27 10 10.5 12 6" strokeOpacity="0.25" fill="currentColor" fillOpacity="0.06"/>
+    </svg>
+  ),
+  atraccion: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3c1-2 4-2 5 0s0 4-2 5l-3 3-3-3C7 7 6 5 7 3s4-2 5 0z"/>
+      <path d="M12 11l-1 2-3 .5 2 2-.5 3L12 17l2.5 1.5-.5-3 2-2-3-.5-1-2z" strokeOpacity="0.35" fill="currentColor" fillOpacity="0.06"/>
+      <path d="M12 17v4" strokeOpacity="0.4"/>
+    </svg>
+  ),
+  compatibilidad: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="8" cy="12" r="4"/><circle cx="16" cy="12" r="4"/>
+      <path d="M10.83 9.17A4 4 0 0 1 13.17 9.17" strokeOpacity="0.5"/>
+      <path d="M10.83 14.83A4 4 0 0 0 13.17 14.83" strokeOpacity="0.5"/>
+    </svg>
+  ),
+  profesional: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="7" width="20" height="14" rx="2"/>
+      <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+      <line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/>
+    </svg>
+  ),
+};
+
 const TABS = [
-  { id: "perfil",         label: "Perfil",         icon: "◎", desc: "Tus dimensiones y puntuaciones",   free: true  },
-  { id: "advisor",        label: "Advisor IA",     icon: "✦", desc: "Pregunta lo que quieras",          free: false },
-  { id: "psicologia",     label: "Psicología",     icon: "🧬", desc: "Funciones cognitivas profundas",   free: false },
-  { id: "vinculos",       label: "Vínculos",       icon: "💞", desc: "Apego y lenguajes del amor",       free: false },
-  { id: "fortalezas",     label: "Fortalezas",     icon: "⚡", desc: "Tus mayores activos personales",   free: false },
-  { id: "atraccion",      label: "Atracción",      icon: "🔥", desc: "Qué te hace magnético/a",          free: false },
-  { id: "compatibilidad", label: "Compatibilidad", icon: "♾", desc: "Tipos y dinámicas relacionales",   free: false },
-  { id: "profesional",    label: "Profesional",    icon: "💼", desc: "Carrera, liderazgo y entorno",     free: false },
+  { id: "perfil",         label: "Perfil",         desc: "Tus dimensiones y puntuaciones",   free: true  },
+  { id: "advisor",        label: "Advisor IA",     desc: "Pregunta lo que quieras",          free: false },
+  { id: "psicologia",     label: "Psicología",     desc: "Funciones cognitivas profundas",   free: false },
+  { id: "vinculos",       label: "Vínculos",       desc: "Apego y lenguajes del amor",       free: false },
+  { id: "fortalezas",     label: "Fortalezas",     desc: "Tus mayores activos personales",   free: false },
+  { id: "atraccion",      label: "Atracción",      desc: "Qué te hace magnético/a",          free: false },
+  { id: "compatibilidad", label: "Compatibilidad", desc: "Tipos y dinámicas relacionales",   free: false },
+  { id: "profesional",    label: "Profesional",    desc: "Carrera, liderazgo y entorno",     free: false },
 ];
 
 // ─────────────────────────────────────────────
@@ -237,8 +294,8 @@ function ProgressBar({ current, total }) {
         <span style={{ color: "#888", fontSize: "0.75rem", letterSpacing: "0.1em" }}>PREGUNTA {current} DE {total}</span>
         <span style={{ color: "#888", fontSize: "0.75rem" }}>{pct}%</span>
       </div>
-      <div style={{ height: "3px", background: "#222", borderRadius: "2px" }}>
-        <div style={{ height: "100%", width: `${pct}%`, background: "linear-gradient(90deg,#6C63FF,#ff6b6b)", borderRadius: "2px", transition: "width 0.4s ease" }} />
+      <div style={{ height: "3px", background: "rgba(255,255,255,0.05)", borderRadius: "2px" }}>
+        <div style={{ height: "100%", width: `${pct}%`, background: "linear-gradient(90deg,#6C3FC8,#A78BFA)", borderRadius: "2px", transition: "width 0.4s ease", boxShadow: "0 0 8px rgba(167,139,250,0.4)" }} />
       </div>
     </div>
   );
@@ -338,7 +395,7 @@ function PaywallModal({ type, onClose }) {
 
         {error && <p style={{ color: "#ff6b6b", fontSize: "0.8rem", marginBottom: "0.5rem" }}>{error}</p>}
 
-        <button onClick={handleSubscribe} disabled={loading} className="btn-primary" style={{ width: "100%", background: loading ? "#333" : "linear-gradient(135deg,#6C63FF,#ff6b6b)", color: "#fff", border: "none", borderRadius: "10px", padding: "0.9rem", fontSize: "1rem", fontWeight: 700, cursor: loading ? "not-allowed" : "pointer" }}>
+        <button onClick={handleSubscribe} disabled={loading} className="btn-primary" style={{ width: "100%", background: loading ? "#333" : "linear-gradient(135deg,#6C3FC8,#9B6FE8)", color: "#fff", border: "none", borderRadius: "10px", padding: "0.9rem", fontSize: "1rem", fontWeight: 700, cursor: loading ? "not-allowed" : "pointer" }}>
           {loading ? "Redirigiendo a Stripe..." : `Activar Membership — ${PRICE_DISPLAY}/mes`}
         </button>
 
@@ -563,7 +620,7 @@ function LandingPage() {
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <LandingLogo />
           <div style={{ display: "flex", alignItems: "baseline", gap: "3px" }}>
-            <span style={{ fontWeight: 900, fontSize: "1.2rem", background: "linear-gradient(90deg,#A78BFA,#22D3EE)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>16</span>
+            <span style={{ fontWeight: 900, fontSize: "1.2rem", background: "linear-gradient(90deg,#C4B5FD,#A78BFA)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>16</span>
             <span style={{ fontWeight: 700, fontSize: "1.05rem", color: "#e0e0e0" }}>Personalidades</span>
             <sup style={{ color: "#A78BFA", fontSize: "0.55rem", fontWeight: 700, marginLeft: "1px" }}>AI</sup>
           </div>
@@ -598,7 +655,7 @@ function LandingPage() {
           60 preguntas calibradas. Tu tipo MBTI exacto con análisis profundo de funciones cognitivas, compatibilidad, estilo de apego y cómo operas en relaciones y liderazgo.
         </p>
         <div className="land-hero-actions" style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
-          <button className="btn-primary" onClick={handleCTA} style={{ background: "linear-gradient(135deg,#6C63FF,#ff6b6b)", color: "#fff", border: "none", borderRadius: "12px", padding: "1rem 2.5rem", fontSize: "1.05rem", fontWeight: 700, cursor: "pointer", letterSpacing: "0.04em" }}>
+          <button className="btn-primary" onClick={handleCTA} style={{ background: "linear-gradient(135deg,#6C3FC8,#9B6FE8)", color: "#fff", border: "none", borderRadius: "12px", padding: "1rem 2.5rem", fontSize: "1.05rem", fontWeight: 700, cursor: "pointer", letterSpacing: "0.04em" }}>
             {hasResult ? "Ver mi análisis →" : "Hacer el test gratis →"}
           </button>
           <div className="land-hero-meta" style={{ display: "flex", alignItems: "center", gap: "6px", color: "#444", fontSize: "0.82rem" }}>
@@ -610,7 +667,7 @@ function LandingPage() {
         <div className="land-stats" style={{ marginTop: "3rem", display: "flex", justifyContent: "center", gap: "2rem", flexWrap: "wrap" }}>
           {[["4 800+", "análisis completados"], ["16", "tipos de personalidad"], ["6", "dimensiones de análisis"]].map(([n, l]) => (
             <div key={l} style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "1.5rem", fontWeight: 900, background: "linear-gradient(90deg,#A78BFA,#22D3EE)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{n}</div>
+              <div style={{ fontSize: "1.5rem", fontWeight: 900, background: "linear-gradient(90deg,#C4B5FD,#A78BFA)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{n}</div>
               <div style={{ color: "#444", fontSize: "0.72rem", letterSpacing: "0.05em" }}>{l.toUpperCase()}</div>
             </div>
           ))}
@@ -621,21 +678,21 @@ function LandingPage() {
       <section style={{ position: "relative", zIndex: 1, padding: "0 1.5rem 4rem", maxWidth: "900px", margin: "0 auto" }}>
         <div className="land-pills" style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", justifyContent: "center" }}>
           {[
-            ["INTJ", "#6C63FF", "El Arquitecto"],
-            ["ENFP", "#f97316", "El Inspirador"],
-            ["INFJ", "#8b5cf6", "El Consejero"],
-            ["ENTJ", "#ef4444", "El Comandante"],
-            ["INTP", "#3b82f6", "El Lógico"],
-            ["ISFJ", "#10b981", "El Protector"],
-            ["ENTP", "#f59e0b", "El Debatidor"],
-            ["INFP", "#ec4899", "El Mediador"],
-          ].map(([type, color, label]) => (
-            <div key={type} style={{ background: color + "12", border: `1px solid ${color}33`, borderRadius: "10px", padding: "0.45rem 0.9rem", display: "flex", gap: "6px", alignItems: "center" }}>
-              <span style={{ color, fontWeight: 800, fontSize: "0.85rem" }}>{type}</span>
-              <span style={{ color: "#555", fontSize: "0.75rem" }}>{label}</span>
+            ["INTJ", "El Arquitecto"],
+            ["ENFP", "El Inspirador"],
+            ["INFJ", "El Consejero"],
+            ["ENTJ", "El Comandante"],
+            ["INTP", "El Lógico"],
+            ["ISFJ", "El Protector"],
+            ["ENTP", "El Debatidor"],
+            ["INFP", "El Mediador"],
+          ].map(([type, label]) => (
+            <div key={type} style={{ background: "rgba(108,63,200,0.1)", border: "1px solid rgba(167,139,250,0.15)", borderRadius: "10px", padding: "0.45rem 0.9rem", display: "flex", gap: "6px", alignItems: "center" }}>
+              <span style={{ color: "#A78BFA", fontWeight: 800, fontSize: "0.85rem" }}>{type}</span>
+              <span style={{ color: "#3D3550", fontSize: "0.75rem" }}>{label}</span>
             </div>
           ))}
-          <div style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: "10px", padding: "0.45rem 0.9rem", color: "#333", fontSize: "0.75rem" }}>+8 más</div>
+          <div className="glass-card" style={{ borderRadius: "10px", padding: "0.45rem 0.9rem", color: "#3D3550", fontSize: "0.75rem" }}>+8 más</div>
         </div>
       </section>
 
@@ -732,7 +789,7 @@ function LandingPage() {
               </div>
             ))}
           </div>
-          <button className="btn-primary" onClick={handleCTA} style={{ width: "100%", background: "linear-gradient(135deg,#6C63FF,#ff6b6b)", color: "#fff", border: "none", borderRadius: "12px", padding: "1rem", fontSize: "1rem", fontWeight: 700, cursor: "pointer" }}>
+          <button className="btn-primary" onClick={handleCTA} style={{ width: "100%", background: "linear-gradient(135deg,#6C3FC8,#9B6FE8)", color: "#fff", border: "none", borderRadius: "12px", padding: "1rem", fontSize: "1rem", fontWeight: 700, cursor: "pointer" }}>
             {hasResult ? "Desbloquear análisis →" : "Hacer el test gratis →"}
           </button>
           <p style={{ color: "#333", fontSize: "0.75rem", marginTop: "1rem" }}>El test es gratuito. La membership desbloquea el análisis completo.</p>
@@ -742,7 +799,7 @@ function LandingPage() {
       {/* ── FOOTER ── */}
       <footer style={{ position: "relative", zIndex: 1, borderTop: "1px solid rgba(255,255,255,0.05)", padding: "2rem 1.5rem", textAlign: "center" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", marginBottom: "0.75rem" }}>
-          <span style={{ fontWeight: 900, fontSize: "0.95rem", background: "linear-gradient(90deg,#A78BFA,#22D3EE)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>16 Personalidades</span>
+          <span style={{ fontWeight: 900, fontSize: "0.95rem", background: "linear-gradient(90deg,#C4B5FD,#A78BFA)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>16 Personalidades</span>
           <sup style={{ color: "#A78BFA", fontSize: "0.5rem", fontWeight: 700 }}>AI</sup>
         </div>
         <p style={{ color: "#333", fontSize: "0.73rem" }}>Basado en el modelo MBTI · Myers-Briggs Type Indicator · © 2025</p>
@@ -782,7 +839,7 @@ function TestIntro({ onStart }) {
           ))}
         </div>
         <div style={{ display: "flex", gap: "0.75rem", justifyContent: "center", flexWrap: "wrap" }}>
-          <button className="btn-primary" onClick={onStart} style={{ background: "linear-gradient(135deg,#6C63FF,#ff6b6b)", color: "#fff", border: "none", borderRadius: "10px", padding: "0.9rem 2.5rem", fontSize: "1rem", fontWeight: 700, cursor: "pointer", letterSpacing: "0.05em" }}>
+          <button className="btn-primary" onClick={onStart} style={{ background: "linear-gradient(135deg,#6C3FC8,#9B6FE8)", color: "#fff", border: "none", borderRadius: "10px", padding: "0.9rem 2.5rem", fontSize: "1rem", fontWeight: 700, cursor: "pointer", letterSpacing: "0.05em" }}>
             COMENZAR TEST →
           </button>
           <button className="btn-secondary" onClick={() => navigate('/')} style={{ background: "none", border: "1px solid #222", borderRadius: "10px", padding: "0.9rem 1.5rem", fontSize: "0.9rem", color: "#555", cursor: "pointer" }}>
@@ -811,7 +868,7 @@ function QuestionScreen({ question, index, total, selected, onAnswer, onPrev }) 
             const isSel = selected === item.value;
             const isMid = item.value === 4;
             return (
-              <button key={item.value} onClick={() => onAnswer(item.value)} title={item.label} style={{ flex: 1, aspectRatio: "1", maxWidth: "48px", borderRadius: "50%", border: isSel ? "2px solid transparent" : `2px solid ${isMid ? "#333" : "#222"}`, background: isSel ? "linear-gradient(135deg,#6C63FF,#ff6b6b)" : isMid ? "#1a1a1a" : "#0f0f0f", color: isSel ? "#fff" : isMid ? "#555" : "#444", fontSize: "0.7rem", fontWeight: 700, cursor: "pointer", transition: "all 0.15s ease", transform: isSel ? "scale(1.15)" : "scale(1)" }}>{item.value}</button>
+              <button key={item.value} onClick={() => onAnswer(item.value)} title={item.label} style={{ flex: 1, aspectRatio: "1", maxWidth: "48px", borderRadius: "50%", border: isSel ? "2px solid transparent" : `2px solid ${isMid ? "#333" : "#222"}`, background: isSel ? "linear-gradient(135deg,#6C3FC8,#9B6FE8)" : isMid ? "#1a1a1a" : "#0f0f0f", color: isSel ? "#fff" : isMid ? "#555" : "#444", fontSize: "0.7rem", fontWeight: 700, cursor: "pointer", transition: "all 0.15s ease", transform: isSel ? "scale(1.15)" : "scale(1)" }}>{item.value}</button>
             );
           })}
         </div>
@@ -1047,7 +1104,7 @@ function TabFortalezas({ analysis }) {
       {analysis.fortalezas.map((f, i) => (
         <Card key={i}>
           <div style={{ display: "flex", gap: "0.75rem", alignItems: "flex-start" }}>
-            <div style={{ minWidth: "24px", height: "24px", borderRadius: "50%", background: "linear-gradient(135deg,#6C63FF,#ff6b6b)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.7rem", fontWeight: 900, color: "#fff", marginTop: "1px" }}>{i + 1}</div>
+            <div style={{ minWidth: "24px", height: "24px", borderRadius: "50%", background: "rgba(108,63,200,0.25)", border: "1px solid rgba(167,139,250,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.7rem", fontWeight: 900, color: "#A78BFA", marginTop: "1px" }}>{i + 1}</div>
             <div>
               <div style={{ color: "#eee", fontWeight: 600, fontSize: "0.9rem", marginBottom: "0.3rem" }}>{f.titulo}</div>
               <div style={{ color: "#777", fontSize: "0.84rem", lineHeight: 1.65 }}>{f.desc}</div>
@@ -1357,11 +1414,11 @@ function TabProfesional({ type, typeColor }) {
 
       {/* Grid — liderazgo + dinero */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.85rem", marginBottom: "0.85rem" }}>
-        <div style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: "14px", padding: "1.25rem" }}>
+        <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "14px", padding: "1.25rem" }}>
           <div style={{ color: typeColor, fontSize: "0.68rem", letterSpacing: "0.1em", fontWeight: 700, marginBottom: "0.6rem" }}>ESTILO DE LIDERAZGO</div>
           <p style={{ color: "#888", fontSize: "0.81rem", lineHeight: 1.65, margin: 0 }}>{data.estilo_liderazgo}</p>
         </div>
-        <div style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: "14px", padding: "1.25rem" }}>
+        <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "14px", padding: "1.25rem" }}>
           <div style={{ color: typeColor, fontSize: "0.68rem", letterSpacing: "0.1em", fontWeight: 700, marginBottom: "0.6rem" }}>RELACIÓN CON EL DINERO</div>
           <p style={{ color: "#888", fontSize: "0.81rem", lineHeight: 1.65, margin: 0 }}>{data.relacion_dinero}</p>
         </div>
@@ -1459,7 +1516,7 @@ function TabAdvisor({ type, typeColor }) {
           <div style={{ color: "#555", fontSize: "0.7rem", letterSpacing: "0.12em", marginBottom: "0.6rem" }}>PREGUNTAS FRECUENTES</div>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
             {SUGGESTIONS.map((s, i) => (
-              <button key={i} onClick={() => sendMessage(s)} style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: "10px", padding: "0.7rem 1rem", color: "#aaa", fontSize: "0.84rem", cursor: "pointer", textAlign: "left", transition: "border-color 0.2s" }}
+              <button key={i} onClick={() => sendMessage(s)} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "0.7rem 1rem", color: "#8878A0", fontSize: "0.84rem", cursor: "pointer", textAlign: "left", transition: "border-color 0.2s" }}
                 onMouseEnter={e => e.currentTarget.style.borderColor = typeColor + "55"}
                 onMouseLeave={e => e.currentTarget.style.borderColor = "#1e1e1e"}
               >
@@ -1505,7 +1562,7 @@ function TabAdvisor({ type, typeColor }) {
           placeholder="Pregunta algo sobre tu tipo..."
           disabled={loading}
           style={{
-            flex: 1, background: "#111", border: "1px solid #222", borderRadius: "10px",
+            flex: 1, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "10px",
             padding: "0.75rem 1rem", color: "#fff", fontSize: "0.88rem", outline: "none",
           }}
         />
@@ -1678,7 +1735,7 @@ function ShareModal({ type, info, onClose }) {
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.92)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000, padding: "1rem", overflowY: "auto" }} onClick={onClose}>
-      <div className="share-modal-card" onClick={e => e.stopPropagation()} style={{ background: "#111", border: `1px solid ${info.color}44`, borderRadius: "20px", padding: "2rem", maxWidth: "420px", width: "100%", position: "relative" }}>
+      <div className="share-modal-card glass-card" onClick={e => e.stopPropagation()} style={{ border: `1px solid ${info.color}33`, borderRadius: "20px", padding: "2rem", maxWidth: "420px", width: "100%", position: "relative" }}>
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: `linear-gradient(90deg,transparent,${info.color},transparent)`, borderRadius: "20px 20px 0 0" }} />
         <button onClick={onClose} style={{ position: "absolute", top: "1rem", right: "1rem", background: "none", border: "none", color: "#444", cursor: "pointer", fontSize: "1.2rem" }}>✕</button>
 
@@ -1743,7 +1800,7 @@ function TypeSelectorModal({ currentType, onSelect, onClose }) {
   const [hovered, setHovered] = useState(null);
   return (
     <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.85)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:3000, padding:"1rem" }} onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} style={{ background:"#111", border:"1px solid #2a2a2a", borderRadius:"22px", padding:"1.75rem", maxWidth:"420px", width:"100%", position:"relative" }}>
+      <div onClick={e => e.stopPropagation()} className="glass-card" style={{ borderRadius:"22px", padding:"1.75rem", maxWidth:"420px", width:"100%", position:"relative" }}>
         <div style={{ position:"absolute", top:0, left:0, right:0, height:"3px", background:"linear-gradient(90deg,transparent,#6C63FF,transparent)", borderRadius:"22px 22px 0 0" }} />
         <button onClick={onClose} style={{ position:"absolute", top:"1rem", right:"1rem", background:"none", border:"none", color:"#444", cursor:"pointer", fontSize:"1.2rem" }}>✕</button>
 
@@ -2033,7 +2090,9 @@ function ResultsScreen({ type: initialType, display: initialDisplay, onRetake })
                 {!isLocked && (
                   <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: `linear-gradient(90deg, transparent, ${info.color}88, transparent)` }} />
                 )}
-                <div style={{ fontSize: "1.3rem", marginBottom: "0.45rem", lineHeight: 1, filter: isLocked ? "grayscale(1)" : "none" }}>{t.icon}</div>
+                <div style={{ marginBottom: "0.55rem", color: isLocked ? "#2A2040" : "#A78BFA", display: "flex" }}>
+                  {TAB_ICONS[t.id]}
+                </div>
                 <div style={{ fontSize: "0.84rem", fontWeight: 700, color: isLocked ? "#3D3550" : "#F0EBF8", marginBottom: "0.25rem", letterSpacing: "0.01em" }}>
                   {t.label}
                 </div>
@@ -2071,7 +2130,7 @@ function ResultsScreen({ type: initialType, display: initialDisplay, onRetake })
           {/* Bottom back button */}
           <button
             onClick={() => setTab(null)}
-            style={{ display: "flex", alignItems: "center", gap: "6px", background: "#111", border: "1px solid #1e1e1e", borderRadius: "12px", color: "#555", cursor: "pointer", fontSize: "0.8rem", fontWeight: 600, padding: "0.75rem 1.2rem", marginTop: "1.5rem", letterSpacing: "0.02em" }}
+            style={{ display: "flex", alignItems: "center", gap: "6px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", color: "#8878A0", cursor: "pointer", fontSize: "0.8rem", fontWeight: 600, padding: "0.75rem 1.2rem", marginTop: "1.5rem", letterSpacing: "0.02em" }}
           >
             ← Todas las secciones
           </button>
@@ -2080,7 +2139,7 @@ function ResultsScreen({ type: initialType, display: initialDisplay, onRetake })
 
       {/* Actions */}
       <div style={{ display: "flex", gap: "0.75rem", marginTop: "1.75rem" }}>
-        <button onClick={handleShare} className="btn-secondary" style={{ flex: 1, background: "#111", border: "1px solid #1e1e1e", borderRadius: "12px", padding: "0.8rem", color: "#666", cursor: "pointer", fontSize: "0.82rem", fontWeight: 600, transition: "all 0.2s" }}>
+        <button onClick={handleShare} className="btn-secondary" style={{ flex: 1, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "0.8rem", color: "#8878A0", cursor: "pointer", fontSize: "0.82rem", fontWeight: 600, transition: "all 0.2s" }}>
           ↗ Compartir resultado
         </button>
         <button onClick={onRetake} className="btn-secondary" style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: "12px", padding: "0.8rem 1.2rem", color: "#444", cursor: "pointer", fontSize: "0.82rem", fontWeight: 600 }}>
@@ -2186,7 +2245,7 @@ function AppInner() {
         <a href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none" }}>
           <LandingLogo />
           <div style={{ display: "flex", alignItems: "baseline", gap: "3px" }}>
-            <span style={{ fontWeight: 900, fontSize: "1.15rem", background: "linear-gradient(90deg,#A78BFA,#22D3EE)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>16</span>
+            <span style={{ fontWeight: 900, fontSize: "1.15rem", background: "linear-gradient(90deg,#C4B5FD,#A78BFA)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>16</span>
             <span style={{ fontWeight: 700, fontSize: "1.05rem", color: "#e0e0e0", letterSpacing: "0.02em" }}>Personalidades</span>
             <sup style={{ color: "#A78BFA", fontSize: "0.55rem", fontWeight: 700, letterSpacing: "0.05em", marginLeft: "1px" }}>AI</sup>
           </div>
