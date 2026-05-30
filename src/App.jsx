@@ -1590,31 +1590,29 @@ function TabAdvisor({ type, typeColor }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-      {/* Jarvis Header */}
-      <Card style={{ borderColor: typeColor + "33", background: `linear-gradient(160deg, rgba(255,255,255,0.03) 60%, ${typeColor}08)`, marginBottom: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          <div style={{ flexShrink: 0 }}>
-            <JarvisOrb active={loading} size={64} color={typeColor || "#A78BFA"} />
+      {/* Orbe central */}
+      <div style={{ textAlign: "center", padding: "1.5rem 0 0.5rem", position: "relative" }}>
+        {/* Glow de fondo */}
+        <div style={{
+          position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
+          width: "200px", height: "200px", borderRadius: "50%",
+          background: `radial-gradient(circle, ${typeColor || "#A78BFA"}22 0%, transparent 70%)`,
+          pointerEvents: "none", filter: "blur(20px)",
+        }} />
+        <div style={{ display: "inline-block", position: "relative" }}>
+          <JarvisOrb active={loading} size={160} color={typeColor || "#A78BFA"} />
+        </div>
+        <div style={{ marginTop: "1rem" }}>
+          <div style={{ color: typeColor, fontWeight: 700, fontSize: "0.8rem", letterSpacing: "0.18em", marginBottom: "0.25rem" }}>
+            ADVISOR {type}
           </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ color: typeColor, fontWeight: 700, fontSize: "0.95rem", marginBottom: "0.15rem", letterSpacing: "0.04em" }}>
-              ADVISOR {type}
-            </div>
-            <div style={{ color: "#8878A0", fontSize: "0.76rem", lineHeight: 1.5 }}>
-              {loading ? "Procesando respuesta…" : "Sistema activo · Preguntas ilimitadas"}
-            </div>
-            <div style={{ display: "flex", gap: "4px", marginTop: "0.4rem" }}>
-              {[0,1,2].map(i => (
-                <div key={i} style={{
-                  width: loading ? "18px" : "6px", height: "3px", borderRadius: "2px",
-                  background: loading ? `linear-gradient(90deg, ${typeColor}, #A78BFA)` : typeColor + "44",
-                  transition: `width 0.3s ease ${i * 0.1}s`,
-                }} />
-              ))}
-            </div>
+          <div style={{ color: "#8878A0", fontSize: "0.74rem" }}>
+            {loading ? (
+              <span style={{ color: typeColor, opacity: 0.8 }}>Procesando…</span>
+            ) : messages.length === 0 ? "¿Qué quieres saber sobre ti?" : "Sistema activo"}
           </div>
         </div>
-      </Card>
+      </div>
 
       {/* Suggestions (only when no messages) */}
       {messages.length === 0 && (
