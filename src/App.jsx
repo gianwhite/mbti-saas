@@ -1,6 +1,13 @@
 import { useState, useCallback, useEffect, useRef, Component, createContext, useContext } from 'react';
 import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import { supabase } from './supabase.js';
+import {
+  identifyUser, resetUser,
+  trackTestStarted, trackTestCompleted,
+  trackPaywallSeen, trackCheckoutStarted, trackSubscriptionActivated,
+  trackTabOpened, trackAdvisorMessage, trackShareClicked,
+  trackSignUp, trackLogin,
+} from './analytics.js';
 
 // ─────────────────────────────────────────────
 // ERROR BOUNDARY
@@ -40,7 +47,10 @@ function AuthProvider({ children }) {
       setReady(true);
     });
     const { data: listener } = supabase.auth.onAuthStateChange((_e, session) => {
-      setUser(session?.user ?? null);
+      const u = session?.user ?? null;
+      setUser(u);
+      if (u) identifyUser(u.id, u.email);
+      else resetUser();
     });
     return () => listener.subscription.unsubscribe();
   }, []);
@@ -101,11 +111,12 @@ function AuthModal({ onClose, onSuccess, title = "Crea tu cuenta" }) {
 
       if (mode === "signup") {
         setError("");
-        // Auto sign-in after signup (Supabase may require email confirm)
+        trackSignUp();
         const { error: loginErr } = await signIn(email, password);
         if (!loginErr) onSuccess?.();
         else setError("Cuenta creada. Inicia sesión.");
       } else {
+        trackLogin();
         onSuccess?.();
       }
     } catch (e) {
@@ -257,6 +268,7 @@ function PaywallModal({ type, onClose }) {
   const handleSubscribe = async () => {
     setLoading(true);
     setError('');
+    trackCheckoutStarted(type);
     try {
       const res = await fetch('/api/create-checkout', {
         method: 'POST',
@@ -1143,6 +1155,7 @@ function TabAdvisor({ type, typeColor }) {
   const sendMessage = async (text) => {
     const userMsg = text || input.trim();
     if (!userMsg || loading) return;
+    trackAdvisorMessage(type);
     setInput('');
 
     const newMessages = [...messages, { role: 'user', content: userMsg }];
@@ -1485,6 +1498,7 @@ function ResultsScreen({ type, display, onRetake }) {
           if (data.active) {
             localStorage.setItem('mbti_customer_id', data.customerId);
             setIsPaid(true);
+            trackSubscriptionActivated(type);
           }
           window.history.replaceState({}, '', '/test');
         })
@@ -1543,13 +1557,15 @@ function ResultsScreen({ type, display, onRetake }) {
   const handleTabClick = (tabId, isFree) => {
     if (!isFree && !isPaid) {
       setShowPaywall(true);
+      trackPaywallSeen('tab_click');
       return;
     }
     setTab(tabId);
+    trackTabOpened(tabId, type);
   };
 
   const [showShare, setShowShare] = useState(false);
-  const handleShare = () => setShowShare(true);
+  const handleShare = () => { setShowShare(true); trackShareClicked(type); };
 
   return (
     <div style={{ maxWidth: "640px", width: "100%", margin: "0 auto", padding: "1.5rem 1rem 3rem", boxSizing: "border-box" }}>
@@ -1626,7 +1642,7 @@ function ResultsScreen({ type, display, onRetake }) {
               </div>
 
               <button
-                onClick={() => setShowPaywall(true)}
+                onClick={() => { setShowPaywall(true); trackPaywallSeen('unlock_banner'); }}
                 className="btn-primary"
                 style={{ width: "100%", background: `linear-gradient(135deg, ${info.color}, #6C63FF)`, color: "#fff", border: "none", borderRadius: "12px", padding: "0.85rem", fontSize: "0.92rem", fontWeight: 700, cursor: "pointer", letterSpacing: "0.02em" }}
               >
@@ -1747,7 +1763,7 @@ function AppInner() {
     }
   }, []);
 
-  const handleStart = () => { setAnswers({}); setIndex(0); setScreen("test-questions"); };
+  const handleStart = () => { setAnswers({}); setIndex(0); setScreen("test-questions"); trackTestStarted(); };
 
   const handleAnswer = useCallback((value) => {
     const q = QUESTIONS[index];
@@ -1760,7 +1776,7 @@ function AppInner() {
       localStorage.setItem('mbti_display', JSON.stringify(res.display));
       setResult(res);
       setScreen("results");
-      // Save to Supabase if logged in
+      trackTestCompleted(res.type);
       if (user) saveResultToSupabase(res.type, res.display);
     }
   }, [index, answers, user]);
