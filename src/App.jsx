@@ -112,6 +112,15 @@ function AuthModal({ onClose, onSuccess, title = "Crea tu cuenta", initialMode =
       if (mode === "signup") {
         setError("");
         trackSignUp();
+        // Fire welcome email (best-effort, non-blocking)
+        const mbtiType = localStorage.getItem('mbti_type');
+        if (mbtiType) {
+          fetch('/api/send-welcome', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, mbtiType }),
+          }).catch(() => {});
+        }
         const { error: loginErr } = await signIn(email, password);
         if (!loginErr) onSuccess?.();
         else setError("Cuenta creada. Inicia sesión.");
@@ -1751,6 +1760,14 @@ function ResultsScreen({ type, display, onRetake }) {
             localStorage.setItem('mbti_customer_id', data.customerId);
             setIsPaid(true);
             trackSubscriptionActivated(type);
+            // Fire premium welcome email (best-effort)
+            if (user?.email) {
+              fetch('/api/send-premium-welcome', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: user.email, mbtiType: type }),
+              }).catch(() => {});
+            }
           }
           window.history.replaceState({}, '', '/test');
         })
