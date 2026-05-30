@@ -1540,6 +1540,82 @@ function JarvisOrb({ active = false, size = 72, color = "#A78BFA" }) {
   return <canvas ref={canvasRef} style={{ width: size, height: size, display: "block" }} />;
 }
 
+// ── Quick Compatibility Widget — inside Advisor ───────────────
+function QuickCompatWidget({ myType, typeColor, onAskAdvisor }) {
+  const [selected, setSelected] = useState(null);
+  const [open, setOpen]         = useState(false);
+
+  const getResult = (targetType) => {
+    if (!targetType || targetType === myType) return null;
+    const myAnalysis = TYPE_ANALYSIS[myType];
+    const theirAnalysis = TYPE_ANALYSIS[targetType];
+    if (!myAnalysis || !theirAnalysis) return null;
+
+    const myTop     = myAnalysis.compatibilidad?.top?.find(m => m.tipo === targetType);
+    const myEvitar  = myAnalysis.compatibilidad?.evitar?.tipo === targetType;
+    const theirTop  = theirAnalysis.compatibilidad?.top?.find(m => m.tipo === myType);
+    const theirEvit = theirAnalysis.compatibilidad?.evitar?.tipo === myType;
+
+    if (myTop && theirTop)   return { level: "alta",    emoji: "🔥", label: "Alta compatibilidad",       color: "#22c55e", desc: myTop.detalle || "Match natural — complementan sus funciones cognitivas." };
+    if (myTop || theirTop)   return { level: "media",   emoji: "✨", label: "Compatibilidad interesante", color: "#A78BFA", desc: (myTop || theirTop)?.detalle || "Hay química con fricción creativa." };
+    if (myEvitar || theirEvit) return { level: "baja",  emoji: "⚠️", label: "Alta fricción potencial",    color: "#ff6b6b", desc: "Visiones del mundo muy distintas. Puede funcionar con trabajo consciente." };
+    return { level: "neutral", emoji: "◈",  label: "Compatibilidad neutral",      color: "#888",    desc: "Ni natural ni problemático. Depende del contexto y madurez de ambos." };
+  };
+
+  const result = selected ? getResult(selected) : null;
+  const selInfo = selected ? TYPES[selected] : null;
+
+  return (
+    <div className="glass-card" style={{ borderRadius: "14px", padding: "1rem", border: "1px solid rgba(255,255,255,0.06)" }}>
+      <button onClick={() => setOpen(o => !o)} style={{ background: "none", border: "none", cursor: "pointer", width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <span style={{ fontSize: "0.9rem" }}>💞</span>
+          <span style={{ color: "#8878A0", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.08em" }}>COMPATIBILIDAD RÁPIDA</span>
+        </div>
+        <span style={{ color: "#3D3550", fontSize: "0.75rem" }}>{open ? "▲" : "▼"}</span>
+      </button>
+
+      {open && (
+        <div style={{ marginTop: "0.85rem" }}>
+          <div style={{ color: "#555", fontSize: "0.68rem", marginBottom: "0.6rem" }}>¿Con qué tipo quieres compararte?</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", marginBottom: "0.85rem" }}>
+            {ALL_TYPES.filter(t => t !== myType).map(t => {
+              const ti = TYPES[t] || { color: "#888" };
+              const isSel = t === selected;
+              return (
+                <button key={t} onClick={() => setSelected(isSel ? null : t)}
+                  style={{ background: isSel ? ti.color + "22" : "rgba(255,255,255,0.03)", border: `1px solid ${isSel ? ti.color + "66" : "rgba(255,255,255,0.07)"}`, borderRadius: "7px", padding: "4px 9px", color: isSel ? ti.color : "#555", fontSize: "0.73rem", fontWeight: isSel ? 700 : 400, cursor: "pointer", transition: "all 0.15s" }}
+                >
+                  {t}
+                </button>
+              );
+            })}
+          </div>
+
+          {result && selInfo && (
+            <div style={{ background: result.color + "0e", border: `1px solid ${result.color}33`, borderRadius: "10px", padding: "0.9rem", marginBottom: "0.75rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
+                <span style={{ fontSize: "1.1rem" }}>{result.emoji}</span>
+                <span style={{ color: result.color, fontWeight: 700, fontSize: "0.82rem" }}>{result.label}</span>
+                <span style={{ marginLeft: "auto", color: selInfo.color, fontWeight: 800, fontSize: "0.85rem" }}>{selected}</span>
+              </div>
+              <p style={{ color: "#8878A0", fontSize: "0.78rem", lineHeight: 1.6, margin: 0 }}>{result.desc}</p>
+            </div>
+          )}
+
+          {result && (
+            <button onClick={() => { onAskAdvisor(`¿Cómo es la compatibilidad entre ${myType} y ${selected}? Analiza la dinámica real entre estos dos tipos.`); setOpen(false); }}
+              style={{ width: "100%", background: "rgba(255,255,255,0.03)", border: `1px solid ${typeColor}33`, borderRadius: "9px", padding: "0.65rem", color: typeColor, fontSize: "0.78rem", fontWeight: 700, cursor: "pointer" }}
+            >
+              Análisis profundo con el Advisor →
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function TabAdvisor({ type, typeColor }) {
   const [messages, setMessages]         = useState([]);
   const [sessions, setSessions]         = useState([]);   // past sessions list
@@ -1740,6 +1816,9 @@ function TabAdvisor({ type, typeColor }) {
           </div>
         </div>
       )}
+
+      {/* Quick Compatibility Widget */}
+      <QuickCompatWidget myType={type} typeColor={typeColor} onAskAdvisor={sendMessage} />
 
       {/* Suggestions (only when no messages) */}
       {messages.length === 0 && (
@@ -2001,10 +2080,24 @@ function ShareModal({ type, info, onClose }) {
           </div>
         </div>
 
-        {/* Instagram Story — hero button */}
-        <button onClick={handleInstagram} className="btn-primary" style={{ width: "100%", background: "linear-gradient(135deg,#833AB4,#FD1D1D,#F56040,#FCAF45)", color: "#fff", border: "none", borderRadius: "12px", padding: "0.95rem", fontSize: "0.95rem", fontWeight: 700, cursor: "pointer", marginBottom: "0.6rem", letterSpacing: "0.02em" }}>
-          📸 Historia de Instagram
-        </button>
+        {/* Instagram Story preview + button */}
+        {storyDataUrl && (
+          <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "0.75rem", marginBottom: "0.6rem" }}>
+            <img src={storyDataUrl} alt="Story preview" style={{ width: "48px", height: "85px", borderRadius: "6px", objectFit: "cover", border: "1px solid rgba(255,255,255,0.08)" }} />
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 700, fontSize: "0.82rem", marginBottom: "0.25rem" }}>Historia de Instagram</div>
+              <div style={{ color: "#555", fontSize: "0.72rem", lineHeight: 1.5 }}>Imagen generada lista para compartir</div>
+            </div>
+            <button onClick={handleInstagram} style={{ background: "linear-gradient(135deg,#833AB4,#FD1D1D,#FCAF45)", color: "#fff", border: "none", borderRadius: "9px", padding: "0.6rem 1rem", fontSize: "0.8rem", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>
+              📸 Compartir
+            </button>
+          </div>
+        )}
+        {!storyDataUrl && (
+          <button onClick={handleInstagram} className="btn-primary" style={{ width: "100%", background: "linear-gradient(135deg,#833AB4,#FD1D1D,#F56040,#FCAF45)", color: "#fff", border: "none", borderRadius: "12px", padding: "0.95rem", fontSize: "0.95rem", fontWeight: 700, cursor: "pointer", marginBottom: "0.6rem", letterSpacing: "0.02em" }}>
+            📸 Historia de Instagram
+          </button>
+        )}
         {igShared && (
           <p style={{ color: "#555", fontSize: "0.75rem", textAlign: "center", marginBottom: "0.75rem", lineHeight: 1.5 }}>
             Imagen guardada · Ábrela en Instagram → <strong style={{ color: "#aaa" }}>+ Nueva historia</strong>
@@ -2091,6 +2184,96 @@ function TypeSelectorModal({ currentType, onSelect, onClose }) {
         <p style={{ color:"#333", fontSize:"0.7rem", marginTop:"1rem", textAlign:"center" }}>
           Esto sobreescribe tu resultado actual
         </p>
+      </div>
+    </div>
+  );
+}
+
+// ── Premium Welcome Modal — post-pago ────────────────────────
+function PremiumWelcomeModal({ type, onClose }) {
+  const info = TYPES[type] || { color: "#A78BFA", name: type, tagline: "" };
+  const [step, setStep] = useState(0); // 0 = reveal, 1 = tips
+
+  const UNLOCK_ITEMS = [
+    { icon: "🧬", label: "Psicología profunda", desc: "Funciones cognitivas y stack completo" },
+    { icon: "💞", label: "Vínculos & amor",      desc: "Apego, atracción y patrones" },
+    { icon: "⚡", label: "Fortalezas",           desc: "Activos y puntos de sabotaje" },
+    { icon: "💼", label: "Profesional",          desc: "Carrera y entorno ideal" },
+    { icon: "🤖", label: "Advisor IA",           desc: "Tu psicólogo de personalidad" },
+  ];
+
+  const TIPS = [
+    { emoji: "🤖", title: "Empieza por el Advisor", desc: `Pregúntale algo sobre ${type}: "¿Cuál es mi mayor punto ciego en relaciones?"` },
+    { emoji: "💞", title: "Lee tus vínculos", desc: "La sección más reveladora — tu patrón de atracción y apego real." },
+    { emoji: "📸", title: "Comparte tu tipo", desc: "Genera tu historia para Instagram desde la sección Compatibilidad." },
+  ];
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.94)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 5000, padding: "1rem" }}>
+      <div className="glass-card" style={{ border: `1px solid ${info.color}44`, borderRadius: "24px", padding: "2rem 1.75rem", maxWidth: "420px", width: "100%", position: "relative", textAlign: "center", overflow: "hidden" }}>
+        {/* Top glow bar */}
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: `linear-gradient(90deg, transparent, ${info.color}, transparent)` }} />
+
+        {step === 0 ? (
+          <>
+            {/* Orb */}
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: "1.25rem" }}>
+              <JarvisOrb active={false} size={100} color={info.color} />
+            </div>
+
+            {/* Badge */}
+            <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: info.color + "18", border: `1px solid ${info.color}44`, borderRadius: "20px", padding: "5px 14px", marginBottom: "1rem" }}>
+              <span style={{ color: info.color, fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.1em" }}>✦ ACCESO COMPLETO ACTIVO</span>
+            </div>
+
+            <div className="serif" style={{ fontSize: "2.4rem", fontWeight: 700, color: info.color, lineHeight: 1, marginBottom: "0.3rem" }}>{type}</div>
+            <div style={{ fontWeight: 700, fontSize: "1.05rem", marginBottom: "0.2rem" }}>{info.name}</div>
+            <div style={{ color: "#8878A0", fontSize: "0.8rem", marginBottom: "1.5rem", fontStyle: "italic" }}>"{info.tagline}"</div>
+
+            {/* Unlocked items */}
+            <div style={{ textAlign: "left", marginBottom: "1.5rem", background: "rgba(255,255,255,0.02)", borderRadius: "12px", padding: "1rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+              {UNLOCK_ITEMS.map((item, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.5rem 0", borderBottom: i < UNLOCK_ITEMS.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
+                  <span style={{ fontSize: "1rem" }}>{item.icon}</span>
+                  <div>
+                    <div style={{ fontSize: "0.83rem", fontWeight: 700, color: "#F0EBF8" }}>{item.label}</div>
+                    <div style={{ fontSize: "0.7rem", color: "#8878A0" }}>{item.desc}</div>
+                  </div>
+                  <span style={{ marginLeft: "auto", color: info.color, fontSize: "0.75rem", fontWeight: 700 }}>✓</span>
+                </div>
+              ))}
+            </div>
+
+            <button onClick={() => setStep(1)} className="btn-primary" style={{ width: "100%", background: `linear-gradient(135deg, ${info.color}, #6C3FC8)`, border: "none", borderRadius: "12px", padding: "0.9rem", color: "#fff", fontWeight: 700, fontSize: "0.95rem", cursor: "pointer", marginBottom: "0.6rem" }}>
+              Ver mi análisis completo →
+            </button>
+            <button onClick={onClose} style={{ background: "none", border: "none", color: "#3D3550", fontSize: "0.75rem", cursor: "pointer" }}>Explorar solo</button>
+          </>
+        ) : (
+          <>
+            <div style={{ fontSize: "1.5rem", marginBottom: "0.75rem" }}>✦</div>
+            <div style={{ fontWeight: 800, fontSize: "1.1rem", marginBottom: "0.3rem" }}>Por dónde empezar</div>
+            <div style={{ color: "#8878A0", fontSize: "0.8rem", marginBottom: "1.5rem" }}>3 secciones que no te puedes perder</div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", textAlign: "left", marginBottom: "1.5rem" }}>
+              {TIPS.map((tip, i) => (
+                <div key={i} className="glass-card" style={{ borderRadius: "12px", padding: "1rem", border: `1px solid ${info.color}22` }}>
+                  <div style={{ display: "flex", gap: "0.75rem", alignItems: "flex-start" }}>
+                    <span style={{ fontSize: "1.25rem" }}>{tip.emoji}</span>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: "0.85rem", marginBottom: "0.25rem" }}>{tip.title}</div>
+                      <div style={{ color: "#8878A0", fontSize: "0.75rem", lineHeight: 1.5 }}>{tip.desc}</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button onClick={onClose} className="btn-primary" style={{ width: "100%", background: `linear-gradient(135deg, ${info.color}, #6C3FC8)`, border: "none", borderRadius: "12px", padding: "0.9rem", color: "#fff", fontWeight: 700, fontSize: "0.95rem", cursor: "pointer" }}>
+              Empezar →
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
@@ -2691,6 +2874,8 @@ function AppInner() {
     }
   }, [ready, user]);
 
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+
   // Handle return from Stripe (URL has session_id)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -2699,6 +2884,10 @@ function AppInner() {
       if (savedType) {
         setResult({ type: savedType, display: JSON.parse(localStorage.getItem('mbti_display') || 'null') });
         setScreen('results');
+        // Show welcome modal after a short delay so results render first
+        setTimeout(() => setShowWelcomeModal(true), 800);
+        // Clean URL without reload
+        window.history.replaceState({}, '', window.location.pathname);
       }
     }
   }, []);
@@ -2760,6 +2949,7 @@ function AppInner() {
         </div>
       </header>
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onSuccess={() => setShowAuthModal(false)} title="Inicia sesión o crea tu cuenta" initialMode={authInitialMode} />}
+      {showWelcomeModal && result && <PremiumWelcomeModal type={result.type} onClose={() => setShowWelcomeModal(false)} />}
       <main style={{ flex: 1, display: "flex", alignItems: screen === "results" ? "flex-start" : "center", justifyContent: "center", padding: (screen === "results" || screen === "email-gate") ? "0" : "1rem", width: "100%" }}>
         <ErrorBoundary>
         {!ready ? (
