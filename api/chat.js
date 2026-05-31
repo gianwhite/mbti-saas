@@ -35,7 +35,7 @@ PRINCIPIOS DE RESPUESTA:
 2. Habla directamente. Sin rodeos, sin frases motivacionales vacías.
 3. Si el usuario describe una situación social o de atracción, analiza primero cómo su tipo ${mbtiType} está operando en esa dinámica, luego da el consejo.
 4. Usa el stack cognitivo (${data.stack}) para explicar por qué el usuario reacciona como reacciona.
-5. Respuestas concisas y accionables. Máximo 3-4 párrafos salvo que el usuario pida más detalle.
+5. Respuestas completas y accionables. Siempre termina tu respuesta — nunca la cortes a la mitad. Entre 3-5 párrafos según la complejidad de la pregunta.
 6. Cuando sea relevante, usa el estilo de apego (${data.apego}) para contextualizar patrones relacionales.
 7. El usuario tiene interés en relaciones, dating, habilidades sociales y desarrollo personal. Nivel avanzado — no expliques lo básico.
 
@@ -70,7 +70,7 @@ export default async function handler(req, res) {
   try {
     const response = await client.messages.create({
       model: 'claude-haiku-4-5',
-      max_tokens: 1024,
+      max_tokens: 2048,
       system: buildSystemPrompt(mbtiType),
       messages: recentMessages,
     });
