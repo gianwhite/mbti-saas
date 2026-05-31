@@ -5,13 +5,23 @@ export const TYPES = {
     tagline: "Estratega implacable. Visión a largo plazo. Solitario por elección.",
     desc: "Tienes una mente que siempre está diez pasos adelante. Prefieres la soledad productiva a la socialización sin propósito, y tus estándares — para ti mismo y para otros — son casi imposibles de satisfacer. No te mueve la aprobación ajena; te mueve la visión de lo que podría ser.",
     alternatives: ["INFJ", "ENTJ"],
+    celebrities: [
+      { name: "Elon Musk",       img: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Elon_Musk_Royal_Society_%28crop2%29.jpg/240px-Elon_Musk_Royal_Society_%28crop2%29.jpg" },
+      { name: "Cristiano Ronaldo", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Cristiano_Ronaldo_2018.jpg/240px-Cristiano_Ronaldo_2018.jpg" },
+      { name: "Nikola Tesla",    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/N.Tesla.JPG/240px-N.Tesla.JPG" },
+    ],
   },
   INTP: {
     name: "El Lógico",
     color: "#4ECDC4",
     tagline: "Arquitecto de ideas. Análisis profundo. Desapegado pero brillante.",
-    desc: "Tu mente no descansa — siempre está desarmando conceptos para ver cómo funcionan. Priorizas la precisión sobre la diplomacia, y preferiría admitir que estás equivocado a defender una posición que no resiste análisis. Las relaciones son importantes, pero la coherencia interna lo es más.",
+    desc: "Tu mente no descansa — siempre está desarmando conceptos para ver cómo funcionan. Priorizas la precisión sobre la diplomacia, y preferirías admitir que estás equivocado a defender una posición que no resiste análisis. Las relaciones son importantes, pero la coherencia interna lo es más.",
     alternatives: ["INTJ", "ENTP"],
+    celebrities: [
+      { name: "Albert Einstein", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Albert_Einstein_Head.jpg/240px-Albert_Einstein_Head.jpg" },
+      { name: "Bill Gates",      img: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Bill_Gates_2017_%28cropped%29.jpg/240px-Bill_Gates_2017_%28cropped%29.jpg" },
+      { name: "Larry Page",      img: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Larry_Page_in_the_European_Parliament%2C_17.06.2009_%28cropped%29.jpg/240px-Larry_Page_in_the_European_Parliament%2C_17.06.2009_%28cropped%29.jpg" },
+    ],
   },
   ENTJ: {
     name: "El Comandante",
@@ -19,6 +29,11 @@ export const TYPES = {
     tagline: "Liderazgo natural. Eficiencia sobre todo. Implacable con los estándares.",
     desc: "Lees las situaciones con rapidez y naturalmente tomas el control cuando hay un vacío de liderazgo. El sentimentalismo no te paraliza — tomas decisiones difíciles con calma. Tu energía está orientada a resultados, y el tiempo desperdiciado es una de las pocas cosas que realmente te molestan.",
     alternatives: ["INTJ", "ESTJ"],
+    celebrities: [
+      { name: "Steve Jobs",      img: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Steve_Jobs_Headshot_2010-CROP_%28cropped_2%29.jpg/240px-Steve_Jobs_Headshot_2010-CROP_%28cropped_2%29.jpg" },
+      { name: "Gordon Ramsay",   img: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Gordon_Ramsay.jpg/240px-Gordon_Ramsay.jpg" },
+      { name: "Napoleon Bonaparte", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Jacques-Louis_David_-_The_Emperor_Napoleon_in_His_Study_at_the_Tuileries_-_Google_Art_Project_2.jpg/240px-Jacques-Louis_David_-_The_Emperor_Napoleon_in_His_Study_at_the_Tuileries_-_Google_Art_Project_2.jpg" },
+    ],
   },
   ENTP: {
     name: "El Innovador",
@@ -26,6 +41,11 @@ export const TYPES = {
     tagline: "Debate como deporte. Ideas sin filtro. Maestro del ángulo muerto.",
     desc: "Generas ideas más rápido de lo que puedes ejecutarlas, y disfrutas el debate aunque no tengas una posición firme — simplemente te gusta explorar todos los ángulos. Eres capaz de ver lo que otros no ven, pero el seguimiento no es tu fuerte.",
     alternatives: ["ENFP", "INTP"],
+    celebrities: [
+      { name: "Tom Hanks",       img: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Tom_Hanks_TIFF_2019.jpg/240px-Tom_Hanks_TIFF_2019.jpg" },
+      { name: "Sacha Baron Cohen", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Sacha_Baron_Cohen_2012_Shankbone.JPG/240px-Sacha_Baron_Cohen_2012_Shankbone.JPG" },
+      { name: "Mark Twain",      img: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Mark_Twain%2C_Brady-Handy_photo_portrait%2C_Feb_7%2C_1871%2C_cropped.jpg/240px-Mark_Twain%2C_Brady-Handy_photo_portrait%2C_Feb_7%2C_1871%2C_cropped.jpg" },
+    ],
   },
   INFJ: {
     name: "El Consejero",
@@ -33,6 +53,11 @@ export const TYPES = {
     tagline: "Empatía táctica. Visión única. Profundo y selectivo.",
     desc: "Entiendes a las personas a un nivel que a veces te resulta agotador. Tienes una visión clara de cómo deberían ser las cosas, pero rara vez la compartes con quien no consideras digno de confianza. Eres raro: introvertido pero profundamente humano, visionario pero orientado a las personas.",
     alternatives: ["INFP", "INTJ"],
+    celebrities: [
+      { name: "Martin Luther King", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Martin_Luther_King%2C_Jr..jpg/240px-Martin_Luther_King%2C_Jr..jpg" },
+      { name: "Adele",           img: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Adele_2016.jpg/240px-Adele_2016.jpg" },
+      { name: "Keanu Reeves",    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Keanu_Reeves_2023.jpg/240px-Keanu_Reeves_2023.jpg" },
+    ],
   },
   INFP: {
     name: "El Mediador",
@@ -40,6 +65,11 @@ export const TYPES = {
     tagline: "Valores inamovibles. Intensidad interior. Poco visible, muy presente.",
     desc: "Tienes un mundo interior tan rico que el exterior a veces se siente superficial. Tus valores son no negociables — puedes adaptarte en muchas cosas, pero no en lo que consideras fundamentalmente correcto. Sientes mucho más de lo que muestras.",
     alternatives: ["INFJ", "ENFP"],
+    celebrities: [
+      { name: "Johnny Depp",     img: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Johnny_Depp_2020.jpg/240px-Johnny_Depp_2020.jpg" },
+      { name: "Billie Eilish",   img: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Billie_Eilish_2019_by_Glenn_Francis.jpg/240px-Billie_Eilish_2019_by_Glenn_Francis.jpg" },
+      { name: "J.R.R. Tolkien",  img: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/J._R._R._Tolkien%2C_ca._1925.jpg/240px-J._R._R._Tolkien%2C_ca._1925.jpg" },
+    ],
   },
   ENFJ: {
     name: "El Protagonista",
@@ -47,6 +77,11 @@ export const TYPES = {
     tagline: "Influencia social innata. Lector de personas. Carismático y directo.",
     desc: "Tienes la habilidad de hacer que las personas se sientan vistas y entendidas, y eso genera una atracción magnética que no siempre buscas activamente. Lees dinámicas sociales con facilidad y naturalmente tomas el rol de conectar, guiar o motivar a otros — aunque a veces a costa de tus propias necesidades.",
     alternatives: ["INFJ", "ENFP"],
+    celebrities: [
+      { name: "Barack Obama",    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/President_Barack_Obama.jpg/240px-President_Barack_Obama.jpg" },
+      { name: "Oprah Winfrey",   img: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Oprah_in_2014.jpg/240px-Oprah_in_2014.jpg" },
+      { name: "Jennifer Lawrence", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Jennifer_Lawrence_SDCC_2015_X-Men.jpg/240px-Jennifer_Lawrence_SDCC_2015_X-Men.jpg" },
+    ],
   },
   ENFP: {
     name: "El Activista",
@@ -54,6 +89,11 @@ export const TYPES = {
     tagline: "Energía contagiosa. Conexiones genuinas. Caos organizado.",
     desc: "Tu entusiasmo es real, no performativo — cuando algo te emociona, lo transmites sin esfuerzo. Buscas conexiones auténticas y te aburres rápido con lo superficial. Tienes mil ideas brillantes y el reto es elegir cuál ejecutar.",
     alternatives: ["ENTP", "INFP"],
+    celebrities: [
+      { name: "Will Smith",      img: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Will_Smith_2011.jpg/240px-Will_Smith_2011.jpg" },
+      { name: "Robin Williams",  img: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Robin_Williams_2011a_%282%29.jpg/240px-Robin_Williams_2011a_%282%29.jpg" },
+      { name: "Shakira",         img: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Shakira_-_2010_World_Cup.jpg/240px-Shakira_-_2010_World_Cup.jpg" },
+    ],
   },
   ISTJ: {
     name: "El Inspector",
@@ -61,6 +101,11 @@ export const TYPES = {
     tagline: "Confiabilidad absoluta. Sistemas y orden. Silencioso y efectivo.",
     desc: "Eres de las personas en quienes se puede confiar para que hagan lo que dijeron que harían, cuando dijeron que lo harían. No necesitas reconocimiento — necesitas que las cosas funcionen correctamente. Tu fuerza está en la consistencia, no en la visibilidad.",
     alternatives: ["ISFJ", "ESTJ"],
+    celebrities: [
+      { name: "Natalie Portman", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Natalie_Portman_Cannes_2015_3.jpg/240px-Natalie_Portman_Cannes_2015_3.jpg" },
+      { name: "Warren Buffett",  img: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Warren_Buffett_KU_Visit.jpg/240px-Warren_Buffett_KU_Visit.jpg" },
+      { name: "Vin Diesel",      img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/VinDiesel2014.jpg/240px-VinDiesel2014.jpg" },
+    ],
   },
   ISFJ: {
     name: "El Defensor",
@@ -68,6 +113,11 @@ export const TYPES = {
     tagline: "Apoyo incondicional. Detalles que importan. Lealtad sobre visibilidad.",
     desc: "Recuerdas lo que importa a las personas que quieres y actúas en consecuencia, sin anunciarlo. Eres la columna silenciosa que sostiene relaciones y organizaciones, aunque rara vez recibes el crédito por ello. Tu fortaleza es la constancia.",
     alternatives: ["ISTJ", "ESFJ"],
+    celebrities: [
+      { name: "Beyoncé",         img: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Beyonc%C3%A9_at_The_Lion_King_European_Premiere_2019.png/240px-Beyonc%C3%A9_at_The_Lion_King_European_Premiere_2019.png" },
+      { name: "Kate Middleton",  img: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Catherine%2C_Princess_of_Wales_in_2023.jpg/240px-Catherine%2C_Princess_of_Wales_in_2023.jpg" },
+      { name: "Vin Diesel",      img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/VinDiesel2014.jpg/240px-VinDiesel2014.jpg" },
+    ],
   },
   ESTJ: {
     name: "El Director",
@@ -75,6 +125,11 @@ export const TYPES = {
     tagline: "Estructura y ejecución. Líder por defecto. Claro y directo.",
     desc: "Cuando hay un trabajo que hacer, tú eres quien organiza cómo se va a hacer. No toleras la ambigüedad ni la falta de compromiso. Eres directo hasta el punto de parecer brusco, pero la gente sabe exactamente dónde está contigo.",
     alternatives: ["ENTJ", "ISTJ"],
+    celebrities: [
+      { name: "Judge Judy",      img: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/JudgeJudySheindlin.jpg/240px-JudgeJudySheindlin.jpg" },
+      { name: "Michelle Obama",  img: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Michelle_Obama_2013_official_portrait.jpg/240px-Michelle_Obama_2013_official_portrait.jpg" },
+      { name: "Sonia Sotomayor", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Sonia_Sotomayor_in_SCOTUS_robe_crop.jpg/240px-Sonia_Sotomayor_in_SCOTUS_robe_crop.jpg" },
+    ],
   },
   ESFJ: {
     name: "El Cónsul",
@@ -82,6 +137,11 @@ export const TYPES = {
     tagline: "Armonía social. Red de contactos. Necesita aprobación externa.",
     desc: "Eres el pegamento social en tus círculos — notas cuando alguien está mal, te aseguras de que nadie se sienta excluido y recuerdas los detalles que hacen sentir especiales a las personas. El conflicto te incomoda y la armonía del grupo es una prioridad genuina.",
     alternatives: ["ISFJ", "ENFJ"],
+    celebrities: [
+      { name: "Taylor Swift",    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/191125_Taylor_Swift_at_the_2019_American_Music_Awards_%28DFree%29_%28cropped%29.jpg/240px-191125_Taylor_Swift_at_the_2019_American_Music_Awards_%28DFree%29_%28cropped%29.jpg" },
+      { name: "Ed Sheeran",      img: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Ed_Sheeran-6886_%28cropped%29.jpg/240px-Ed_Sheeran-6886_%28cropped%29.jpg" },
+      { name: "Bill Clinton",    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Bill_Clinton.jpg/240px-Bill_Clinton.jpg" },
+    ],
   },
   ISTP: {
     name: "El Virtuoso",
@@ -89,6 +149,11 @@ export const TYPES = {
     tagline: "Frío bajo presión. Habilidad práctica. Independiente por naturaleza.",
     desc: "Eres increíblemente efectivo en situaciones que requieren acción inmediata y pensamiento claro bajo presión. No te complicas con emociones cuando hay un problema que resolver. Tu independencia no es arrogancia — es que realmente no necesitas que nadie te dirija.",
     alternatives: ["INTP", "ESTP"],
+    celebrities: [
+      { name: "Clint Eastwood",  img: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/twenty-one/Clint_Eastwood_-_2011_(cropped).jpg/240px-Clint_Eastwood_-_2011_(cropped).jpg" },
+      { name: "Bruce Lee",       img: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Bruce_Lee_1973.jpg/240px-Bruce_Lee_1973.jpg" },
+      { name: "Scarlett Johansson", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Scarlett_Johansson_2010.jpg/240px-Scarlett_Johansson_2010.jpg" },
+    ],
   },
   ISFP: {
     name: "El Aventurero",
@@ -96,13 +161,23 @@ export const TYPES = {
     tagline: "Estética y presencia. Acción silenciosa. Intenso en privado.",
     desc: "Tienes una sensibilidad hacia la belleza y la experiencia que pocos entienden. Tus valores son profundos pero raramente los verbalizas — los demuestras a través de tus acciones. Eres más intenso de lo que pareces desde afuera.",
     alternatives: ["INFP", "ISTP"],
+    celebrities: [
+      { name: "Michael Jackson", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/Michael_Jackson_in_1988.jpg/240px-Michael_Jackson_in_1988.jpg" },
+      { name: "Rihanna",         img: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Rihanna_-_Live_at_Rock_in_Rio_Madrid_2010_3_%28cropped%29.jpg/240px-Rihanna_-_Live_at_Rock_in_Rio_Madrid_2010_3_%28cropped%29.jpg" },
+      { name: "David Beckham",   img: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/David_Beckham_-_2014_%28cropped%29.jpg/240px-David_Beckham_-_2014_%28cropped%29.jpg" },
+    ],
   },
   ESTP: {
     name: "El Emprendedor",
     color: "#E9C46A",
     tagline: "Reacción instantánea. Riesgo calculado. Presente total.",
-    desc: "Eres mejor de lo que la mayoría en leer la situación en tiempo real y actuar sobre ella. El riesgo no te paraliza — lo calculas rápido y actúas. Vives en el presente de una manera que otros solo aspiran a tener.",
-    alternatives: ["ESTP", "ISTP"],
+    desc: "Eres mejor que la mayoría leyendo la situación en tiempo real y actuando sobre ella. El riesgo no te paraliza — lo calculas rápido y actúas. Vives en el presente de una manera que otros solo aspiran a tener.",
+    alternatives: ["ENTJ", "ISTP"],
+    celebrities: [
+      { name: "Donald Trump",    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Donald_Trump_official_portrait.jpg/240px-Donald_Trump_official_portrait.jpg" },
+      { name: "Madonna",         img: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Madonna_-_Sticky_%26_Sweet_Tour_Bucharest_cropped.jpg/240px-Madonna_-_Sticky_%26_Sweet_Tour_Bucharest_cropped.jpg" },
+      { name: "Ernest Hemingway", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/ErnestHemingway.jpg/240px-ErnestHemingway.jpg" },
+    ],
   },
   ESFP: {
     name: "El Animador",
@@ -110,5 +185,10 @@ export const TYPES = {
     tagline: "Atracción natural. Presente absoluto. Energía sin filtros.",
     desc: "Tienes una presencia que se siente cuando entras a un espacio. No lo finges — genuinamente disfrutas de la gente y de la experiencia, y eso es magnético. El futuro es abstracto; el momento presente es donde vives.",
     alternatives: ["ENFP", "ESTP"],
+    celebrities: [
+      { name: "Miley Cyrus",     img: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Miley_Cyrus_2019_by_Glenn_Francis.jpg/240px-Miley_Cyrus_2019_by_Glenn_Francis.jpg" },
+      { name: "Katy Perry",      img: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Katy_Perry_-_Witness_The_Tour_-_Billboard_%28cropped%29.jpg/240px-Katy_Perry_-_Witness_The_Tour_-_Billboard_%28cropped%29.jpg" },
+      { name: "Elvis Presley",   img: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Elvis_Presley_promoting_Jailhouse_Rock.jpg/240px-Elvis_Presley_promoting_Jailhouse_Rock.jpg" },
+    ],
   },
 };

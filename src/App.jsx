@@ -3001,7 +3001,29 @@ function ResultsScreen({ type: initialType, display: initialDisplay, onRetake, o
           </div>
         )}
 
-        <button onClick={() => setShowTypeSelector(true)} style={{ background: "none", border: "none", color: "#383838", cursor: "pointer", fontSize: "0.7rem", marginTop: "0.25rem", textDecoration: "underline", padding: 0 }}>
+        {/* Celebridades */}
+        {info.celebrities?.length > 0 && (
+          <div style={{ marginTop: "1rem" }}>
+            <div style={{ color: "#3D3550", fontSize: "0.65rem", letterSpacing: "0.12em", marginBottom: "0.65rem" }}>CELEBRIDADES CON TU PERSONALIDAD</div>
+            <div style={{ display: "flex", justifyContent: "center", gap: "1.25rem" }}>
+              {info.celebrities.map((c) => (
+                <div key={c.name} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.4rem" }}>
+                  <div style={{ width: "52px", height: "52px", borderRadius: "50%", border: `2px solid ${info.color}55`, overflow: "hidden", background: "#111" }}>
+                    <img
+                      src={c.img}
+                      alt={c.name}
+                      style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }}
+                      onError={e => { e.target.style.display = "none"; }}
+                    />
+                  </div>
+                  <span style={{ color: "#555", fontSize: "0.62rem", textAlign: "center", maxWidth: "60px", lineHeight: 1.3 }}>{c.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <button onClick={() => setShowTypeSelector(true)} style={{ background: "none", border: "none", color: "#383838", cursor: "pointer", fontSize: "0.7rem", marginTop: "0.75rem", textDecoration: "underline", padding: 0 }}>
           Este no soy yo — ver alternativas
         </button>
 
