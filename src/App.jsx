@@ -2438,50 +2438,78 @@ const TYPE_GROUPS = [
 ];
 
 function TypeSelectorModal({ currentType, onSelect, onClose }) {
+  const [step, setStep] = useState('alternatives'); // 'alternatives' | 'all'
   const [hovered, setHovered] = useState(null);
+
+  const currentInfo = TYPES[currentType] || {};
+  const alternatives = (currentInfo.alternatives || []).filter(t => t !== currentType);
+
   return (
-    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.85)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:3000, padding:"1rem" }} onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} className="glass-card" style={{ borderRadius:"22px", padding:"1.75rem", maxWidth:"420px", width:"100%", position:"relative" }}>
+    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.88)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:3000, padding:"1rem" }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} className="glass-card" style={{ borderRadius:"22px", padding:"1.75rem", maxWidth:"440px", width:"100%", position:"relative", maxHeight:"90vh", overflowY:"auto" }}>
         <div style={{ position:"absolute", top:0, left:0, right:0, height:"3px", background:"linear-gradient(90deg,transparent,#6C63FF,transparent)", borderRadius:"22px 22px 0 0" }} />
         <button onClick={onClose} style={{ position:"absolute", top:"1rem", right:"1rem", background:"none", border:"none", color:"#444", cursor:"pointer", fontSize:"1.2rem" }}>✕</button>
 
-        <h2 style={{ color:"#fff", fontWeight:700, fontSize:"1.1rem", marginBottom:"0.25rem" }}>Selecciona tu tipo</h2>
-        <p style={{ color:"#555", fontSize:"0.78rem", marginBottom:"1.5rem" }}>¿Ya conoces tu tipo real? Cámbialo manualmente.</p>
+        {step === 'alternatives' ? (
+          <>
+            <h2 style={{ color:"#fff", fontWeight:700, fontSize:"1.1rem", marginBottom:"0.25rem" }}>Este no soy yo</h2>
+            <p style={{ color:"#555", fontSize:"0.78rem", marginBottom:"1.5rem" }}>El test dio <span style={{ color: currentInfo.color, fontWeight:700 }}>{currentType}</span>, pero estos tipos cercanos también son posibles. ¿Con cuál te identificas más?</p>
 
-        {TYPE_GROUPS.map(group => (
-          <div key={group.label} style={{ marginBottom:"1.1rem" }}>
-            <div style={{ fontSize:"0.65rem", color:"#444", letterSpacing:"0.15em", marginBottom:"0.5rem" }}>{group.label.toUpperCase()}</div>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"6px" }}>
-              {group.types.map(t => {
-                const tInfo = TYPES[t] || { color:"#6C63FF" };
-                const isActive = t === currentType;
+            {/* Alternativas con descripción */}
+            <div style={{ display:"flex", flexDirection:"column", gap:"0.75rem", marginBottom:"1.25rem" }}>
+              {alternatives.map(t => {
+                const ti = TYPES[t] || { color:"#888", name:t };
                 return (
-                  <button
-                    key={t}
-                    onClick={() => onSelect(t)}
-                    onMouseEnter={() => setHovered(t)}
-                    onMouseLeave={() => setHovered(null)}
-                    style={{
-                      background: isActive ? `${tInfo.color}22` : hovered === t ? "#1a1a1a" : "#0f0f0f",
-                      border: `1px solid ${isActive ? tInfo.color + "66" : "#222"}`,
-                      borderRadius:"10px", padding:"0.6rem 0.3rem",
-                      color: isActive ? tInfo.color : hovered === t ? "#ccc" : "#555",
-                      fontSize:"0.78rem", fontWeight: isActive ? 800 : 500,
-                      cursor:"pointer", transition:"all 0.15s",
-                      fontFamily:"inherit",
-                    }}
+                  <button key={t} onClick={() => onSelect(t)}
+                    style={{ background:`${ti.color}0a`, border:`1px solid ${ti.color}33`, borderRadius:"14px", padding:"1rem 1.1rem", textAlign:"left", cursor:"pointer", transition:"all 0.2s" }}
+                    onMouseEnter={e => e.currentTarget.style.borderColor = ti.color + "66"}
+                    onMouseLeave={e => e.currentTarget.style.borderColor = ti.color + "33"}
                   >
-                    {t}
+                    <div style={{ display:"flex", alignItems:"center", gap:"0.6rem", marginBottom:"0.5rem" }}>
+                      <span style={{ color:ti.color, fontWeight:900, fontSize:"1.1rem" }}>{t}</span>
+                      <span style={{ color:"#555", fontSize:"0.78rem" }}>{ti.name}</span>
+                    </div>
+                    <p style={{ color:"#8878A0", fontSize:"0.78rem", lineHeight:1.6, margin:0 }}>{ti.desc}</p>
+                    <div style={{ marginTop:"0.65rem", color:ti.color, fontSize:"0.72rem", fontWeight:700 }}>Este soy yo →</div>
                   </button>
                 );
               })}
             </div>
-          </div>
-        ))}
 
-        <p style={{ color:"#333", fontSize:"0.7rem", marginTop:"1rem", textAlign:"center" }}>
-          Esto sobreescribe tu resultado actual
-        </p>
+            <button onClick={() => setStep('all')} style={{ width:"100%", background:"none", border:"1px solid #1a1a2e", borderRadius:"10px", padding:"0.7rem", color:"#3D3550", fontSize:"0.78rem", cursor:"pointer" }}>
+              Ver todos los tipos
+            </button>
+          </>
+        ) : (
+          <>
+            <h2 style={{ color:"#fff", fontWeight:700, fontSize:"1.1rem", marginBottom:"0.25rem" }}>Todos los tipos</h2>
+            <p style={{ color:"#555", fontSize:"0.78rem", marginBottom:"1.5rem" }}>¿Ya conoces tu tipo real? Selecciónalo.</p>
+
+            {TYPE_GROUPS.map(group => (
+              <div key={group.label} style={{ marginBottom:"1.1rem" }}>
+                <div style={{ fontSize:"0.65rem", color:"#444", letterSpacing:"0.15em", marginBottom:"0.5rem" }}>{group.label.toUpperCase()}</div>
+                <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"6px" }}>
+                  {group.types.map(t => {
+                    const tInfo = TYPES[t] || { color:"#6C63FF" };
+                    const isActive = t === currentType;
+                    return (
+                      <button key={t} onClick={() => onSelect(t)}
+                        onMouseEnter={() => setHovered(t)}
+                        onMouseLeave={() => setHovered(null)}
+                        style={{ background: isActive ? `${tInfo.color}22` : hovered === t ? "#1a1a1a" : "#0f0f0f", border:`1px solid ${isActive ? tInfo.color+"66" : "#222"}`, borderRadius:"10px", padding:"0.6rem 0.3rem", color: isActive ? tInfo.color : hovered === t ? "#ccc" : "#555", fontSize:"0.78rem", fontWeight: isActive ? 800 : 500, cursor:"pointer", transition:"all 0.15s", fontFamily:"inherit" }}>
+                        {t}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+
+            <button onClick={() => setStep('alternatives')} style={{ background:"none", border:"none", color:"#3D3550", cursor:"pointer", fontSize:"0.72rem", textDecoration:"underline", padding:0, marginTop:"0.5rem" }}>
+              ← Volver a sugerencias
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
@@ -2964,10 +2992,17 @@ function ResultsScreen({ type: initialType, display: initialDisplay, onRetake, o
         </div>
 
         <div className="serif" style={{ fontSize: "1.55rem", color: "#F0EBF8", fontWeight: 400, marginBottom: "0.4rem", letterSpacing: "0.01em" }}>{info.name}</div>
-        <div style={{ color: "#8878A0", fontSize: "0.84rem", lineHeight: 1.65, fontStyle: "italic", maxWidth: "380px", margin: "0 auto" }}>"{info.tagline}"</div>
+        <div style={{ color: "#8878A0", fontSize: "0.84rem", lineHeight: 1.65, fontStyle: "italic", maxWidth: "380px", margin: "0 auto 1rem" }}>"{info.tagline}"</div>
 
-        <button onClick={() => setShowTypeSelector(true)} style={{ background: "none", border: "none", color: "#383838", cursor: "pointer", fontSize: "0.7rem", marginTop: "0.75rem", textDecoration: "underline", padding: 0 }}>
-          ¿No es tu tipo? Cámbiarlo
+        {/* Descripción corta — visible para todos */}
+        {info.desc && (
+          <div style={{ background: `${info.color}0a`, border: `1px solid ${info.color}22`, borderRadius: "12px", padding: "0.9rem 1rem", maxWidth: "420px", margin: "0 auto 0.85rem", textAlign: "left" }}>
+            <p style={{ color: "#C4B5FD", fontSize: "0.83rem", lineHeight: 1.7, margin: 0 }}>{info.desc}</p>
+          </div>
+        )}
+
+        <button onClick={() => setShowTypeSelector(true)} style={{ background: "none", border: "none", color: "#383838", cursor: "pointer", fontSize: "0.7rem", marginTop: "0.25rem", textDecoration: "underline", padding: 0 }}>
+          Este no soy yo — ver alternativas
         </button>
 
         {/* Dimension pills */}

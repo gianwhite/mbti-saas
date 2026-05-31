@@ -1,64 +1,71 @@
 export const RAW_QUESTIONS = [
-  { id: 1,  text: "Prefiero socializar con grupos grandes antes que pasar tiempo solo.",                          dimension: "EI", direction: "positive" },
-  { id: 2,  text: "Me energiza estar rodeado de muchas personas durante largos períodos.",                        dimension: "EI", direction: "positive" },
-  { id: 3,  text: "Expreso mis ideas en voz alta mientras las estoy formando, no después.",                       dimension: "EI", direction: "positive" },
-  { id: 4,  text: "Busco activamente nuevas conexiones sociales con personas que no conozco.",                    dimension: "EI", direction: "positive" },
-  { id: 5,  text: "Me siento cómodo siendo el centro de atención en reuniones o grupos.",                         dimension: "EI", direction: "positive" },
-  { id: 6,  text: "Prefiero pensar en voz alta junto a otros antes de llegar a una conclusión.",                  dimension: "EI", direction: "positive" },
-  { id: 7,  text: "Los ambientes animados y con mucha gente me resultan estimulantes.",                           dimension: "EI", direction: "positive" },
-  { id: 8,  text: "Suelo tomar la iniciativa para iniciar conversaciones con desconocidos.",                      dimension: "EI", direction: "positive" },
-  { id: 9,  text: "Después de socializar mucho, necesito tiempo a solas para recargarme.",                       dimension: "EI", direction: "negative" },
-  { id: 10, text: "Prefiero las conversaciones profundas de uno a uno antes que los grupos grandes.",             dimension: "EI", direction: "negative" },
-  { id: 11, text: "Los eventos sociales prolongados me resultan agotadores, incluso si los disfruto.",            dimension: "EI", direction: "negative" },
-  { id: 12, text: "Proceso mis pensamientos internamente antes de compartirlos con otros.",                       dimension: "EI", direction: "negative" },
-  { id: 13, text: "Disfruto más las actividades en solitario que las que implican grandes grupos.",               dimension: "EI", direction: "negative" },
-  { id: 14, text: "Me incomoda profundamente cuando interrumpen mis momentos de concentración.",                  dimension: "EI", direction: "negative" },
-  { id: 15, text: "Prefiero observar una situación nueva antes de participar activamente en ella.",               dimension: "EI", direction: "negative" },
-  { id: 16, text: "Confío más en información concreta y verificable que en teorías abstractas.",                  dimension: "SN", direction: "positive" },
-  { id: 17, text: "Prefiero instrucciones detalladas paso a paso antes que una visión general.",                  dimension: "SN", direction: "positive" },
-  { id: 18, text: "Me fijo más en los detalles prácticos que en el panorama general de las cosas.",               dimension: "SN", direction: "positive" },
-  { id: 19, text: "Soy bueno recordando hechos específicos, fechas y datos concretos.",                          dimension: "SN", direction: "positive" },
-  { id: 20, text: "Prefiero trabajar con lo que existe y funciona antes que imaginar lo que podría ser.",         dimension: "SN", direction: "positive" },
-  { id: 21, text: "Aprendo mejor a través de la experiencia directa que leyendo teoría.",                        dimension: "SN", direction: "positive" },
-  { id: 22, text: "Me resulta más fácil hablar de hechos pasados que de posibilidades futuras.",                  dimension: "SN", direction: "positive" },
-  { id: 23, text: "Prefiero enfocarme en la realidad presente antes que especular sobre escenarios futuros.",     dimension: "SN", direction: "positive" },
-  { id: 24, text: "Me atrae más entender los patrones subyacentes que los hechos superficiales.",                 dimension: "SN", direction: "negative" },
-  { id: 25, text: "Con frecuencia imagino cómo las cosas podrían ser radicalmente diferentes.",                   dimension: "SN", direction: "negative" },
-  { id: 26, text: "Las tareas rutinarias me aburren y busco formas más creativas de hacerlas.",                   dimension: "SN", direction: "negative" },
-  { id: 27, text: "Prefiero las ideas innovadoras antes que los métodos probados y comprobados.",                 dimension: "SN", direction: "negative" },
-  { id: 28, text: "Me resulta fácil ver conexiones entre cosas aparentemente no relacionadas.",                   dimension: "SN", direction: "negative" },
-  { id: 29, text: "Suelo confiar más en mis corazonadas e intuición que en datos verificados.",                   dimension: "SN", direction: "negative" },
-  { id: 30, text: "Pienso más en posibilidades futuras que en las realidades del presente.",                      dimension: "SN", direction: "negative" },
-  { id: 31, text: "Tomo decisiones basándome principalmente en la lógica, no en las emociones.",                  dimension: "TF", direction: "positive" },
-  { id: 32, text: "Me resulta más fácil criticar directamente que preocuparme por los sentimientos ajenos.",      dimension: "TF", direction: "positive" },
-  { id: 33, text: "Valoro más la verdad objetiva que la armonía en las relaciones.",                              dimension: "TF", direction: "positive" },
-  { id: 34, text: "Cuando alguien tiene un problema, mi primera reacción es ofrecer soluciones prácticas.",       dimension: "TF", direction: "positive" },
-  { id: 35, text: "Prefiero ser honesto antes que diplomático cuando hay que decir algo difícil.",                 dimension: "TF", direction: "positive" },
-  { id: 36, text: "Las decisiones deben basarse en hechos, no en cómo se sentirá la gente al respecto.",          dimension: "TF", direction: "positive" },
-  { id: 37, text: "Me resulta más natural analizar situaciones que empatizar con los involucrados.",               dimension: "TF", direction: "positive" },
-  { id: 38, text: "Considero que la justicia es más importante que la compasión cuando hay conflicto.",           dimension: "TF", direction: "positive" },
-  { id: 39, text: "Las necesidades emocionales de las personas me importan más que la lógica o eficiencia.",      dimension: "TF", direction: "negative" },
-  { id: 40, text: "Los conflictos con personas cercanas me afectan emocionalmente de forma significativa.",       dimension: "TF", direction: "negative" },
-  { id: 41, text: "Al tomar decisiones, considero principalmente cómo afectarán a las personas involucradas.",    dimension: "TF", direction: "negative" },
-  { id: 42, text: "Prefiero la armonía del grupo antes que ganar un debate o imponer mi punto de vista.",         dimension: "TF", direction: "negative" },
-  { id: 43, text: "Necesito que mis valores personales estén alineados con las decisiones que tomo.",             dimension: "TF", direction: "negative" },
-  { id: 44, text: "Me resulta difícil mantener una posición cuando alguien se muestra muy afectado.",             dimension: "TF", direction: "negative" },
-  { id: 45, text: "Valoro profundamente la conexión emocional y la expresión personal en las relaciones.",        dimension: "TF", direction: "negative" },
-  { id: 46, text: "Me siento más cómodo cuando tengo un plan claro antes de actuar.",                             dimension: "JP", direction: "positive" },
-  { id: 47, text: "Prefiero tener las cosas decididas y cerradas antes que mantenerlas abiertas.",                dimension: "JP", direction: "positive" },
-  { id: 48, text: "Me molesta cuando los planes cambian a último momento sin aviso previo.",                      dimension: "JP", direction: "positive" },
-  { id: 49, text: "Hago listas de tareas y me satisface ir tachando lo que voy completando.",                     dimension: "JP", direction: "positive" },
-  { id: 50, text: "Prefiero terminar mis proyectos actuales antes de comenzar algo nuevo.",                       dimension: "JP", direction: "positive" },
-  { id: 51, text: "Me resulta difícil relajarme cuando tengo tareas pendientes sin completar.",                   dimension: "JP", direction: "positive" },
-  { id: 52, text: "Tiendo a llegar puntual o incluso temprano a mis compromisos.",                                dimension: "JP", direction: "positive" },
-  { id: 53, text: "Planifico con anticipación en lugar de improvisar sobre la marcha.",                           dimension: "JP", direction: "positive" },
-  { id: 54, text: "Prefiero dejar mis opciones abiertas antes que comprometerme con un plan fijo.",               dimension: "JP", direction: "negative" },
-  { id: 55, text: "Me adapto fácilmente cuando las circunstancias cambian de forma inesperada.",                  dimension: "JP", direction: "negative" },
-  { id: 56, text: "Trabajo mejor bajo presión y cerca de las fechas límite.",                                     dimension: "JP", direction: "negative" },
-  { id: 57, text: "Inicio muchos proyectos distintos pero a veces me cuesta llevarlos todos a término.",          dimension: "JP", direction: "negative" },
-  { id: 58, text: "Prefiero explorar distintas opciones antes de tomar una decisión definitiva.",                  dimension: "JP", direction: "negative" },
-  { id: 59, text: "Me resulta restrictivo tener que seguir una agenda o rutina fija.",                            dimension: "JP", direction: "negative" },
-  { id: 60, text: "Soy bueno improvisando y encontrando soluciones en situaciones nuevas e inesperadas.",         dimension: "JP", direction: "negative" },
+  // ── E/I (Extroversión / Introversión) ─────────────────────────
+  { id: 1,  text: "Después de un día muy social, lo que más necesito es estar con más personas para terminar bien el día.",  dimension: "EI", direction: "positive" },
+  { id: 2,  text: "Cuando tengo un problema, mi primer instinto es hablar de él con alguien en lugar de procesarlo solo.",   dimension: "EI", direction: "positive" },
+  { id: 3,  text: "En una reunión de trabajo o social, tiendo a hablar más que a escuchar.",                                 dimension: "EI", direction: "positive" },
+  { id: 4,  text: "Me resulta fácil presentarme y entablar conversación con alguien que acabo de conocer.",                  dimension: "EI", direction: "positive" },
+  { id: 5,  text: "En una fiesta o evento, generalmente me quedo hasta el final — la energía del grupo me carga.",           dimension: "EI", direction: "positive" },
+  { id: 6,  text: "Cuando estoy emocionado por algo, mi reacción inmediata es contárselo a alguien.",                       dimension: "EI", direction: "positive" },
+  { id: 7,  text: "Prefiero trabajar en espacios con otras personas presentes, aunque no interactúe con ellas.",             dimension: "EI", direction: "positive" },
+  { id: 8,  text: "Cuando debo tomar una decisión difícil, pensar en voz alta con otros me ayuda más que reflexionar solo.", dimension: "EI", direction: "positive" },
+  { id: 9,  text: "Después de un fin de semana muy social, el lunes necesito tiempo a solas para recuperarme.",              dimension: "EI", direction: "negative" },
+  { id: 10, text: "Cuando llego a un lugar nuevo con gente que no conozco, mi tendencia natural es observar antes de participar.", dimension: "EI", direction: "negative" },
+  { id: 11, text: "Hay personas que me dicen que es difícil saber lo que pienso porque no lo expreso espontáneamente.",      dimension: "EI", direction: "negative" },
+  { id: 12, text: "Prefiero resolver un conflicto por escrito (mensaje, email) que en persona o por llamada.",               dimension: "EI", direction: "negative" },
+  { id: 13, text: "Me resulta más fácil concentrarme cuando estoy solo que cuando hay otras personas alrededor.",            dimension: "EI", direction: "negative" },
+  { id: 14, text: "Si tengo un sábado libre sin planes, la opción que más me atrae es tiempo en casa sin compromisos.",      dimension: "EI", direction: "negative" },
+  { id: 15, text: "Las conversaciones profundas de uno a uno me satisfacen más que los grupos grandes.",                    dimension: "EI", direction: "negative" },
+
+  // ── S/N (Sensación / Intuición) ────────────────────────────────
+  { id: 16, text: "Cuando aprendo algo nuevo, prefiero empezar con ejemplos concretos antes que con el marco teórico.",      dimension: "SN", direction: "positive" },
+  { id: 17, text: "Al dar instrucciones a alguien, naturalmente incluyo pasos detallados en lugar de una visión general.",   dimension: "SN", direction: "positive" },
+  { id: 18, text: "Me resulta más útil saber exactamente qué hicieron otros en situaciones similares que teorizar soluciones.", dimension: "SN", direction: "positive" },
+  { id: 19, text: "Cuando planeo algo, me enfoco en los detalles prácticos (logística, recursos, tiempos) antes que en la visión global.", dimension: "SN", direction: "positive" },
+  { id: 20, text: "Confío más en algo que ha funcionado y está probado que en una idea innovadora sin historial.",            dimension: "SN", direction: "positive" },
+  { id: 21, text: "Cuando leo algo, me quedo más con los hechos concretos que con las interpretaciones o implicaciones.",    dimension: "SN", direction: "positive" },
+  { id: 22, text: "Aprendo mejor haciendo las cosas (prueba y error) que leyendo explicaciones o teorías.",                  dimension: "SN", direction: "positive" },
+  { id: 23, text: "Cuando describo algo, tiendes a dar detalles específicos y concretos en lugar de metáforas o conceptos.", dimension: "SN", direction: "positive" },
+  { id: 24, text: "Con frecuencia encuentro conexiones entre cosas aparentemente no relacionadas que otros no ven.",          dimension: "SN", direction: "negative" },
+  { id: 25, text: "Cuando enfrento un problema, mi mente saltea rápidamente a múltiples posibles causas y soluciones.",      dimension: "SN", direction: "negative" },
+  { id: 26, text: "Las tareas repetitivas me aburren rápido aunque las haga bien — busco variación o un ángulo nuevo.",      dimension: "SN", direction: "negative" },
+  { id: 27, text: "A menudo pienso en cómo las situaciones actuales podrían evolucionar en el futuro antes que en lo inmediato.", dimension: "SN", direction: "negative" },
+  { id: 28, text: "Cuando escucho una idea, instintivamente pienso en su potencial y sus implicaciones más que en sus limitaciones prácticas.", dimension: "SN", direction: "negative" },
+  { id: 29, text: "Mis mejores ideas suelen aparecer de forma espontánea, no como resultado de un proceso deliberado.",       dimension: "SN", direction: "negative" },
+  { id: 30, text: "Prefiero entender el principio detrás de algo que memorizar cómo aplicarlo paso a paso.",                 dimension: "SN", direction: "negative" },
+
+  // ── T/F (Pensamiento / Sentimiento) ───────────────────────────
+  { id: 31, text: "Cuando un amigo toma una mala decisión, le digo directamente lo que pienso aunque le incomode.",          dimension: "TF", direction: "positive" },
+  { id: 32, text: "En un debate, lo que más me importa es llegar a la conclusión correcta, no cómo se sientan los demás.",   dimension: "TF", direction: "positive" },
+  { id: 33, text: "Cuando alguien me cuenta un problema, mi primer impulso es buscar una solución, no expresar empatía.",    dimension: "TF", direction: "positive" },
+  { id: 34, text: "Si tengo que elegir entre decir la verdad o proteger los sentimientos de alguien, elijo la verdad.",      dimension: "TF", direction: "positive" },
+  { id: 35, text: "Al evaluar una idea, lo primero que analizo es su lógica y consistencia interna.",                        dimension: "TF", direction: "positive" },
+  { id: 36, text: "Me resulta fácil tomar decisiones difíciles cuando los datos son claros, aunque afecten a personas.",     dimension: "TF", direction: "positive" },
+  { id: 37, text: "Cuando alguien critica mi trabajo, prefiero que sea directo y sin suavizar, para poder mejorar.",         dimension: "TF", direction: "positive" },
+  { id: 38, text: "En conflictos de grupo, mi prioridad es identificar quién tiene razón, no mediar para que todos estén bien.", dimension: "TF", direction: "positive" },
+  { id: 39, text: "Cuando tomo una decisión importante, el factor que más pesa es cómo afectará a las personas involucradas.", dimension: "TF", direction: "negative" },
+  { id: 40, text: "Si un conflicto con alguien cercano queda sin resolver, me cuesta concentrarme en otras cosas.",          dimension: "TF", direction: "negative" },
+  { id: 41, text: "Cuando alguien está pasando por algo difícil, lo que más quiero hacer es que se sienta acompañado.",      dimension: "TF", direction: "negative" },
+  { id: 42, text: "Suelo adaptar mi forma de comunicar algo según cómo creo que lo va a recibir la otra persona.",           dimension: "TF", direction: "negative" },
+  { id: 43, text: "Me cuesta mucho actuar en contra de mis valores personales aunque la lógica lo justifique.",              dimension: "TF", direction: "negative" },
+  { id: 44, text: "En una discusión, si noto que el otro está muy afectado emocionalmente, tiendo a suavizar mi posición.",  dimension: "TF", direction: "negative" },
+  { id: 45, text: "La calidad de mis relaciones personales es más importante para mi bienestar que mis logros individuales.", dimension: "TF", direction: "negative" },
+
+  // ── J/P (Juicio / Percepción) ─────────────────────────────────
+  { id: 46, text: "Antes de un viaje, tengo el itinerario, alojamiento y actividades planificadas con anticipación.",        dimension: "JP", direction: "positive" },
+  { id: 47, text: "Me incomoda dejar conversaciones o proyectos importantes sin una conclusión o próximo paso claro.",       dimension: "JP", direction: "positive" },
+  { id: 48, text: "Cuando alguien cambia planes que ya habíamos acordado, me genera estrés aunque sea con tiempo de aviso.", dimension: "JP", direction: "positive" },
+  { id: 49, text: "Tengo lugares fijos para mis cosas y me molesta no encontrar algo donde espero que esté.",                dimension: "JP", direction: "positive" },
+  { id: 50, text: "Prefiero terminar una tarea completamente antes de empezar otra nueva.",                                  dimension: "JP", direction: "positive" },
+  { id: 51, text: "Tener una agenda o lista de tareas pendientes me da tranquilidad, no me agobia.",                         dimension: "JP", direction: "positive" },
+  { id: 52, text: "Para mí es importante llegar puntual — llegar tarde me genera ansiedad aunque sea poco tiempo.",          dimension: "JP", direction: "positive" },
+  { id: 53, text: "Cuando tengo un plazo de entrega, empiezo con tiempo para no tener que apurarme al final.",               dimension: "JP", direction: "positive" },
+  { id: 54, text: "Me resulta estimulante tener un plan del día completamente abierto y decidir sobre la marcha.",           dimension: "JP", direction: "negative" },
+  { id: 55, text: "Cuando los planes cambian a último momento, generalmente me adapto con facilidad y sin estrés.",          dimension: "JP", direction: "negative" },
+  { id: 56, text: "Rindo mejor cuando el plazo se acerca — la presión del tiempo me activa.",                                dimension: "JP", direction: "negative" },
+  { id: 57, text: "Tengo varios proyectos o ideas en paralelo que voy avanzando según el estado de ánimo del momento.",     dimension: "JP", direction: "negative" },
+  { id: 58, text: "Cuando tengo que tomar una decisión, prefiero esperar a tener más información aunque demore el proceso.", dimension: "JP", direction: "negative" },
+  { id: 59, text: "Las rutinas fijas me generan aburrimiento — prefiero que cada día tenga algo distinto.",                  dimension: "JP", direction: "negative" },
+  { id: 60, text: "Me siento cómodo empezando algo sin saber exactamente cómo va a terminar.",                               dimension: "JP", direction: "negative" },
 ];
 
 export function seededShuffle(arr, seed = 42) {
@@ -80,22 +87,26 @@ export function calculateResult(answers) {
     sums[q.dimension]   += q.direction === "positive" ? raw : 8 - raw;
     counts[q.dimension] += 1;
   });
-  const pct = {};
-  Object.keys(sums).forEach(dim => {
-    const n = counts[dim] || 1;
-    pct[dim] = ((sums[dim] - n) / (n * 6)) * 100;
-  });
+
+  const avgs = {};
+  for (const dim of Object.keys(sums)) {
+    avgs[dim] = counts[dim] > 0 ? sums[dim] / counts[dim] : 4;
+  }
+
   const type = [
-    pct.EI >= 50 ? "E" : "I",
-    pct.SN >= 50 ? "S" : "N",
-    pct.TF >= 50 ? "T" : "F",
-    pct.JP >= 50 ? "J" : "P",
+    avgs.EI > 4 ? "E" : "I",
+    avgs.SN > 4 ? "S" : "N",
+    avgs.TF > 4 ? "T" : "F",
+    avgs.JP > 4 ? "J" : "P",
   ].join("");
+
+  // Compute display percentages
   const display = {
-    EI: pct.EI >= 50 ? { letter:"E", label:"Extravertido",  pct: Math.round(pct.EI)        } : { letter:"I", label:"Introvertido",  pct: Math.round(100-pct.EI) },
-    SN: pct.SN >= 50 ? { letter:"S", label:"Sensorial",     pct: Math.round(pct.SN)        } : { letter:"N", label:"Intuitivo",     pct: Math.round(100-pct.SN) },
-    TF: pct.TF >= 50 ? { letter:"T", label:"Racional",      pct: Math.round(pct.TF)        } : { letter:"F", label:"Sentimental",   pct: Math.round(100-pct.TF) },
-    JP: pct.JP >= 50 ? { letter:"J", label:"Calificador",   pct: Math.round(pct.JP)        } : { letter:"P", label:"Perceptivo",    pct: Math.round(100-pct.JP) },
+    EI: { letter: avgs.EI > 4 ? "E" : "I", pct: Math.round(Math.abs(avgs.EI - 4) / 3 * 100 * 0.45 + 55) },
+    SN: { letter: avgs.SN > 4 ? "S" : "N", pct: Math.round(Math.abs(avgs.SN - 4) / 3 * 100 * 0.45 + 55) },
+    TF: { letter: avgs.TF > 4 ? "T" : "F", pct: Math.round(Math.abs(avgs.TF - 4) / 3 * 100 * 0.45 + 55) },
+    JP: { letter: avgs.JP > 4 ? "J" : "P", pct: Math.round(Math.abs(avgs.JP - 4) / 3 * 100 * 0.45 + 55) },
   };
+
   return { type, display };
 }
