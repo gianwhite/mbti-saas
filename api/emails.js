@@ -107,7 +107,7 @@ export function welcomeEmail({ email, mbtiType }) {
 
     <!-- CTA -->
     <div style="text-align:center;">
-      <a href="${appUrl}" style="display:inline-block; background:linear-gradient(135deg,${color},#6C63FF); color:#fff; text-decoration:none; border-radius:12px; padding:14px 36px; font-weight:700; font-size:0.95rem; letter-spacing:0.02em;">
+      <a href="${appUrl}/test?type=${mbtiType}" style="display:inline-block; background:linear-gradient(135deg,${color},#6C63FF); color:#fff; text-decoration:none; border-radius:12px; padding:14px 36px; font-weight:700; font-size:0.95rem; letter-spacing:0.02em;">
         Ver mi análisis completo →
       </a>
       <p style="color:#333; font-size:0.72rem; margin-top:12px;">$19/mes · Cancela cuando quieras</p>
@@ -279,7 +279,7 @@ export function nurture24Email({ email, mbtiType }) {
 
     <!-- CTA -->
     <div style="text-align:center;">
-      <a href="${appUrl}/test" style="display:inline-block; background:linear-gradient(135deg,${color},#6C3FC8); color:#fff; text-decoration:none; border-radius:12px; padding:14px 36px; font-weight:700; font-size:0.95rem; letter-spacing:0.02em;">
+      <a href="${appUrl}/test?type=${mbtiType}" style="display:inline-block; background:linear-gradient(135deg,${color},#6C3FC8); color:#fff; text-decoration:none; border-radius:12px; padding:14px 36px; font-weight:700; font-size:0.95rem; letter-spacing:0.02em;">
         ${data.unlock || "Ver mi análisis completo →"}
       </a>
       <p style="color:#2a2a2a; font-size:0.72rem; margin-top:12px;">7 días gratis · Sin tarjeta · Cancela cuando quieras</p>
@@ -355,7 +355,7 @@ export function nurture72Email({ email, mbtiType }) {
 
     <!-- CTA -->
     <div style="text-align:center;">
-      <a href="${appUrl}/test" style="display:inline-block; background:linear-gradient(135deg,${color},#6C3FC8); color:#fff; text-decoration:none; border-radius:12px; padding:14px 36px; font-weight:700; font-size:0.95rem; letter-spacing:0.02em;">
+      <a href="${appUrl}/test?type=${mbtiType}" style="display:inline-block; background:linear-gradient(135deg,${color},#6C3FC8); color:#fff; text-decoration:none; border-radius:12px; padding:14px 36px; font-weight:700; font-size:0.95rem; letter-spacing:0.02em;">
         Ver mi compatibilidad completa →
       </a>
       <p style="color:#2a2a2a; font-size:0.72rem; margin-top:12px;">7 días gratis · Sin tarjeta · Cancela cuando quieras</p>
@@ -424,7 +424,7 @@ export function premiumWelcomeEmail({ email, mbtiType }) {
 
     <!-- CTA -->
     <div style="text-align:center;">
-      <a href="${appUrl}" style="display:inline-block; background:linear-gradient(135deg,${color},#6C63FF); color:#fff; text-decoration:none; border-radius:12px; padding:14px 36px; font-weight:700; font-size:0.95rem; letter-spacing:0.02em;">
+      <a href="${appUrl}/test?type=${mbtiType}" style="display:inline-block; background:linear-gradient(135deg,${color},#6C63FF); color:#fff; text-decoration:none; border-radius:12px; padding:14px 36px; font-weight:700; font-size:0.95rem; letter-spacing:0.02em;">
         Ir a mi análisis →
       </a>
     </div>

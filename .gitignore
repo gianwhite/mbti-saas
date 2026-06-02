@@ -3,3 +3,5 @@ dist
 .env
 .env.local
 *.timestamp-*.mjs
+.vercel
+.env*

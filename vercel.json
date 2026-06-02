@@ -7,5 +7,8 @@
       "path": "/api/cron-nurture",
       "schedule": "0 9 * * *"
     }
-  ]
+  ],
+  "functions": {
+    "api/chat.js": { "maxDuration": 30 }
+  }
 }

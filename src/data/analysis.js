@@ -257,7 +257,7 @@ export const TYPE_ANALYSIS = {
     },
     compatibilidad: {
       top: [
-        { tipo: "ENFJ", por_que: "El ENFJ da la dirección, la estructura emocional y la calidez que el INFP necesita sin exigirle que abandone su autenticidad. El INFP aporta la profundidad de valores y la comprensión genuina que el ENFJ respeta más que cualquier logro.", como_conectar: "Muéstrate auténtico antes que impresionante. El INFP no respeta a quien actúa para ser aceptado." },
+        { tipo: "ENFJ", por_que: "El ENFJ da la dirección, la estructura emocional y la calidez que el INFP necesita sin exigirle que abandone su autenticidad. El INFP aporta la profundidad de valores y la comprensión genuina que el ENFJ respeta más que cualquier logro.", como_conectar: "Déjate guiar emocionalmente y muestra tu mundo interior. El ENFJ necesita sentir que puede conectar contigo — la profundidad que proteges es exactamente lo que más lo atrae. Permítele entrar en vez de esperar a que descifre tus señales." },
         { tipo: "ENTJ", por_que: "Complementariedad estructural total. El ENTJ aporta la dirección, estructura y ambición que el INFP no se da a sí mismo. El INFP humaniza al ENTJ de formas que ningún otro tipo puede — lo conecta con sus propios valores.", como_conectar: "Demuestra que tienes convicciones reales que no ceden ante la presión. El ENTJ solo respeta genuinamente a quien mantiene su posición." },
         { tipo: "ENFP", por_que: "Energía compartida, valores alineados, y crecimiento mutuo. Ambos operan desde Fi/Ne o Ne/Fi — hay una comprensión natural del mundo interno del otro que no requiere traducción.", como_conectar: "Sé espontáneo ocasionalmente. El ENFP necesita que salgas de tu mundo interior para encontrarla en el suyo." }
       ],

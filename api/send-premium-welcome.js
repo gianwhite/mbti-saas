@@ -19,21 +19,22 @@ export default async function handler(req, res) {
     let event;
     try {
       const raw = await getRawBody(req);
-      event = stripe.webhooks.constructEvent(raw, sig, process.env.STRIPE_WEBHOOK_SECRET);
+      event = stripe.webhooks.constructEvent(raw, sig, process.env.STRIPE_WEBHOOK_SECRET_PREMIUM);
     } catch (err) {
       return res.status(400).json({ error: `Webhook error: ${err.message}` });
     }
 
+    // Only act on checkout.session.completed — acknowledge all other events silently
     if (event.type === 'checkout.session.completed') {
       const session  = event.data.object;
       const email    = session.customer_details?.email || session.customer_email;
       const mbtiType = session.metadata?.mbti_type;
 
       if (email && mbtiType) {
-        await sendPremiumEmail(email, mbtiType);
+        try { await sendPremiumEmail(email, mbtiType); } catch {}
       }
     }
-    return res.json({ received: true });
+    return res.status(200).json({ received: true });
   }
 
   // ── Path B: Direct call from frontend ─────────────────────

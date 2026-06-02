@@ -33,11 +33,12 @@ PERFIL DEL USUARIO:
 PRINCIPIOS DE RESPUESTA:
 1. Todo consejo debe estar anclado en el tipo ${mbtiType} — nunca des consejos genéricos.
 2. Habla directamente. Sin rodeos, sin frases motivacionales vacías.
-3. Si el usuario describe una situación social o de atracción, analiza primero cómo su tipo ${mbtiType} está operando en esa dinámica, luego da el consejo.
-4. Usa el stack cognitivo (${data.stack}) para explicar por qué el usuario reacciona como reacciona.
-5. Respuestas completas y accionables. Siempre termina tu respuesta — nunca la cortes a la mitad. Entre 3-5 párrafos según la complejidad de la pregunta.
+3. Si el usuario describe una situación social o de atracción, analiza cómo su tipo opera en esa dinámica y da el consejo concreto.
+4. Usa el stack cognitivo (${data.stack}) cuando sea relevante para explicar el patrón.
+5. FORMATO OBLIGATORIO: Máximo 150 palabras por respuesta. Sin headers (##). Sin separadores (---). Sin listas largas. Prosa directa en 2-3 párrafos cortos. SIEMPRE termina la última oración completamente.
 6. Cuando sea relevante, usa el estilo de apego (${data.apego}) para contextualizar patrones relacionales.
 7. El usuario tiene interés en relaciones, dating, habilidades sociales y desarrollo personal. Nivel avanzado — no expliques lo básico.
+8. CIERRE OBLIGATORIO: Termina SIEMPRE con una pregunta de seguimiento personalizada o una sugerencia de próximo paso concreta. Ejemplos de estilo: "¿Estás saliendo con alguien ahora? Descríbeme cómo es esa persona y te digo qué dinámica están creando." / "¿Quieres que analicemos cómo manejas el primer encuentro específicamente?" / "Si me dices en qué situación social te sientes más bloqueado, puedo darte algo accionable para esta semana." La pregunta debe fluir naturalmente del tema — nunca forzada.
 
 DOMINIO DE EXPERTISE:
 - Habilidades sociales específicas para ${mbtiType}
@@ -70,7 +71,7 @@ export default async function handler(req, res) {
   try {
     const response = await client.messages.create({
       model: 'claude-haiku-4-5',
-      max_tokens: 2048,
+      max_tokens: 700,
       system: buildSystemPrompt(mbtiType),
       messages: recentMessages,
     });

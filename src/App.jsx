@@ -2,6 +2,7 @@
 import { useState, useCallback, useEffect, useRef, Component, createContext, useContext } from 'react';
 import { Routes, Route, useNavigate, Navigate, useParams } from 'react-router-dom';
 import CogTest from './CogTest.jsx';
+import TypeSeoPage from './TypeSeoPage.jsx';
 import { supabase } from './supabase.js';
 import {
   identifyUser, resetUser,
@@ -360,6 +361,151 @@ function DimensionBar({ dim, data }) {
 }
 
 // ─────────────────────────────────────────────
+// ONBOARDING CARD (pre-paywall personalization)
+// ─────────────────────────────────────────────
+const ONBOARDING_INTERESTS = [
+  { id: "relaciones", icon: "💞", label: "Relaciones y atracción" },
+  { id: "psicologia", icon: "🧠", label: "Por qué soy como soy" },
+  { id: "trabajo",    icon: "🚀", label: "Trabajo y liderazgo" },
+];
+
+const INTEREST_PREVIEWS = {
+  relaciones: {
+    INTJ: "Descubre por qué generas atracción intelectual intensa pero alejas a quien se acerca demasiado rápido — y cómo romper ese patrón.",
+    INTP: "Entenderás por qué las relaciones se complican cuando tu cabeza va más rápido que tus emociones, y qué tipo de pareja realmente te activa.",
+    ENTJ: "Sabrás por qué dominas casi todo menos la vulnerabilidad, y cómo conectar profundamente sin perder el control que te define.",
+    ENTP: "Descubrirás por qué atraes con facilidad pero te aburres igual de rápido, y qué te hace quedarte de verdad.",
+    INFJ: "Entenderás tu patrón de idealizar y luego desconectarte, y cómo construir vínculos reales sin perder tu identidad.",
+    INFP: "Verás por qué sientes tanto pero dices tan poco, y cómo expresar lo que necesitas sin sentir que traicionas tus valores.",
+    ENFJ: "Descubrirás por qué das más de lo que recibes en relaciones y cómo establecer límites sin sentirte egoísta.",
+    ENFP: "Entenderás por qué te enamoras rápido y profundo, y cómo sostener esa intensidad cuando la novedad desaparece.",
+    ISTJ: "Sabrás cómo mostrar afecto de formas que tu pareja realmente sienta, sin que te sientas forzado a ser alguien que no eres.",
+    ISFJ: "Descubrirás por qué das todo en silencio y terminas resentido, y cómo pedir lo que necesitas sin sentirte una carga.",
+    ESTJ: "Entenderás por qué tu directness se lee como frialdad, y cómo conectar emocionalmente sin soltar el timón.",
+    ESFJ: "Verás cómo tu necesidad de armonía te hace aceptar menos de lo que mereces, y cómo cambiarlo sin perder tu calidez.",
+    ISTP: "Descubrirás qué tipo de vínculo realmente te enriquece y cómo mostrarlo sin que parezca que no te importa.",
+    ISFP: "Entenderás por qué sientes tan profundo pero te cuesta tanto mostrarlo, y qué hace que finalmente bajes la guardia.",
+    ESTP: "Sabrás por qué conectas fácil pero en profundidad te bloqueas, y qué necesitas para querer realmente quedarte.",
+    ESFP: "Descubrirás por qué la intensidad inicial no siempre se convierte en compromiso real, y qué tipo de amor te llena de verdad.",
+  },
+  psicologia: {
+    INTJ: "Tu stack Ni→Te→Fi→Se explica por qué ves el futuro con claridad, ejecutas sin piedad y odias cuando tus emociones interfieren.",
+    INTP: "Ti→Ne→Si→Fe: tu mente crea sistemas perfectos pero se niega a cerrar el análisis — descubre por qué siempre hay una variable más.",
+    ENTJ: "Te→Ni→Se→Fi: lideras con visión estratégica pero tu función inferior Fi te hace dudar en privado más de lo que muestras.",
+    ENTP: "Ne→Ti→Fe→Si: generas ideas infinitas, usas la lógica para destruir argumentos y te resistes a la rutina como mecanismo de supervivencia.",
+    INFJ: "Ni→Fe→Ti→Se: tu visión del futuro y tu empatía profunda coexisten con una necesidad de lógica que la mayoría no ve en ti.",
+    INFP: "Fi→Ne→Si→Te: tus valores son el filtro de todo — cuando algo los viola, no es terquedad, es identidad.",
+    ENFJ: "Fe→Ni→Se→Ti: lees personas como texto y anticipas dinámicas — pero tu función inferior Te te hace dudar de tus propias decisiones.",
+    ENFP: "Ne→Fi→Te→Si: exploras posibilidades movido por valores profundos, con una capacidad de ejecución que aparece solo cuando algo te importa de verdad.",
+    ISTJ: "Si→Te→Fi→Ne: tu memoria experiencial y tu lógica práctica son tu fuerza — y por qué el cambio sin evidencia te genera desconfianza real.",
+    ISFJ: "Si→Fe→Ti→Ne: recuerdas cómo se sintió cada persona en cada momento, y actúas en consecuencia — eso no es debilidad, es tu superpoder.",
+    ESTJ: "Te→Si→Ne→Fi: ejecutas sobre lo probado, lideras con estructura — y tu función inferior Fi explica esa incomodidad con lo emocional.",
+    ESFJ: "Fe→Si→Ne→Ti: eres el arquitecto de la armonía social, y tu necesidad de aprobación no es inseguridad — es tu función dominante en acción.",
+    ISTP: "Ti→Se→Ni→Fe: analizas en tiempo real y actúas con precisión — y tu resistencia a las emociones es una protección que tiene un costo.",
+    ISFP: "Fi→Se→Ni→Te: vives en el presente con valores profundos e inamovibles — y por eso el mundo te parece ruidoso con tanta frecuencia.",
+    ESTP: "Se→Ti→Fe→Ni: lees la realidad al instante, calculas riesgos en segundos — y tu impaciencia con lo abstracto es completamente lógica.",
+    ESFP: "Se→Fi→Te→Ni: absorbes el mundo sensorialmente, actúas desde valores auténticos, y tu dificultad con la planificación no es falta de seriedad.",
+  },
+  trabajo: {
+    INTJ: "Descubrirás en qué entornos tu estrategia funciona sin fricción, por qué te frustra tanto el trabajo en equipo ineficiente, y cómo liderar sin parecer inalcanzable.",
+    INTP: "Entenderás por qué eres invaluable en problemas complejos pero invisible en política de oficina, y cómo posicionarte sin perder tu esencia.",
+    ENTJ: "Verás qué tipo de poder realmente te satisface a largo plazo y cómo construir equipos que ejecuten tu visión sin necesitar que lo hagas tú.",
+    ENTP: "Descubrirás por qué te aburres de proyectos que iniciaste con entusiasmo, y cómo diseñar un rol donde tu caos creativo sea un activo.",
+    INFJ: "Sabrás por qué te desgasta el trabajo sin propósito y cómo encontrar o crear roles donde tu visión y empatía sean tu ventaja competitiva.",
+    INFP: "Entenderás qué tipo de trabajo activa tu mejor versión y por qué el dinero solo nunca será suficiente motivación para ti.",
+    ENFJ: "Descubrirás en qué roles tu influencia natural se convierte en liderazgo real, y cómo evitar quemarte dando más de lo que el sistema te devuelve.",
+    ENFP: "Verás qué entornos potencian tu creatividad, por qué el trabajo repetitivo literalmente te apaga, y cómo monetizar tu capacidad de conectar ideas.",
+    ISTJ: "Entenderás por qué eres el pilar silencioso de cualquier organización y cómo usar eso para avanzar sin tener que cambiar quién eres.",
+    ISFJ: "Descubrirás cómo tu capacidad de sostener sistemas complejos y personas difíciles es una ventaja rara — y cómo que te la reconozcan.",
+    ESTJ: "Verás en qué estructuras tu estilo directivo genera resultados y no resistencia, y cómo gestionar a personas que no operan como tú.",
+    ESFJ: "Sabrás por qué eres excelente creando cultura de equipo y cómo usar esa habilidad para escalar tu influencia sin depender de la aprobación.",
+    ISTP: "Descubrirás qué tipo de trabajo activa tu modo de alto rendimiento y por qué necesitas autonomía real para dar tu mejor versión.",
+    ISFP: "Entenderás qué entornos respetan tu ritmo y valores, y cómo encontrar trabajo que se sienta como expresión en lugar de obligación.",
+    ESTP: "Verás por qué prosperas en contextos de alta presión y cambio constante, y cómo construir una carrera donde eso sea la norma.",
+    ESFP: "Descubrirás en qué roles tu energía social y creatividad son el producto, y cómo construir una carrera que no se sienta como una jaula.",
+  },
+};
+
+function OnboardingCard({ type, color, onComplete }) {
+  const [interest, setInterest] = useState(null);
+  const [visible, setVisible]   = useState(true);
+
+  if (!visible) return null;
+
+  const preview = interest ? (INTEREST_PREVIEWS[interest]?.[type] || "") : null;
+
+  const handleSelect = (id) => setInterest(id);
+
+  const handleCTA = () => {
+    if (interest) sessionStorage.setItem('mbti_interest', interest);
+    setVisible(false);
+    onComplete();
+  };
+
+  return (
+    <div className="fade-up" style={{ background: "linear-gradient(135deg, #0a0a0a 0%, #111 100%)", border: `1px solid ${color}44`, borderRadius: "18px", padding: "1.4rem 1.4rem 1.2rem", marginBottom: "1.25rem", position: "relative", overflow: "hidden" }}>
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: `linear-gradient(90deg, transparent, ${color}99, transparent)` }} />
+
+      {!interest ? (
+        <>
+          <div style={{ fontSize: "0.7rem", letterSpacing: "0.12em", color: color, marginBottom: "0.6rem", fontWeight: 600 }}>UN PASO MÁS</div>
+          <div style={{ fontSize: "0.97rem", fontWeight: 700, color: "#fff", marginBottom: "0.35rem", lineHeight: 1.3 }}>
+            ¿Qué te interesa más entender sobre ti?
+          </div>
+          <div style={{ fontSize: "0.75rem", color: "#555", marginBottom: "1rem" }}>
+            Personalizamos tu análisis según lo que elijas.
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+            {ONBOARDING_INTERESTS.map(({ id, icon, label }) => (
+              <button
+                key={id}
+                onClick={() => handleSelect(id)}
+                style={{ display: "flex", alignItems: "center", gap: "0.75rem", background: "#0f0f0f", border: `1px solid ${color}33`, borderRadius: "12px", padding: "0.75rem 1rem", cursor: "pointer", textAlign: "left", transition: "border-color 0.15s" }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = color + "88"}
+                onMouseLeave={e => e.currentTarget.style.borderColor = color + "33"}
+              >
+                <span style={{ fontSize: "1.2rem" }}>{icon}</span>
+                <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "#ddd" }}>{label}</span>
+                <span style={{ marginLeft: "auto", color: "#444", fontSize: "0.8rem" }}>→</span>
+              </button>
+            ))}
+          </div>
+        </>
+      ) : (
+        <>
+          <div style={{ fontSize: "0.7rem", letterSpacing: "0.12em", color: color, marginBottom: "0.6rem", fontWeight: 600 }}>
+            {ONBOARDING_INTERESTS.find(i => i.id === interest)?.icon} TU ANÁLISIS PERSONALIZADO
+          </div>
+          <div style={{ fontSize: "0.88rem", color: "#ccc", lineHeight: 1.6, marginBottom: "1.1rem", borderLeft: `3px solid ${color}55`, paddingLeft: "0.85rem" }}>
+            {preview}
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", marginBottom: "1rem" }}>
+            {[
+              "Análisis completo de tu tipo",
+              "Funciones cognitivas aplicadas",
+              "Compatibilidad en relaciones",
+              "Advisor IA personalizado para ti",
+            ].map(item => (
+              <div key={item} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.75rem", color: "#777" }}>
+                <span style={{ color: color, fontSize: "0.65rem" }}>✦</span> {item}
+              </div>
+            ))}
+          </div>
+          <button
+            onClick={handleCTA}
+            style={{ width: "100%", background: `linear-gradient(135deg, ${color}, #6C63FF)`, color: "#fff", border: "none", borderRadius: "12px", padding: "0.9rem", fontSize: "0.92rem", fontWeight: 700, cursor: "pointer", letterSpacing: "0.02em" }}
+          >
+            Desbloquear mi análisis completo →
+          </button>
+          <div style={{ textAlign: "center", marginTop: "0.5rem", fontSize: "0.67rem", color: "#444" }}>
+            $19/mes · Cancela cuando quieras
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 // PAYWALL MODAL
 // ─────────────────────────────────────────────
 function PaywallModal({ type, onClose }) {
@@ -1915,6 +2061,7 @@ function TabAdvisor({ type, typeColor, initialMessage }) {
   const [histLoading, setHistLoading]   = useState(true);
   const [showHistory, setShowHistory]   = useState(false);
   const bottomRef = useRef(null);
+  const scrollContainerRef = useRef(null);
   const { user } = useAuth();
 
   const SUGGESTIONS = [
@@ -1967,7 +2114,9 @@ function TabAdvisor({ type, typeColor, initialMessage }) {
 
   // ── Auto-scroll ──
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    }
   }, [messages, loading]);
 
   // ── Auto-send initialMessage (from compat tab) ──
@@ -2137,7 +2286,7 @@ function TabAdvisor({ type, typeColor, initialMessage }) {
 
       {/* Message history */}
       {messages.length > 0 && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem", maxHeight: "440px", overflowY: "auto", paddingRight: "2px" }}>
+        <div ref={scrollContainerRef} style={{ display: "flex", flexDirection: "column", gap: "0.85rem", maxHeight: "60vh", overflowY: "auto", paddingRight: "4px", scrollbarWidth: "thin", scrollbarColor: `${typeColor}44 transparent` }}>
           {messages.map((m, i) => (
             <div key={i} style={{ display: "flex", justifyContent: m.role === 'user' ? "flex-end" : "flex-start", gap: "0.55rem", alignItems: "flex-end" }}>
               {/* Hex avatar for assistant */}
@@ -2792,6 +2941,47 @@ function ExitIntentModal({ type, info, onClose, onTrial }) {
   );
 }
 
+// Fetches real image URL from Wikipedia REST API
+function CelebrityCircle({ celebrity, color }) {
+  const [imgSrc, setImgSrc] = useState(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    // If a direct image URL is provided, use it immediately
+    if (celebrity.img) {
+      setImgSrc(celebrity.img);
+      return;
+    }
+    const title = encodeURIComponent(celebrity.wiki || celebrity.name.replace(/ /g, '_'));
+    fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${title}`)
+      .then(r => r.json())
+      .then(data => {
+        const src = data?.thumbnail?.source || data?.originalimage?.source;
+        if (src) setImgSrc(src);
+        else setFailed(true);
+      })
+      .catch(() => setFailed(true));
+  }, [celebrity.name]);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.4rem" }}>
+      <div style={{ width: "52px", height: "52px", borderRadius: "50%", border: `2px solid ${color}55`, overflow: "hidden", background: color + "22", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        {imgSrc && !failed ? (
+          <img
+            src={imgSrc}
+            alt={celebrity.name}
+            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }}
+            onError={() => setFailed(true)}
+          />
+        ) : (
+          <span style={{ fontSize: "1.3rem", fontWeight: 700, color }}>{celebrity.name.charAt(0)}</span>
+        )}
+      </div>
+      <span style={{ color: "#555", fontSize: "0.62rem", textAlign: "center", maxWidth: "60px", lineHeight: 1.3 }}>{celebrity.name}</span>
+    </div>
+  );
+}
+
 function ResultsScreen({ type: initialType, display: initialDisplay, onRetake, onPreviewWelcome }) {
   const [type, setType]   = useState(initialType);
   const [display, setDisplay] = useState(initialDisplay);
@@ -2803,6 +2993,7 @@ function ResultsScreen({ type: initialType, display: initialDisplay, onRetake, o
   const [isPaid, setIsPaid]   = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const [showTypeSelector, setShowTypeSelector] = useState(false);
+  const [onboardingDone, setOnboardingDone] = useState(() => !!sessionStorage.getItem('mbti_interest'));
 
   const { user } = useAuth();
 
@@ -2969,8 +3160,8 @@ function ResultsScreen({ type: initialType, display: initialDisplay, onRetake, o
       {showTypeSelector && <TypeSelectorModal currentType={type} onSelect={handleTypeChange} onClose={() => setShowTypeSelector(false)} />}
       {showExitIntent && !isPaid && <ExitIntentModal type={type} info={info} onClose={() => setShowExitIntent(false)} onTrial={handleTrialCheckout} />}
 
-      {/* Hero */}
-      <div className="results-hero glass-card" style={{ background: `linear-gradient(160deg, rgba(255,255,255,0.03) 60%, ${info.color}0a)`, border: `1px solid ${info.color}33`, borderRadius: "24px", padding: "2rem 1.75rem 1.75rem", textAlign: "center", marginBottom: "1.25rem", position: "relative", overflow: "hidden" }}>
+      {/* Hero — solo visible en el hub (tab === null) */}
+      {tab === null && <div className="results-hero glass-card" style={{ background: `linear-gradient(160deg, rgba(255,255,255,0.03) 60%, ${info.color}0a)`, border: `1px solid ${info.color}33`, borderRadius: "24px", padding: "2rem 1.75rem 1.75rem", textAlign: "center", marginBottom: "1.25rem", position: "relative", overflow: "hidden" }}>
         {/* Top glow bar */}
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: `linear-gradient(90deg, transparent, ${info.color}, transparent)` }} />
         {/* Background glow */}
@@ -3007,17 +3198,7 @@ function ResultsScreen({ type: initialType, display: initialDisplay, onRetake, o
             <div style={{ color: "#3D3550", fontSize: "0.65rem", letterSpacing: "0.12em", marginBottom: "0.65rem" }}>CELEBRIDADES CON TU PERSONALIDAD</div>
             <div style={{ display: "flex", justifyContent: "center", gap: "1.25rem" }}>
               {info.celebrities.map((c) => (
-                <div key={c.name} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.4rem" }}>
-                  <div style={{ width: "52px", height: "52px", borderRadius: "50%", border: `2px solid ${info.color}55`, overflow: "hidden", background: "#111" }}>
-                    <img
-                      src={c.img}
-                      alt={c.name}
-                      style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }}
-                      onError={e => { e.target.style.display = "none"; }}
-                    />
-                  </div>
-                  <span style={{ color: "#555", fontSize: "0.62rem", textAlign: "center", maxWidth: "60px", lineHeight: 1.3 }}>{c.name}</span>
-                </div>
+                <CelebrityCircle key={c.name} celebrity={c} color={info.color} />
               ))}
             </div>
           </div>
@@ -3035,10 +3216,19 @@ function ResultsScreen({ type: initialType, display: initialDisplay, onRetake, o
             </div>
           ))}
         </div>
-      </div>
+      </div>}
 
-      {/* ── Unlock Banner (non-paid only) ── */}
-      {!isPaid && (
+      {/* ── Onboarding Card (pre-paywall, non-paid, first visit) ── */}
+      {tab === null && !isPaid && !onboardingDone && (
+        <OnboardingCard
+          type={type}
+          color={info.color}
+          onComplete={() => { setOnboardingDone(true); setShowPaywall(true); trackPaywallSeen('onboarding'); }}
+        />
+      )}
+
+      {/* ── Unlock Banner (non-paid only, after onboarding) ── */}
+      {tab === null && !isPaid && onboardingDone && (
         <div className="fade-up" style={{ background: `linear-gradient(135deg, #0f0f0f 0%, ${info.color}0a 100%)`, border: `1px solid ${info.color}44`, borderRadius: "18px", padding: "1.25rem 1.4rem", marginBottom: "1.25rem", position: "relative", overflow: "hidden" }}>
           {/* Glow top border */}
           <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: `linear-gradient(90deg, transparent, ${info.color}99, transparent)` }} />
@@ -3133,13 +3323,19 @@ function ResultsScreen({ type: initialType, display: initialDisplay, onRetake, o
       ) : (
         /* ── Section content (spoke) ── */
         <div>
-          {/* Back button */}
-          <button
-            onClick={() => setTab(null)}
-            style={{ display: "flex", alignItems: "center", gap: "6px", background: "none", border: "none", color: "#555", cursor: "pointer", fontSize: "0.8rem", fontWeight: 600, padding: "0 0 1rem", letterSpacing: "0.02em" }}
-          >
-            ← Volver
-          </button>
+          {/* Mini header + back button */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
+            <button
+              onClick={() => setTab(null)}
+              style={{ display: "flex", alignItems: "center", gap: "6px", background: "none", border: "none", color: "#555", cursor: "pointer", fontSize: "0.8rem", fontWeight: 600, padding: 0, letterSpacing: "0.02em" }}
+            >
+              ← Volver
+            </button>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <div style={{ background: `${info.color}15`, border: `1px solid ${info.color}44`, borderRadius: "8px", padding: "3px 10px", fontSize: "0.78rem", fontWeight: 800, color: info.color, letterSpacing: "0.1em" }}>{type}</div>
+              <span style={{ fontSize: "0.75rem", color: "#555" }}>{info.name}</span>
+            </div>
+          </div>
 
           {tab === "perfil"         && <TabPerfil type={type} display={display} info={info} />}
           {tab === "advisor"        && <TabAdvisor type={type} typeColor={info.color} initialMessage={advisorInitialMessage} />}
@@ -3232,9 +3428,12 @@ function AppInner() {
 
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
 
-  // Handle return from Stripe (URL has session_id)
+  // Handle return from Stripe (URL has session_id) or email link (URL has type=)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    const urlType = (params.get('type') || '').toUpperCase();
+    const VALID_TYPES = ['INTJ','INTP','ENTJ','ENTP','INFJ','INFP','ENFJ','ENFP','ISTJ','ISFJ','ESTJ','ESFJ','ISTP','ISFP','ESTP','ESFP'];
+
     if (params.get('session_id')) {
       const savedType = localStorage.getItem('mbti_type');
       if (savedType) {
@@ -3245,6 +3444,12 @@ function AppInner() {
         // Clean URL without reload
         window.history.replaceState({}, '', window.location.pathname);
       }
+    } else if (urlType && VALID_TYPES.includes(urlType)) {
+      // Came from email link with ?type=INFP — load result directly
+      localStorage.setItem('mbti_type', urlType);
+      setResult({ type: urlType, display: null });
+      setScreen('results');
+      window.history.replaceState({}, '', window.location.pathname);
     }
   }, []);
 
@@ -3337,6 +3542,36 @@ function ResetPasswordPage() {
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState('');
   const [done, setDone]         = useState(false);
+  const [ready, setReady]       = useState(false); // token validated
+
+  useEffect(() => {
+    // Handle PKCE flow: ?code= in URL (Supabase v2 default)
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    if (code) {
+      supabase.auth.exchangeCodeForSession(code).then(({ error: err }) => {
+        if (!err) setReady(true);
+        else setError('El enlace no es válido o ya expiró. Solicita uno nuevo.');
+      });
+    }
+
+    // Handle legacy implicit flow: #access_token= in hash
+    const hash = window.location.hash;
+    if (hash.includes('type=recovery') || hash.includes('access_token')) {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) setReady(true);
+      });
+    }
+
+    // Listen for auth state changes (covers both flows)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && session)) {
+        setReady(true);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleReset = async () => {
     setError('');
@@ -3358,6 +3593,8 @@ function ResetPasswordPage() {
 
         {done ? (
           <p style={{ color: '#4ADE80', textAlign: 'center', fontSize: '0.9rem' }}>✓ Contraseña actualizada. Redirigiendo…</p>
+        ) : !ready ? (
+          <p style={{ color: '#aaa', textAlign: 'center', fontSize: '0.85rem' }}>Verificando enlace…</p>
         ) : (
           <>
             <input type="password" placeholder="Nueva contraseña" value={password} onChange={e => setPassword(e.target.value)}
@@ -3386,6 +3623,7 @@ export default function App() {
         <Route path="/compat/:type" element={<CompatPage />} />
         <Route path="/test-v2" element={<CogTest />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/tipo/:type" element={<TypeSeoPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AuthProvider>
