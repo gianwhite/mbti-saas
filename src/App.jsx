@@ -2991,6 +2991,7 @@ function ResultsScreen({ type: initialType, display: initialDisplay, onRetake, o
   const [advisorInitialMessage, setAdvisorInitialMessage] = useState(null);
   const [copied, setCopied]   = useState(false);
   const [isPaid, setIsPaid]   = useState(false);
+  const [subscriptionStatus, setSubscriptionStatus] = useState(null); // null | 'active' | 'trialing' | 'past_due' | 'unpaid' | 'canceled' | 'never_subscribed'
   const [showPaywall, setShowPaywall] = useState(false);
   const [showTypeSelector, setShowTypeSelector] = useState(false);
   const [onboardingDone, setOnboardingDone] = useState(() => !!sessionStorage.getItem('mbti_interest'));
@@ -3019,14 +3020,27 @@ function ResultsScreen({ type: initialType, display: initialDisplay, onRetake, o
     const sessionId = params.get('session_id');
     const storedCustomerId = localStorage.getItem('mbti_customer_id');
 
+    const applyResult = (data) => {
+      if (data.active) {
+        if (data.customerId) localStorage.setItem('mbti_customer_id', data.customerId);
+        setIsPaid(true);
+        setSubscriptionStatus(data.subscriptionStatus || 'active');
+      } else {
+        setSubscriptionStatus(data.subscriptionStatus || 'never_subscribed');
+        // Keep customerId in localStorage for past_due/unpaid so portal still works
+        if (data.customerId && (data.subscriptionStatus === 'past_due' || data.subscriptionStatus === 'unpaid')) {
+          localStorage.setItem('mbti_customer_id', data.customerId);
+        }
+      }
+    };
+
     if (sessionId) {
       // Return from Stripe checkout — verify and store customer ID
       fetch(`/api/verify-access?session_id=${sessionId}`)
         .then(r => r.json())
         .then(data => {
+          applyResult(data);
           if (data.active) {
-            localStorage.setItem('mbti_customer_id', data.customerId);
-            setIsPaid(true);
             trackSubscriptionActivated(type);
             // Fire premium welcome email (best-effort)
             if (user?.email) {
@@ -3045,19 +3059,18 @@ function ResultsScreen({ type: initialType, display: initialDisplay, onRetake, o
       fetch(`/api/verify-access?customer_id=${storedCustomerId}`)
         .then(r => r.json())
         .then(data => {
-          if (data.active) setIsPaid(true);
-          else {
-            localStorage.removeItem('mbti_customer_id');
-            // Fallback: try by email if logged in
-            if (user?.email) {
+          if (data.active) {
+            applyResult(data);
+          } else {
+            if (data.subscriptionStatus !== 'past_due' && data.subscriptionStatus !== 'unpaid') {
+              localStorage.removeItem('mbti_customer_id');
+            }
+            applyResult(data);
+            // Fallback: try by email if logged in and status is never_subscribed
+            if (user?.email && data.subscriptionStatus === 'never_subscribed') {
               fetch(`/api/verify-access?email=${encodeURIComponent(user.email)}`)
                 .then(r => r.json())
-                .then(d => {
-                  if (d.active) {
-                    if (d.customerId) localStorage.setItem('mbti_customer_id', d.customerId);
-                    setIsPaid(true);
-                  }
-                })
+                .then(d => applyResult(d))
                 .catch(() => {});
             }
           }
@@ -3067,13 +3080,10 @@ function ResultsScreen({ type: initialType, display: initialDisplay, onRetake, o
       // No stored customer ID but user is logged in — look up by email
       fetch(`/api/verify-access?email=${encodeURIComponent(user.email)}`)
         .then(r => r.json())
-        .then(data => {
-          if (data.active) {
-            if (data.customerId) localStorage.setItem('mbti_customer_id', data.customerId);
-            setIsPaid(true);
-          }
-        })
+        .then(data => applyResult(data))
         .catch(() => {});
+    } else {
+      setSubscriptionStatus('never_subscribed');
     }
   }, [user]);
 
@@ -3227,8 +3237,56 @@ function ResultsScreen({ type: initialType, display: initialDisplay, onRetake, o
         />
       )}
 
-      {/* ── Unlock Banner (non-paid only, after onboarding) ── */}
-      {tab === null && !isPaid && onboardingDone && (
+      {/* ── Payment failed banner (past_due / unpaid) ── */}
+      {tab === null && !isPaid && (subscriptionStatus === 'past_due' || subscriptionStatus === 'unpaid') && (
+        <div className="fade-up" style={{ background: "linear-gradient(135deg, #1a0505 0%, #2a0a0a 100%)", border: "1px solid #ff4444aa", borderRadius: "18px", padding: "1.1rem 1.4rem", marginBottom: "1.25rem", position: "relative", overflow: "hidden" }}>
+          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: "linear-gradient(90deg, transparent, #ff4444, transparent)" }} />
+          <div style={{ display: "flex", alignItems: "flex-start", gap: "0.85rem" }}>
+            <div style={{ fontSize: "1.4rem", flexShrink: 0 }}>⚠️</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: "0.92rem", fontWeight: 700, color: "#ff8080", marginBottom: "0.25rem" }}>
+                Problema con tu pago
+              </div>
+              <div style={{ fontSize: "0.78rem", color: "#aa6666", marginBottom: "0.85rem", lineHeight: 1.5 }}>
+                No pudimos procesar tu último cobro. Actualiza tu método de pago para recuperar el acceso a tu análisis completo.
+              </div>
+              <button
+                onClick={handleManageSubscription}
+                style={{ width: "100%", background: "linear-gradient(135deg, #cc2222, #ff4444)", color: "#fff", border: "none", borderRadius: "12px", padding: "0.8rem", fontSize: "0.9rem", fontWeight: 700, cursor: "pointer" }}
+              >
+                Actualizar método de pago →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Cancelled subscription banner ── */}
+      {tab === null && !isPaid && subscriptionStatus === 'canceled' && (
+        <div className="fade-up" style={{ background: `linear-gradient(135deg, #0f0f0f 0%, ${info.color}08 100%)`, border: `1px solid ${info.color}33`, borderRadius: "18px", padding: "1.1rem 1.4rem", marginBottom: "1.25rem", position: "relative", overflow: "hidden" }}>
+          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: `linear-gradient(90deg, transparent, ${info.color}66, transparent)` }} />
+          <div style={{ display: "flex", alignItems: "flex-start", gap: "0.85rem" }}>
+            <div style={{ fontSize: "1.4rem", flexShrink: 0 }}>🔓</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: "0.92rem", fontWeight: 700, color: "#fff", marginBottom: "0.25rem" }}>
+                Tu suscripción está inactiva
+              </div>
+              <div style={{ fontSize: "0.78rem", color: "#666", marginBottom: "0.85rem", lineHeight: 1.5 }}>
+                Perdiste acceso a tu análisis completo, advisor IA y compatibilidad. Reactívala cuando quieras.
+              </div>
+              <button
+                onClick={() => { setShowPaywall(true); trackPaywallSeen('reactivate_banner'); }}
+                style={{ width: "100%", background: `linear-gradient(135deg, ${info.color}, #6C63FF)`, color: "#fff", border: "none", borderRadius: "12px", padding: "0.8rem", fontSize: "0.9rem", fontWeight: 700, cursor: "pointer" }}
+              >
+                Reactivar membresía →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Unlock Banner (never subscribed only, after onboarding) ── */}
+      {tab === null && !isPaid && onboardingDone && (subscriptionStatus === 'never_subscribed' || subscriptionStatus === null) && (
         <div className="fade-up" style={{ background: `linear-gradient(135deg, #0f0f0f 0%, ${info.color}0a 100%)`, border: `1px solid ${info.color}44`, borderRadius: "18px", padding: "1.25rem 1.4rem", marginBottom: "1.25rem", position: "relative", overflow: "hidden" }}>
           {/* Glow top border */}
           <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: `linear-gradient(90deg, transparent, ${info.color}99, transparent)` }} />
