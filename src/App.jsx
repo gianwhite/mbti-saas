@@ -2100,13 +2100,9 @@ function TabAdvisor({ type, typeColor, initialMessage, onClose }) {
         });
 
         const sids = Object.keys(grouped);
-        const latestSid = sids[sids.length - 1];
 
-        setSessionId(latestSid);
-        setActiveSessionId(latestSid);
-        setMessages(grouped[latestSid].messages);
-
-        const pastSessions = sids.slice(0, -1).reverse().map(sid => ({
+        // Carga todo al sidebar — no auto-cargar ninguna sesión en el chat
+        const allSessions = [...sids].reverse().map(sid => ({
           id: sid,
           preview: grouped[sid].messages.find(m => m.role === 'user')?.content || '…',
           rawDate: grouped[sid].created_at,
@@ -2114,7 +2110,8 @@ function TabAdvisor({ type, typeColor, initialMessage, onClose }) {
           count: grouped[sid].messages.length,
           messages: grouped[sid].messages,
         }));
-        setSessions(pastSessions);
+        setSessions(allSessions);
+        // messages y activeSessionId quedan vacíos → pantalla inicial
         setHistLoading(false);
       });
   }, [user, type]);
@@ -2155,18 +2152,23 @@ function TabAdvisor({ type, typeColor, initialMessage, onClose }) {
   // ── Nueva conversación ──
   const newConversation = () => {
     if (messages.length > 0) {
-      setSessions(prev => [{
-        id: sessionId,
-        preview: messages.find(m => m.role === 'user')?.content || '…',
-        rawDate: new Date().toISOString(),
-        date: new Date().toLocaleDateString('es', { day: 'numeric', month: 'short' }),
-        count: messages.length,
-        messages: [...messages],
-      }, ...prev]);
+      // Guardar conversación actual al sidebar si no está ya
+      setSessions(prev => {
+        const exists = prev.find(s => s.id === sessionId);
+        if (exists) return prev;
+        return [{
+          id: sessionId,
+          preview: messages.find(m => m.role === 'user')?.content || '…',
+          rawDate: new Date().toISOString(),
+          date: new Date().toLocaleDateString('es', { day: 'numeric', month: 'short' }),
+          count: messages.length,
+          messages: [...messages],
+        }, ...prev];
+      });
     }
     const newSid = crypto.randomUUID();
     setSessionId(newSid);
-    setActiveSessionId(newSid);
+    setActiveSessionId(null);
     setMessages([]);
     if (window.innerWidth < 700) setSidebarOpen(false);
   };
@@ -2344,24 +2346,6 @@ function TabAdvisor({ type, typeColor, initialMessage, onClose }) {
         <div style={{ flex: 1, overflowY: "auto", padding: "0.625rem 0.5rem", scrollbarWidth: "thin", scrollbarColor: "rgba(255,255,255,0.08) transparent" }}>
           {histLoading && (
             <div style={{ color: "#3D3550", fontSize: "0.75rem", textAlign: "center", padding: "1.5rem 0.5rem" }}>Cargando historial…</div>
-          )}
-
-          {/* Current active session (if has messages and not already in list) */}
-          {!histLoading && messages.length > 0 && (
-            <>
-              <div style={{ color: "#2A2040", fontSize: "0.62rem", letterSpacing: "0.1em", padding: "0.25rem 0.5rem 0.35rem", fontWeight: 600 }}>HOY</div>
-              <SidebarItem
-                session={{
-                  id: sessionId,
-                  preview: messages.find(m => m.role === 'user')?.content || '…',
-                  rawDate: new Date().toISOString(),
-                  date: 'Ahora',
-                  count: messages.length,
-                  messages,
-                }}
-                isActive={true}
-              />
-            </>
           )}
 
           {!histLoading && groupedSessions.map(group => (
