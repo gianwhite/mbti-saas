@@ -215,12 +215,11 @@ function AuthModal({ onClose, onSuccess, title = "Crea tu cuenta", initialMode =
   );
 }
 
-import { RAW_QUESTIONS, seededShuffle, calculateResult } from './data/questions.js';
 import { TYPE_ANALYSIS } from './data/analysis.js';
 import { TYPE_PROFESSIONAL } from './data/professional.js';
 import { TYPES } from './data/types.js';
+import AdaptiveTest from './AdaptiveTest.jsx';
 
-const QUESTIONS = seededShuffle(RAW_QUESTIONS);
 const PRICE_DISPLAY = import.meta.env.VITE_PRICE_DISPLAY || '$19';
 
 const LIKERT = [
@@ -1008,14 +1007,14 @@ function TestIntro({ onStart }) {
       </div>
       <div style={{ position: "relative", zIndex: 1 }}>
         <h1 style={{ fontSize: "1.8rem", fontWeight: 800, color: "#fff", marginBottom: "0.5rem", lineHeight: 1.2 }}>Test de Personalidad MBTI</h1>
-        <p style={{ color: "#888", marginBottom: "2rem", fontSize: "0.92rem" }}>60 preguntas · ~10 minutos · Resultados inmediatos</p>
+        <p style={{ color: "#888", marginBottom: "2rem", fontSize: "0.92rem" }}>30 preguntas · ~6 minutos · Algoritmo adaptativo</p>
         <div className="glass-card" style={{ borderRadius: "14px", padding: "1.25rem", marginBottom: "2rem", textAlign: "left" }}>
           <div style={{ color: "#555", fontSize: "0.68rem", letterSpacing: "0.12em", marginBottom: "1rem" }}>INSTRUCCIONES</div>
           {[
-            ["Responde según tu opinión genuina", "No hay respuestas correctas — refleja cómo realmente eres."],
-            ["Usa tu primera reacción", "No pienses demasiado. La respuesta instintiva es la más precisa."],
-            ["No saltes preguntas", "Puedes volver atrás cuando quieras."],
-            ["Resultados inmediatos", "Al terminar verás tu tipo MBTI con análisis detallado."],
+            ["Elige A o B sin pensar demasiado", "Cada pregunta presenta dos opciones igualmente válidas — no hay respuestas correctas."],
+            ["Tu primera reacción es la más honesta", "El sistema se adapta a tus respuestas en tiempo real."],
+            ["Responde cómo realmente eres", "No cómo te gustaría ser — la autenticidad da resultados más precisos."],
+            ["Resultados con nivel de confianza", "Al terminar verás tu tipo MBTI y qué tan definido es tu perfil."],
           ].map(([t, d]) => (
             <div key={t} style={{ display: "flex", gap: "0.75rem", marginBottom: "0.85rem", alignItems: "flex-start" }}>
               <span style={{ color: "#6C63FF", marginTop: "3px", fontSize: "0.8rem" }}>✓</span>
@@ -3445,8 +3444,6 @@ function AppInner() {
   const [screen, setScreen] = useState(() =>
     localStorage.getItem('mbti_type') ? "results" : "test-intro"
   );
-  const [index, setIndex]     = useState(0);
-  const [answers, setAnswers] = useState({});
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authInitialMode, setAuthInitialMode] = useState("signup");
 
@@ -3511,33 +3508,26 @@ function AppInner() {
     }
   }, []);
 
-  const handleStart = () => { setAnswers({}); setIndex(0); setScreen("test-questions"); trackTestStarted(); };
+  const handleStart = () => { setScreen("test-questions"); trackTestStarted(); };
 
-  const handleAnswer = useCallback((value) => {
-    const q = QUESTIONS[index];
-    const newAnswers = { ...answers, [q.id]: value };
-    setAnswers(newAnswers);
-    if (index < QUESTIONS.length - 1) {
-      setTimeout(() => setIndex(i => i + 1), 250);
+  // Called by AdaptiveTest when all phases are complete
+  const handleTestComplete = useCallback((res) => {
+    localStorage.setItem('mbti_display', JSON.stringify(res.display));
+    localStorage.setItem('mbti_type', res.type);
+    // Also store confidence so ResultsScreen can use it
+    if (res.confidence) localStorage.setItem('mbti_confidence', String(res.confidence));
+    if (res.alternates) localStorage.setItem('mbti_alternates', JSON.stringify(res.alternates));
+    setResult(res);
+    trackTestCompleted(res.type);
+    if (user) {
+      saveResultToSupabase(res.type, res.display);
+      setScreen("results");
     } else {
-      const res = calculateResult(newAnswers);
-      localStorage.setItem('mbti_display', JSON.stringify(res.display));
-      localStorage.setItem('mbti_type', res.type);
-      setResult(res);
-      trackTestCompleted(res.type);
-      if (user) {
-        // Already logged in — skip email gate
-        saveResultToSupabase(res.type, res.display);
-        setScreen("results");
-      } else {
-        // Show email capture before results
-        setScreen("email-gate");
-      }
+      setScreen("email-gate");
     }
-  }, [index, answers, user]);
+  }, [user]);
 
-  const handlePrev  = () => { if (index > 0) setIndex(i => i - 1); };
-  const handleRetake = () => { setAnswers({}); setIndex(0); setResult(null); setScreen("test-intro"); };
+  const handleRetake = () => { setResult(null); setScreen("test-intro"); };
 
   const handleEmailGateContinue = () => {
     if (result) saveResultToSupabase(result.type, result.display);
@@ -3576,7 +3566,7 @@ function AppInner() {
         ) : (
           <>
             {screen === "test-intro"     && <TestIntro onStart={handleStart} />}
-            {screen === "test-questions" && <QuestionScreen question={QUESTIONS[index]} index={index} total={QUESTIONS.length} selected={answers[QUESTIONS[index].id]} onAnswer={handleAnswer} onPrev={handlePrev} />}
+            {screen === "test-questions" && <AdaptiveTest onComplete={handleTestComplete} onCancel={handleRetake} />}
             {screen === "email-gate"     && result && <EmailGateScreen result={result} onContinue={handleEmailGateContinue} />}
             {screen === "results"        && result && <ResultsScreen type={result.type} display={result.display} onRetake={handleRetake} onPreviewWelcome={() => setShowWelcomeModal(true)} />}
           </>
