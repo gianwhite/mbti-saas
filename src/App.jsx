@@ -2206,11 +2206,32 @@ function TabAdvisor({ type, typeColor, initialMessage, onClose }) {
     setLoading(true);
 
     try {
+      // Get current session JWT to authenticate the API call
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+
       const res = await fetch('/api/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ mbtiType: type, messages: newMessages }),
       });
+
+      if (res.status === 401) {
+        setMessages(prev => [...prev, { role: 'assistant', content: '⚠️ Sesión expirada. Recarga la página para continuar.' }]);
+        setLoading(false);
+        return;
+      }
+
+      if (res.status === 429) {
+        const data = await res.json();
+        setMessages(prev => [...prev, { role: 'assistant', content: `⏳ ${data.error || 'Límite diario alcanzado. Vuelve mañana.'}` }]);
+        setLoading(false);
+        return;
+      }
+
       const data = await res.json();
       const reply = data.reply || 'Error al conectar. Intenta de nuevo.';
       setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
