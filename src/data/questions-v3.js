@@ -111,13 +111,13 @@ export const PHASE1_QUESTIONS = [
   },
   {
     id: 'p1_08',
-    text: 'Cuando empiezas un proyecto nuevo, lo primero que haces es...',
+    text: 'Cuando empiezas algo importante — un proyecto, una relación, una etapa nueva...',
     optionA: {
-      text: 'Explorar posibilidades — generar ideas, investigar ángulos distintos, ver qué enfoques existen antes de comprometerte',
-      fns: { Ne: 3 }
+      text: 'Tienes una visión interna de hacia dónde va — aunque no puedas explicarla del todo, sabes hacia dónde apunta',
+      fns: { Ni: 3 }
     },
     optionB: {
-      text: 'Revisar qué funcionó antes — qué recursos existen, cómo se ha hecho, basarte en experiencia probada',
+      text: 'Te apoyas en lo que ya funcionó — la experiencia pasada y los métodos probados son tu punto de partida más confiable',
       fns: { Si: 3 }
     }
   },
@@ -516,6 +516,72 @@ export const PHASE2_POOLS = {
       }
     },
   ],
+
+  // Pool Fe-NJ vs Fe-SJ — discrimina ENFJ/INFJ (Fe+Ni) vs ESFJ/ISFJ (Fe+Si)
+  // Se activa cuando Fe es alta Y la diferencia Ni-Si es pequeña
+  // El par más confundido del test: ambos son cálidos, organizados, orientados a personas
+  FE_NI_SI: [
+    {
+      id: 'p2_fenisi_01',
+      text: 'Cuando piensas en las personas que más te importan, tu atención va hacia...',
+      optionA: {
+        text: 'Su potencial — tienes una visión de quiénes pueden ser y hacia dónde podrían ir, incluso cuando ellos no lo ven',
+        fns: { Ni: 3 }
+      },
+      optionB: {
+        text: 'Sus necesidades actuales — te aseguras de que estén bien hoy, que tengan lo que necesitan en este momento',
+        fns: { Si: 3 }
+      }
+    },
+    {
+      id: 'p2_fenisi_02',
+      text: 'Cuando das consejo o apoyo a alguien cercano...',
+      optionA: {
+        text: 'Sueles ver el patrón más profundo de la situación — lo que está pasando realmente detrás de lo que describen',
+        fns: { Ni: 3 }
+      },
+      optionB: {
+        text: 'Te basas en experiencia concreta — lo que funcionó antes, lo que es práctico, lo que tiene historial comprobado',
+        fns: { Si: 3 }
+      }
+    },
+    {
+      id: 'p2_fenisi_03',
+      text: 'En tu forma de relacionarte, lo que más naturalmente haces es...',
+      optionA: {
+        text: 'Inspirar y guiar — ves lo que las personas pueden llegar a ser y las acompañas hacia esa versión de sí mismas',
+        fns: { Ni: 2, Fe: 1 }
+      },
+      optionB: {
+        text: 'Cuidar y mantener — te aseguras de que las tradiciones, las rutinas y el bienestar del grupo estén cubiertos',
+        fns: { Si: 2, Fe: 1 }
+      }
+    },
+    {
+      id: 'p2_fenisi_04',
+      text: 'Cuando algo sale mal en tu entorno o grupo...',
+      optionA: {
+        text: 'Buscas entender el patrón subyacente — por qué pasó realmente, qué implica para el futuro del grupo',
+        fns: { Ni: 3 }
+      },
+      optionB: {
+        text: 'Buscas restaurar el orden y la estabilidad — volver a lo que funcionaba antes, los procedimientos establecidos',
+        fns: { Si: 3 }
+      }
+    },
+    {
+      id: 'p2_fenisi_05',
+      text: 'Tu forma de planificar el futuro es principalmente...',
+      optionA: {
+        text: 'Guiada por una visión interna — tienes una idea clara de hacia dónde vas aunque no puedas siempre justificarla con datos',
+        fns: { Ni: 3 }
+      },
+      optionB: {
+        text: 'Guiada por la experiencia acumulada — lo que funcionó antes, los patrones del pasado, las rutinas que te dieron resultado',
+        fns: { Si: 3 }
+      }
+    },
+  ],
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -622,6 +688,7 @@ export function selectPhase2Questions(fnScores, count = 12) {
   const fiFeDiff = Math.abs((fns.Fi || 0) - (fns.Fe || 0));
   const tiTeDiff = Math.abs((fns.Ti || 0) - (fns.Te || 0));
   const siSeDiff = Math.abs((fns.Si || 0) - (fns.Se || 0));
+  const niSiDiff = Math.abs((fns.Ni || 0) - (fns.Si || 0));
 
   const iTotal = (fns.Ni || 0) + (fns.Fi || 0) + (fns.Ti || 0) + (fns.Si || 0);
   const eTotal = (fns.Ne || 0) + (fns.Fe || 0) + (fns.Te || 0) + (fns.Se || 0);
@@ -631,7 +698,32 @@ export function selectPhase2Questions(fnScores, count = 12) {
   const pTotal = (fns.Ti || 0) + (fns.Fi || 0) + (fns.Ne || 0) + (fns.Se || 0);
   const jpDiff = Math.abs(jTotal - pTotal);
 
-  // Ordenar por ambigüedad (menor diferencia = más preguntas de ese pool)
+  const selected = [];
+  const seen = new Set();
+
+  const addFrom = (poolKey, take) => {
+    const pool = PHASE2_POOLS[poolKey];
+    if (!pool) return;
+    let added = 0;
+    for (let j = 0; j < pool.length && added < take && selected.length < count; j++) {
+      if (!seen.has(pool[j].id)) {
+        selected.push(pool[j]);
+        seen.add(pool[j].id);
+        added++;
+      }
+    }
+  };
+
+  // ── Detección especial: Fe dominante + Ni/Si ambiguos (ENFJ vs ESFJ / INFJ vs ISFJ)
+  // Este es el par más confundido — tiene prioridad máxima
+  const feIsDominant = (fns.Fe || 0) >= Math.max(
+    fns.Ni||0, fns.Ne||0, fns.Si||0, fns.Se||0, fns.Fi||0, fns.Ti||0, fns.Te||0
+  );
+  if (feIsDominant && niSiDiff <= 4) {
+    addFrom('FE_NI_SI', 5);
+  }
+
+  // ── Pools genéricos ordenados por ambigüedad
   const poolPriority = [
     { key: 'NI_NE', diff: niNeDiff },
     { key: 'FI_FE', diff: fiFeDiff },
@@ -641,23 +733,10 @@ export function selectPhase2Questions(fnScores, count = 12) {
     { key: 'JP',   diff: jpDiff },
   ].sort((a, b) => a.diff - b.diff);
 
-  const selected = [];
-  const seen = new Set();
-
-  // Tomar más preguntas de los pares más ambiguos
-  const allocation = [3, 3, 2, 2, 1, 1]; // preguntas por pool en orden de prioridad
+  const allocation = [3, 3, 2, 2, 1, 1];
 
   for (let i = 0; i < poolPriority.length && selected.length < count; i++) {
-    const { key } = poolPriority[i];
-    const pool = PHASE2_POOLS[key];
-    if (!pool) continue;
-    const take = Math.min(allocation[i], pool.length, count - selected.length);
-    for (let j = 0; j < take && j < pool.length; j++) {
-      if (!seen.has(pool[j].id)) {
-        selected.push(pool[j]);
-        seen.add(pool[j].id);
-      }
-    }
+    addFrom(poolPriority[i].key, allocation[i]);
   }
 
   return selected.slice(0, count);
