@@ -78,11 +78,11 @@ export const PHASE1_QUESTIONS = [
     text: 'Después de pasar un fin de semana completamente solo en casa sin ningún compromiso social...',
     optionA: {
       text: 'Te sientes recargado y listo — eso era exactamente lo que necesitabas para recuperarte',
-      fns: { Ni: 1, Fi: 1, Ti: 1, Si: 1 }
+      fns: { Ni: 2, Fi: 2, Ti: 2, Si: 1 }
     },
     optionB: {
       text: 'Te sientes un poco inquieto o desconectado — necesitabas más contacto con personas o el mundo exterior',
-      fns: { Ne: 1, Fe: 1, Te: 1, Se: 1 }
+      fns: { Ne: 2, Fe: 2, Te: 2, Se: 1 }
     }
   },
   {
@@ -517,6 +517,59 @@ export const PHASE2_POOLS = {
     },
   ],
 
+  // Pool Te-NJ vs Te-SJ — discrimina INTJ/ENTJ (Te+Ni) vs ISTJ/ESTJ (Te+Si)
+  // Ambos son lógicos, organizados y orientados a resultados — el diferenciador es visión (Ni) vs historial (Si)
+  TE_NI_SI: [
+    {
+      id: 'p2_tenisi_01',
+      text: 'Cuando defines la estrategia para algo importante...',
+      optionA: {
+        text: 'Partes de una visión interna — tienes claro el destino y construyes el plan hacia atrás desde ahí',
+        fns: { Ni: 3 }
+      },
+      optionB: {
+        text: 'Partes de lo que ya funcionó — usas experiencia pasada, benchmarks y precedentes como base del plan',
+        fns: { Si: 3 }
+      }
+    },
+    {
+      id: 'p2_tenisi_02',
+      text: 'Cuando evalúas si algo va a funcionar...',
+      optionA: {
+        text: 'Confías en tu intuición sobre el patrón — tienes una sensación clara de si esto tiene futuro o no',
+        fns: { Ni: 3 }
+      },
+      optionB: {
+        text: 'Analizas el historial — buscas datos, precedentes y evidencia de que algo similar funcionó antes',
+        fns: { Si: 3 }
+      }
+    },
+    {
+      id: 'p2_tenisi_03',
+      text: 'Tu relación con la innovación en tu trabajo o proyectos es...',
+      optionA: {
+        text: 'Orientada al futuro — te atraen los enfoques nuevos y las soluciones que aún no existen en el mercado',
+        fns: { Ni: 3 }
+      },
+      optionB: {
+        text: 'Orientada a la mejora continua — prefieres refinar lo que ya existe y probado en lugar de empezar de cero',
+        fns: { Si: 3 }
+      }
+    },
+    {
+      id: 'p2_tenisi_04',
+      text: 'Después de un éxito importante, tu mente va hacia...',
+      optionA: {
+        text: 'La siguiente visión — qué es lo siguiente grande, hacia dónde apunta todo esto',
+        fns: { Ni: 3 }
+      },
+      optionB: {
+        text: 'Documentar lo que funcionó — asegurarte de que el proceso quede registrado para replicarlo',
+        fns: { Si: 3 }
+      }
+    },
+  ],
+
   // Pool Fe-NJ vs Fe-SJ — discrimina ENFJ/INFJ (Fe+Ni) vs ESFJ/ISFJ (Fe+Si)
   // Se activa cuando Fe es alta Y la diferencia Ni-Si es pequeña
   // El par más confundido del test: ambos son cálidos, organizados, orientados a personas
@@ -714,13 +767,24 @@ export function selectPhase2Questions(fnScores, count = 12) {
     }
   };
 
-  // ── Detección especial: Fe dominante + Ni/Si ambiguos (ENFJ vs ESFJ / INFJ vs ISFJ)
-  // Este es el par más confundido — tiene prioridad máxima
-  const feIsDominant = (fns.Fe || 0) >= Math.max(
-    fns.Ni||0, fns.Ne||0, fns.Si||0, fns.Se||0, fns.Fi||0, fns.Ti||0, fns.Te||0
-  );
-  if (feIsDominant && niSiDiff <= 4) {
+  // ── Detección especial: Fe alto + Ni/Si ambiguos
+  // Cubre ENFJ(Fe-dom/Ni-aux) vs ESFJ(Fe-dom/Si-aux)
+  // Y también INFJ(Ni-dom/Fe-aux) vs ISFJ(Si-dom/Fe-aux)
+  // Condición: Fe está en el top-2 de funciones (no necesariamente dominante)
+  const allFnVals = [fns.Ni,fns.Ne,fns.Si,fns.Se,fns.Fi,fns.Fe,fns.Ti,fns.Te]
+    .map(v => v||0).sort((a,b) => b-a);
+  const feIsTopTwo = (fns.Fe||0) >= allFnVals[1]; // Fe está entre las 2 más altas
+  if (feIsTopTwo && niSiDiff <= 5) {
     addFrom('FE_NI_SI', 5);
+  }
+
+  // ── Detección especial: Te alto + Ni/Si ambiguos
+  // Cubre ENTJ(Te-dom/Ni-aux) vs ESTJ(Te-dom/Si-aux)
+  // Y también INTJ(Ni-dom/Te-aux) vs ISTJ(Si-dom/Te-aux)
+  const niSiDiffTe = Math.abs((fns.Ni||0) - (fns.Si||0));
+  const teIsTopTwo = (fns.Te||0) >= allFnVals[1];
+  if (teIsTopTwo && niSiDiffTe <= 5) {
+    addFrom('TE_NI_SI', 4);
   }
 
   // ── Pools genéricos ordenados por ambigüedad
