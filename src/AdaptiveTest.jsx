@@ -2,7 +2,7 @@
 // Test adaptativo v3 — forced-choice, 3 fases, ~30 preguntas
 // Props: onComplete(result), onCancel()
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import {
   PHASE1_QUESTIONS,
   PHASE3_QUESTIONS,
@@ -81,7 +81,7 @@ function AdaptiveProgressBar({ answered, total }) {
 // ─────────────────────────────────────────────
 // Question Card
 // ─────────────────────────────────────────────
-function QuestionCard({ question, questionNumber, total, onAnswer }) {
+function QuestionCard({ question, questionNumber, total, onAnswer, onBack, canGoBack }) {
   const [selected, setSelected] = useState(null);
   const [animating, setAnimating] = useState(false);
 
@@ -213,16 +213,38 @@ function QuestionCard({ question, questionNumber, total, onAnswer }) {
         })}
       </div>
 
-      {/* Instruction hint */}
-      <p style={{
-        textAlign: 'center',
-        color: '#2a2a2a',
-        fontSize: '0.68rem',
-        marginTop: '1.25rem',
-        letterSpacing: '0.05em',
-      }}>
-        ELIGE LA OPCIÓN QUE MEJOR TE DESCRIBE — SIN PENSAR DEMASIADO
-      </p>
+      {/* Bottom row: back button + hint */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '1.25rem' }}>
+        <button
+          onClick={onBack}
+          disabled={!canGoBack || !!selected}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: canGoBack ? '#444' : '#222',
+            cursor: canGoBack ? 'pointer' : 'default',
+            fontSize: '0.8rem',
+            padding: '4px 0',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            transition: 'color 0.2s ease',
+          }}
+          onMouseEnter={e => { if (canGoBack) e.currentTarget.style.color = '#888'; }}
+          onMouseLeave={e => { if (canGoBack) e.currentTarget.style.color = '#444'; }}
+        >
+          ← Anterior
+        </button>
+        <p style={{
+          color: '#252525',
+          fontSize: '0.65rem',
+          letterSpacing: '0.05em',
+          margin: 0,
+        }}>
+          ELIGE SIN PENSAR DEMASIADO
+        </p>
+        <div style={{ width: '72px' }} />
+      </div>
     </div>
   );
 }
@@ -230,7 +252,7 @@ function QuestionCard({ question, questionNumber, total, onAnswer }) {
 // ─────────────────────────────────────────────
 // Milestone Card 1 — después de Fase 1
 // ─────────────────────────────────────────────
-function Milestone1({ fnScores, topCandidates, onContinue }) {
+function Milestone1({ fnScores, topCandidates, onContinue, onBack }) {
   const insight = getMilestone1Text(fnScores);
 
   // Top 2 candidate type groups (blurred)
@@ -287,22 +309,38 @@ function Milestone1({ fnScores, topCandidates, onContinue }) {
         </p>
       </div>
 
-      <button
-        onClick={onContinue}
-        style={{
-          background: 'linear-gradient(135deg,#6C3FC8,#9B6FE8)',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '12px',
-          padding: '1rem 2.5rem',
-          fontSize: '0.95rem',
-          fontWeight: 700,
-          cursor: 'pointer',
-          letterSpacing: '0.04em',
-        }}
-      >
-        Continuar análisis →
-      </button>
+      <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', alignItems: 'center' }}>
+        <button
+          onClick={onBack}
+          style={{
+            background: 'none',
+            border: '1px solid #222',
+            borderRadius: '10px',
+            padding: '0.85rem 1.25rem',
+            fontSize: '0.85rem',
+            color: '#444',
+            cursor: 'pointer',
+          }}
+        >
+          ← Anterior
+        </button>
+        <button
+          onClick={onContinue}
+          style={{
+            background: 'linear-gradient(135deg,#6C3FC8,#9B6FE8)',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '12px',
+            padding: '1rem 2.5rem',
+            fontSize: '0.95rem',
+            fontWeight: 700,
+            cursor: 'pointer',
+            letterSpacing: '0.04em',
+          }}
+        >
+          Continuar análisis →
+        </button>
+      </div>
     </div>
   );
 }
@@ -310,7 +348,7 @@ function Milestone1({ fnScores, topCandidates, onContinue }) {
 // ─────────────────────────────────────────────
 // Milestone Card 2 — después de Fase 2
 // ─────────────────────────────────────────────
-function Milestone2({ topCandidates, onContinue }) {
+function Milestone2({ topCandidates, onContinue, onBack }) {
   const top2 = topCandidates.slice(0, 2);
 
   return (
@@ -356,22 +394,38 @@ function Milestone2({ topCandidates, onContinue }) {
         ))}
       </div>
 
-      <button
-        onClick={onContinue}
-        style={{
-          background: 'linear-gradient(135deg,#6C3FC8,#9B6FE8)',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '12px',
-          padding: '1rem 2.5rem',
-          fontSize: '0.95rem',
-          fontWeight: 700,
-          cursor: 'pointer',
-          letterSpacing: '0.04em',
-        }}
-      >
-        Últimas preguntas →
-      </button>
+      <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', alignItems: 'center' }}>
+        <button
+          onClick={onBack}
+          style={{
+            background: 'none',
+            border: '1px solid #222',
+            borderRadius: '10px',
+            padding: '0.85rem 1.25rem',
+            fontSize: '0.85rem',
+            color: '#444',
+            cursor: 'pointer',
+          }}
+        >
+          ← Anterior
+        </button>
+        <button
+          onClick={onContinue}
+          style={{
+            background: 'linear-gradient(135deg,#6C3FC8,#9B6FE8)',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '12px',
+            padding: '1rem 2.5rem',
+            fontSize: '0.95rem',
+            fontWeight: 700,
+            cursor: 'pointer',
+            letterSpacing: '0.04em',
+          }}
+        >
+          Últimas preguntas →
+        </button>
+      </div>
     </div>
   );
 }
@@ -462,6 +516,51 @@ export default function AdaptiveTest({ onComplete, onCancel }) {
     setQuestionIndex(0);
   };
 
+  // ── Back navigation ──────────────────────────────────────
+  const handleBack = useCallback(() => {
+    if (screen === 'p1') {
+      if (questionIndex > 0) {
+        setAnswers(prev => prev.slice(0, -1));
+        setQuestionIndex(i => i - 1);
+      }
+      // at index 0 of p1 = very first question, back is disabled
+    } else if (screen === 'milestone1') {
+      // Go back to last p1 question — remove its answer so user can re-answer
+      setAnswers(prev => prev.slice(0, -1));
+      setScreen('p1');
+      setQuestionIndex(PHASE1_QUESTIONS.length - 1);
+    } else if (screen === 'p2') {
+      if (questionIndex > 0) {
+        setAnswers(prev => prev.slice(0, -1));
+        setQuestionIndex(i => i - 1);
+      } else {
+        // First question of p2 — go back to milestone1 (no answer to remove yet)
+        setScreen('milestone1');
+      }
+    } else if (screen === 'milestone2') {
+      // Go back to last p2 question
+      setAnswers(prev => prev.slice(0, -1));
+      setScreen('p2');
+      setQuestionIndex(phase2Questions.length - 1);
+    } else if (screen === 'p3') {
+      if (questionIndex > 0) {
+        setAnswers(prev => prev.slice(0, -1));
+        setQuestionIndex(i => i - 1);
+      } else {
+        // First question of p3 — go back to milestone2
+        setScreen('milestone2');
+      }
+    }
+  }, [screen, questionIndex, phase2Questions]);
+
+  const canGoBack = (
+    (screen === 'p1' && questionIndex > 0) ||
+    screen === 'milestone1' ||
+    screen === 'p2' ||
+    screen === 'milestone2' ||
+    screen === 'p3'
+  );
+
   // Render milestone screens
   if (screen === 'milestone1') {
     return (
@@ -471,6 +570,7 @@ export default function AdaptiveTest({ onComplete, onCancel }) {
           fnScores={fnScores}
           topCandidates={topCandidates}
           onContinue={handleMilestone1Continue}
+          onBack={handleBack}
         />
       </div>
     );
@@ -483,6 +583,7 @@ export default function AdaptiveTest({ onComplete, onCancel }) {
         <Milestone2
           topCandidates={topCandidates}
           onContinue={handleMilestone2Continue}
+          onBack={handleBack}
         />
       </div>
     );
@@ -505,6 +606,8 @@ export default function AdaptiveTest({ onComplete, onCancel }) {
         questionNumber={totalAnswered + 1}
         total={TOTAL_QUESTIONS}
         onAnswer={handleAnswer}
+        onBack={handleBack}
+        canGoBack={canGoBack}
       />
     </div>
   );
