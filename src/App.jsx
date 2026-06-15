@@ -2051,16 +2051,19 @@ function QuickCompatWidget({ myType, typeColor, onAskAdvisor }) {
   );
 }
 
-function TabAdvisor({ type, typeColor, initialMessage }) {
-  const [messages, setMessages]         = useState([]);
-  const [sessions, setSessions]         = useState([]);   // past sessions list
-  const [sessionId, setSessionId]       = useState(() => crypto.randomUUID());
-  const [input, setInput]               = useState('');
-  const [loading, setLoading]           = useState(false);
-  const [histLoading, setHistLoading]   = useState(true);
-  const [showHistory, setShowHistory]   = useState(false);
-  const bottomRef = useRef(null);
+function TabAdvisor({ type, typeColor, initialMessage, onClose }) {
+  const color = typeColor || "#A78BFA";
+  const [messages, setMessages]       = useState([]);
+  const [sessions, setSessions]       = useState([]);
+  const [activeSessionId, setActiveSessionId] = useState(null); // id of the session shown in sidebar as active
+  const [sessionId, setSessionId]     = useState(() => crypto.randomUUID());
+  const [input, setInput]             = useState('');
+  const [loading, setLoading]         = useState(false);
+  const [histLoading, setHistLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth >= 700);
   const scrollContainerRef = useRef(null);
+  const textareaRef        = useRef(null);
+  const bottomRef          = useRef(null);
   const { user } = useAuth();
 
   const SUGGESTIONS = [
@@ -2070,7 +2073,13 @@ function TabAdvisor({ type, typeColor, initialMessage }) {
     "¿Cómo manejo el conflicto en una relación?",
   ];
 
-  // ── Load latest session + sessions list on mount ──
+  // ── Lock body scroll while full-screen ──
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
+  // ── Load history on mount ──
   useEffect(() => {
     if (!user) { setHistLoading(false); return; }
     supabase
@@ -2079,11 +2088,10 @@ function TabAdvisor({ type, typeColor, initialMessage }) {
       .eq('user_id', user.id)
       .eq('mbti_type', type)
       .order('created_at', { ascending: true })
-      .limit(200)
+      .limit(400)
       .then(({ data }) => {
         if (!data || data.length === 0) { setHistLoading(false); return; }
 
-        // Group by session_id
         const grouped = {};
         data.forEach(m => {
           const sid = m.session_id || 'legacy';
@@ -2094,14 +2102,14 @@ function TabAdvisor({ type, typeColor, initialMessage }) {
         const sids = Object.keys(grouped);
         const latestSid = sids[sids.length - 1];
 
-        // Load latest session into chat
         setSessionId(latestSid);
+        setActiveSessionId(latestSid);
         setMessages(grouped[latestSid].messages);
 
-        // Build sessions list (all except latest, reversed)
         const pastSessions = sids.slice(0, -1).reverse().map(sid => ({
           id: sid,
           preview: grouped[sid].messages.find(m => m.role === 'user')?.content || '…',
+          rawDate: grouped[sid].created_at,
           date: new Date(grouped[sid].created_at).toLocaleDateString('es', { day: 'numeric', month: 'short' }),
           count: grouped[sid].messages.length,
           messages: grouped[sid].messages,
@@ -2118,66 +2126,79 @@ function TabAdvisor({ type, typeColor, initialMessage }) {
     }
   }, [messages, loading]);
 
-  // ── Auto-send initialMessage (from compat tab) ──
+  // ── Auto-resize textarea ──
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 140) + 'px';
+    }
+  }, [input]);
+
+  // ── Auto-send initialMessage ──
   const initialSent = useRef(false);
   useEffect(() => {
     if (!initialMessage || histLoading || initialSent.current) return;
     initialSent.current = true;
-    // Start a fresh session so it doesn't mix with history
-    setSessionId(crypto.randomUUID());
+    const newSid = crypto.randomUUID();
+    setSessionId(newSid);
+    setActiveSessionId(newSid);
     setMessages([]);
     setTimeout(() => sendMessage(initialMessage), 100);
   }, [initialMessage, histLoading]); // eslint-disable-line
 
-  // ── Save a single message to Supabase ──
+  // ── Save message to Supabase ──
   const saveMsg = (role, content) => {
     if (!user) return;
-    supabase.from('advisor_messages').insert({
-      user_id: user.id,
-      mbti_type: type,
-      session_id: sessionId,
-      role,
-      content,
-    }).then(() => {});
+    supabase.from('advisor_messages').insert({ user_id: user.id, mbti_type: type, session_id: sessionId, role, content }).then(() => {});
   };
 
   // ── Nueva conversación ──
   const newConversation = () => {
-    const newSid = crypto.randomUUID();
-    // Save current session to history list if it has messages
     if (messages.length > 0) {
       setSessions(prev => [{
         id: sessionId,
         preview: messages.find(m => m.role === 'user')?.content || '…',
+        rawDate: new Date().toISOString(),
         date: new Date().toLocaleDateString('es', { day: 'numeric', month: 'short' }),
         count: messages.length,
         messages: [...messages],
       }, ...prev]);
     }
+    const newSid = crypto.randomUUID();
     setSessionId(newSid);
+    setActiveSessionId(newSid);
     setMessages([]);
-    setShowHistory(false);
+    if (window.innerWidth < 700) setSidebarOpen(false);
   };
 
   // ── Resume a past session ──
   const resumeSession = (session) => {
-    // Save current if has messages
-    if (messages.length > 0) {
+    if (messages.length > 0 && sessionId !== session.id) {
       setSessions(prev => {
         const filtered = prev.filter(s => s.id !== session.id);
-        return [{ id: sessionId, preview: messages.find(m => m.role === 'user')?.content || '…', date: new Date().toLocaleDateString('es', { day: 'numeric', month: 'short' }), count: messages.length, messages: [...messages] }, ...filtered];
+        return [{
+          id: sessionId,
+          preview: messages.find(m => m.role === 'user')?.content || '…',
+          rawDate: new Date().toISOString(),
+          date: new Date().toLocaleDateString('es', { day: 'numeric', month: 'short' }),
+          count: messages.length,
+          messages: [...messages],
+        }, ...filtered];
       });
     }
     setSessionId(session.id);
+    setActiveSessionId(session.id);
     setMessages(session.messages);
-    setShowHistory(false);
+    if (window.innerWidth < 700) setSidebarOpen(false);
   };
 
+  // ── Send message ──
   const sendMessage = async (text) => {
     const userMsg = text || input.trim();
     if (!userMsg || loading) return;
     trackAdvisorMessage(type);
     setInput('');
+    if (textareaRef.current) textareaRef.current.style.height = 'auto';
 
     const newMessages = [...messages, { role: 'user', content: userMsg }];
     setMessages(newMessages);
@@ -2195,163 +2216,379 @@ function TabAdvisor({ type, typeColor, initialMessage }) {
       setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
       saveMsg('assistant', reply);
     } catch {
-      const err = 'Error de conexión. Intenta de nuevo.';
-      setMessages(prev => [...prev, { role: 'assistant', content: err }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: 'Error de conexión. Intenta de nuevo.' }]);
     }
     setLoading(false);
   };
 
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-      {/* Orbe central */}
-      <div style={{ textAlign: "center", padding: "1.5rem 0 0.5rem", position: "relative" }}>
-        {/* Glow de fondo */}
-        <div style={{
-          position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
-          width: "200px", height: "200px", borderRadius: "50%",
-          background: `radial-gradient(circle, ${typeColor || "#A78BFA"}22 0%, transparent 70%)`,
-          pointerEvents: "none", filter: "blur(20px)",
-        }} />
-        <div style={{ display: "inline-block", position: "relative" }}>
-          <JarvisOrb active={loading} size={160} color={typeColor || "#A78BFA"} />
+  // ── Render message content with basic markdown ──
+  const renderContent = (content) => ({
+    __html: content
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      .replace(/^(\d+)\.\s/gm, '<br/><strong style="color:#A78BFA">$1.</strong> ')
+      .replace(/^[-•]\s/gm, '<br/>· ')
+  });
+
+  // ── Date grouping for sidebar ──
+  const groupSessions = (list) => {
+    const now = Date.now();
+    const DAY = 86400000;
+    const groups = [
+      { label: 'Hoy',            items: [], cutoff: now - DAY },
+      { label: 'Ayer',           items: [], cutoff: now - 2 * DAY },
+      { label: 'Últimos 7 días', items: [], cutoff: now - 7 * DAY },
+      { label: 'Anteriores',     items: [], cutoff: 0 },
+    ];
+    list.forEach(s => {
+      const t = new Date(s.rawDate).getTime();
+      const g = groups.find(g => t > g.cutoff);
+      if (g) g.items.push(s);
+    });
+    return groups.filter(g => g.items.length > 0);
+  };
+
+  const groupedSessions = groupSessions(sessions);
+
+  // ── Sidebar conversation item ──
+  const SidebarItem = ({ session, isActive }) => {
+    const [hovered, setHovered] = useState(false);
+    return (
+      <button
+        onClick={() => resumeSession(session)}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          width: "100%", textAlign: "left", background: isActive ? `${color}18` : hovered ? "rgba(255,255,255,0.04)" : "transparent",
+          border: `1px solid ${isActive ? color + "44" : "transparent"}`,
+          borderRadius: "8px", padding: "0.6rem 0.75rem", cursor: "pointer",
+          transition: "background 0.15s, border-color 0.15s", marginBottom: "2px",
+        }}
+      >
+        <div style={{ color: isActive ? "#eee" : "#aaa", fontSize: "0.82rem", lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif", fontWeight: isActive ? 600 : 400 }}>
+          {session.preview.slice(0, 60)}{session.preview.length > 60 ? '…' : ''}
         </div>
-        <div style={{ marginTop: "1rem" }}>
-          <div style={{ color: typeColor, fontWeight: 700, fontSize: "0.8rem", letterSpacing: "0.18em", marginBottom: "0.25rem" }}>
-            ADVISOR {type}
+        <div style={{ color: "#3D3550", fontSize: "0.67rem", marginTop: "2px" }}>{session.date}</div>
+      </button>
+    );
+  };
+
+  return (
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 400,
+      background: "#080612",
+      display: "flex",
+      fontFamily: "'Outfit', sans-serif",
+    }}>
+
+      {/* ═══ SIDEBAR ═══ */}
+      <div style={{
+        width: sidebarOpen ? "260px" : "0",
+        flexShrink: 0,
+        background: "#0d0d0d",
+        borderRight: "1px solid rgba(255,255,255,0.06)",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+        transition: "width 0.22s cubic-bezier(0.4,0,0.2,1)",
+      }}>
+        {/* Sidebar header — orb + title */}
+        <div style={{ padding: "1rem 0.875rem 0.875rem", borderBottom: "1px solid rgba(255,255,255,0.05)", flexShrink: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.65rem", marginBottom: "0.875rem", whiteSpace: "nowrap" }}>
+            <JarvisOrb active={loading} size={44} color={color} />
+            <div>
+              <div style={{ color: color, fontWeight: 700, fontSize: "0.62rem", letterSpacing: "0.18em" }}>ADVISOR IA</div>
+              <div style={{ color: "#eee", fontWeight: 800, fontSize: "0.95rem" }}>{type}</div>
+            </div>
           </div>
-          <div style={{ color: "#8878A0", fontSize: "0.74rem" }}>
-            {histLoading ? "Cargando historial…" : loading ? (
-              <span style={{ color: typeColor, opacity: 0.8 }}>Procesando…</span>
-            ) : messages.length === 0 ? "¿Qué quieres saber sobre ti?" : "Sistema activo"}
-          </div>
-          {user && !histLoading && (
-            <div style={{ display: "flex", gap: "0.75rem", justifyContent: "center", marginTop: "0.5rem" }}>
-              <button onClick={newConversation} style={{ background: "none", border: "none", color: "#3D3550", cursor: "pointer", fontSize: "0.68rem", textDecoration: "underline" }}>
-                + Nueva conversación
-              </button>
-              {sessions.length > 0 && (
-                <button onClick={() => setShowHistory(h => !h)} style={{ background: "none", border: "none", color: showHistory ? typeColor : "#3D3550", cursor: "pointer", fontSize: "0.68rem", textDecoration: "underline" }}>
-                  {showHistory ? "Ocultar historial" : `Conversaciones anteriores (${sessions.length})`}
-                </button>
-              )}
+          {/* Nueva conversación */}
+          <button
+            onClick={newConversation}
+            style={{
+              width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.09)",
+              borderRadius: "8px", padding: "0.55rem 0.75rem", color: "#ccc", fontSize: "0.82rem",
+              cursor: "pointer", display: "flex", alignItems: "center", gap: "0.5rem",
+              fontFamily: "'Outfit', sans-serif", fontWeight: 500, whiteSpace: "nowrap",
+              transition: "background 0.15s",
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.09)"}
+            onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.05)"}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nueva conversación
+          </button>
+        </div>
+
+        {/* Conversation list */}
+        <div style={{ flex: 1, overflowY: "auto", padding: "0.625rem 0.5rem", scrollbarWidth: "thin", scrollbarColor: "rgba(255,255,255,0.08) transparent" }}>
+          {histLoading && (
+            <div style={{ color: "#3D3550", fontSize: "0.75rem", textAlign: "center", padding: "1.5rem 0.5rem" }}>Cargando historial…</div>
+          )}
+
+          {/* Current active session (if has messages and not already in list) */}
+          {!histLoading && messages.length > 0 && (
+            <>
+              <div style={{ color: "#2A2040", fontSize: "0.62rem", letterSpacing: "0.1em", padding: "0.25rem 0.5rem 0.35rem", fontWeight: 600 }}>HOY</div>
+              <SidebarItem
+                session={{
+                  id: sessionId,
+                  preview: messages.find(m => m.role === 'user')?.content || '…',
+                  rawDate: new Date().toISOString(),
+                  date: 'Ahora',
+                  count: messages.length,
+                  messages,
+                }}
+                isActive={true}
+              />
+            </>
+          )}
+
+          {!histLoading && groupedSessions.map(group => (
+            <div key={group.label}>
+              <div style={{ color: "#2A2040", fontSize: "0.62rem", letterSpacing: "0.1em", padding: "0.6rem 0.5rem 0.35rem", fontWeight: 600 }}>
+                {group.label.toUpperCase()}
+              </div>
+              {group.items.map(s => (
+                <SidebarItem key={s.id} session={s} isActive={activeSessionId === s.id && messages.length === 0} />
+              ))}
+            </div>
+          ))}
+
+          {!histLoading && sessions.length === 0 && messages.length === 0 && (
+            <div style={{ color: "#2A2040", fontSize: "0.75rem", textAlign: "center", padding: "2rem 1rem", lineHeight: 1.6 }}>
+              Aún no tienes<br/>conversaciones guardadas
             </div>
           )}
         </div>
       </div>
 
-      {/* ── Conversaciones anteriores panel ── */}
-      {showHistory && sessions.length > 0 && (
-        <div className="glass-card" style={{ borderRadius: "14px", padding: "1rem", marginBottom: "0.25rem" }}>
-          <div style={{ color: "#8878A0", fontSize: "0.68rem", letterSpacing: "0.12em", marginBottom: "0.75rem" }}>CONVERSACIONES ANTERIORES</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-            {sessions.map((s, i) => (
-              <button key={s.id} onClick={() => resumeSession(s)} style={{
-                background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)",
-                borderRadius: "10px", padding: "0.75rem 1rem", cursor: "pointer",
-                textAlign: "left", transition: "border-color 0.2s",
-              }}
-                onMouseEnter={e => e.currentTarget.style.borderColor = typeColor + "44"}
-                onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.3rem" }}>
-                  <span style={{ color: "#3D3550", fontSize: "0.65rem", letterSpacing: "0.06em" }}>{s.date} · {s.count} mensajes</span>
-                  <span style={{ color: typeColor, fontSize: "0.65rem", fontWeight: 700 }}>Reanudar →</span>
-                </div>
-                <div style={{ color: "#8878A0", fontSize: "0.8rem", lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "100%" }}>
-                  "{s.preview.slice(0, 80)}{s.preview.length > 80 ? '…' : ''}"
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
+      {/* Mobile overlay to close sidebar */}
+      {sidebarOpen && window.innerWidth < 700 && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{ position: "absolute", inset: 0, zIndex: 1, background: "rgba(0,0,0,0.5)" }}
+        />
       )}
 
-      {/* Suggestions (only when no messages) */}
-      {messages.length === 0 && (
-        <div>
-          <div style={{ color: "#555", fontSize: "0.7rem", letterSpacing: "0.12em", marginBottom: "0.6rem" }}>PREGUNTAS FRECUENTES</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-            {SUGGESTIONS.map((s, i) => (
-              <button key={i} onClick={() => sendMessage(s)} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "0.7rem 1rem", color: "#8878A0", fontSize: "0.84rem", cursor: "pointer", textAlign: "left", transition: "border-color 0.2s" }}
-                onMouseEnter={e => e.currentTarget.style.borderColor = typeColor + "55"}
-                onMouseLeave={e => e.currentTarget.style.borderColor = "#1e1e1e"}
-              >
-                {s}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* ═══ MAIN CHAT AREA ═══ */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", position: "relative", zIndex: 2 }}>
 
-      {/* Message history */}
-      {messages.length > 0 && (
-        <div ref={scrollContainerRef} style={{ display: "flex", flexDirection: "column", gap: "0.85rem", maxHeight: "60vh", overflowY: "auto", paddingRight: "4px", scrollbarWidth: "thin", scrollbarColor: `${typeColor}44 transparent` }}>
-          {messages.map((m, i) => (
-            <div key={i} style={{ display: "flex", justifyContent: m.role === 'user' ? "flex-end" : "flex-start", gap: "0.55rem", alignItems: "flex-end" }}>
-              {/* Hex avatar for assistant */}
-              {m.role === 'assistant' && (
-                <div style={{ flexShrink: 0, marginBottom: "2px" }}>
-                  <JarvisOrb active={false} size={32} color={typeColor || "#A78BFA"} />
-                </div>
-              )}
-              <div style={{
-                maxWidth: "84%",
-                background: m.role === 'user'
-                  ? `linear-gradient(135deg, ${typeColor}22, rgba(108,63,200,0.18))`
-                  : "rgba(255,255,255,0.04)",
-                border: `1px solid ${m.role === 'user' ? typeColor + "33" : "rgba(255,255,255,0.07)"}`,
-                borderRadius: m.role === 'user' ? "16px 16px 4px 16px" : "4px 16px 16px 16px",
-                padding: "0.8rem 1rem",
-                color: m.role === 'user' ? "#F0EBF8" : "#C4B5FD",
-                fontSize: "0.87rem",
-                lineHeight: 1.75,
-                whiteSpace: "pre-wrap",
-              }} dangerouslySetInnerHTML={{ __html: m.content
-                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\*(.+?)\*/g, '<em>$1</em>')
-                .replace(/^(\d+)\.\s/gm, '<br/><strong style="color:#A78BFA">$1.</strong> ')
-                .replace(/^[-•]\s/gm, '<br/>· ')
-              }} />
+        {/* Top bar */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: "0.75rem",
+          padding: "0.7rem 1rem",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          background: "rgba(8,6,18,0.95)",
+          backdropFilter: "blur(12px)",
+          flexShrink: 0,
+        }}>
+          {/* Sidebar toggle */}
+          <button
+            onClick={() => setSidebarOpen(o => !o)}
+            style={{ background: "none", border: "none", color: sidebarOpen ? color : "#555", cursor: "pointer", padding: "4px", borderRadius: "6px", display: "flex", alignItems: "center", transition: "color 0.15s" }}
+            title={sidebarOpen ? "Cerrar panel" : "Ver conversaciones"}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
+
+          {/* Current conversation title */}
+          <div style={{ flex: 1, display: "flex", alignItems: "center", gap: "0.6rem", minWidth: 0 }}>
+            <div style={{ background: `${color}18`, border: `1px solid ${color}44`, borderRadius: "6px", padding: "2px 8px", fontSize: "0.72rem", fontWeight: 800, color, letterSpacing: "0.08em", flexShrink: 0 }}>
+              {type}
             </div>
-          ))}
-          {loading && (
-            <div style={{ display: "flex", alignItems: "center", gap: "0.55rem" }}>
-              <JarvisOrb active={true} size={32} color={typeColor || "#A78BFA"} />
-              <div style={{ display: "flex", gap: "5px", padding: "0.6rem 0.9rem", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "4px 16px 16px 16px" }}>
+            <span style={{ color: "#3D3550", fontSize: "0.78rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {messages.length > 0
+                ? messages.find(m => m.role === 'user')?.content?.slice(0, 50) || 'Advisor IA'
+                : 'Advisor IA'}
+            </span>
+          </div>
+
+          {/* Status indicator */}
+          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexShrink: 0 }}>
+            {loading ? (
+              <div style={{ display: "flex", gap: "3px" }}>
                 {[0,1,2].map(i => (
-                  <div key={i} style={{ width: "6px", height: "6px", borderRadius: "50%", background: typeColor || "#A78BFA", opacity: 0.7, animation: `hexPulse 1.2s ease-in-out ${i * 0.2}s infinite` }} />
+                  <div key={i} style={{ width: "5px", height: "5px", borderRadius: "50%", background: color, opacity: 0.7, animation: `hexPulse 1.2s ease-in-out ${i*0.2}s infinite` }} />
                 ))}
               </div>
+            ) : (
+              <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: messages.length > 0 ? "#4ADE80" : "#3D3550" }} />
+            )}
+          </div>
+
+          {/* Close button */}
+          {onClose && (
+            <button
+              onClick={onClose}
+              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "8px", padding: "5px 12px", color: "#888", cursor: "pointer", fontSize: "0.78rem", display: "flex", alignItems: "center", gap: "0.4rem", fontFamily: "'Outfit', sans-serif", transition: "background 0.15s" }}
+              onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.08)"}
+              onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.04)"}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              Cerrar
+            </button>
+          )}
+        </div>
+
+        {/* Messages scroll area */}
+        <div
+          ref={scrollContainerRef}
+          style={{
+            flex: 1, overflowY: "auto", padding: "0",
+            scrollbarWidth: "thin", scrollbarColor: `${color}33 transparent`,
+          }}
+        >
+          {/* ── Empty state / suggestions ── */}
+          {messages.length === 0 && !loading && (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "100%", padding: "2rem 1.5rem" }}>
+              {/* Big orb */}
+              <div style={{ position: "relative", marginBottom: "1.5rem" }}>
+                <div style={{
+                  position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
+                  width: "180px", height: "180px", borderRadius: "50%",
+                  background: `radial-gradient(circle, ${color}18 0%, transparent 70%)`,
+                  pointerEvents: "none", filter: "blur(18px)",
+                }} />
+                <JarvisOrb active={false} size={120} color={color} />
+              </div>
+              <div style={{ color: "#eee", fontWeight: 700, fontSize: "1.15rem", marginBottom: "0.4rem", textAlign: "center" }}>
+                {histLoading ? "Cargando…" : "¿Qué quieres saber sobre ti?"}
+              </div>
+              <div style={{ color: "#3D3550", fontSize: "0.82rem", marginBottom: "2rem", textAlign: "center" }}>
+                Advisor personalizado para {type}
+              </div>
+              {!histLoading && (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "0.5rem", width: "100%", maxWidth: "640px" }}>
+                  {SUGGESTIONS.map((s, i) => (
+                    <button
+                      key={i}
+                      onClick={() => sendMessage(s)}
+                      style={{
+                        background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)",
+                        borderRadius: "12px", padding: "0.75rem 1rem",
+                        color: "#8878A0", fontSize: "0.83rem", cursor: "pointer",
+                        textAlign: "left", lineHeight: 1.4, fontFamily: "'Outfit', sans-serif",
+                        transition: "border-color 0.15s, background 0.15s",
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = color + "55"; e.currentTarget.style.background = `${color}0a`; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)"; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
-          <div ref={bottomRef} />
-        </div>
-      )}
 
-      {/* Input */}
-      <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.25rem" }}>
-        <input
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
-          placeholder="Pregunta algo sobre tu tipo..."
-          disabled={loading}
-          style={{
-            flex: 1, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "10px",
-            padding: "0.75rem 1rem", color: "#fff", fontSize: "0.88rem", outline: "none",
-          }}
-        />
-        <button
-          onClick={() => sendMessage()}
-          disabled={loading || !input.trim()}
-          style={{
-            background: loading || !input.trim() ? "#1a1a1a" : `linear-gradient(135deg, ${typeColor}, #6C63FF)`,
-            border: "none", borderRadius: "10px", padding: "0.75rem 1rem",
-            color: loading || !input.trim() ? "#444" : "#fff",
-            cursor: loading || !input.trim() ? "not-allowed" : "pointer",
-            fontSize: "1rem", fontWeight: 700, minWidth: "44px",
-          }}
-        >→</button>
+          {/* ── Messages ── */}
+          {messages.length > 0 && (
+            <div style={{ maxWidth: "760px", margin: "0 auto", padding: "1.5rem 1.25rem" }}>
+              {messages.map((m, i) => (
+                <div key={i} style={{
+                  display: "flex",
+                  flexDirection: m.role === 'user' ? "row-reverse" : "row",
+                  gap: "0.65rem", alignItems: "flex-start",
+                  marginBottom: "1.5rem",
+                }}>
+                  {/* Avatar */}
+                  {m.role === 'assistant' ? (
+                    <div style={{ flexShrink: 0, marginTop: "2px" }}>
+                      <JarvisOrb active={false} size={32} color={color} />
+                    </div>
+                  ) : (
+                    <div style={{ flexShrink: 0, width: "32px", height: "32px", borderRadius: "50%", background: `${color}22`, border: `1px solid ${color}44`, display: "flex", alignItems: "center", justifyContent: "center", marginTop: "2px" }}>
+                      <span style={{ color, fontSize: "0.7rem", fontWeight: 800 }}>{type[0]}</span>
+                    </div>
+                  )}
+                  {/* Bubble */}
+                  <div style={{
+                    maxWidth: "82%",
+                    background: m.role === 'user'
+                      ? `linear-gradient(135deg, ${color}22, rgba(108,63,200,0.15))`
+                      : "rgba(255,255,255,0.04)",
+                    border: `1px solid ${m.role === 'user' ? color + "30" : "rgba(255,255,255,0.07)"}`,
+                    borderRadius: m.role === 'user' ? "18px 18px 4px 18px" : "4px 18px 18px 18px",
+                    padding: "0.85rem 1.1rem",
+                    color: m.role === 'user' ? "#F0EBF8" : "#C4B5FD",
+                    fontSize: "0.88rem", lineHeight: 1.8, whiteSpace: "pre-wrap",
+                  }} dangerouslySetInnerHTML={renderContent(m.content)} />
+                </div>
+              ))}
+
+              {/* Loading indicator */}
+              {loading && (
+                <div style={{ display: "flex", gap: "0.65rem", alignItems: "flex-start", marginBottom: "1.5rem" }}>
+                  <div style={{ flexShrink: 0 }}>
+                    <JarvisOrb active={true} size={32} color={color} />
+                  </div>
+                  <div style={{ padding: "0.85rem 1.1rem", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "4px 18px 18px 18px", display: "flex", gap: "5px", alignItems: "center" }}>
+                    {[0,1,2].map(i => (
+                      <div key={i} style={{ width: "6px", height: "6px", borderRadius: "50%", background: color, opacity: 0.7, animation: `hexPulse 1.2s ease-in-out ${i*0.2}s infinite` }} />
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div ref={bottomRef} />
+            </div>
+          )}
+        </div>
+
+        {/* ── Input bar ── */}
+        <div style={{
+          padding: "0.875rem 1.25rem 1rem",
+          borderTop: "1px solid rgba(255,255,255,0.06)",
+          background: "rgba(8,6,18,0.95)",
+          backdropFilter: "blur(12px)",
+          flexShrink: 0,
+        }}>
+          <div style={{ maxWidth: "760px", margin: "0 auto", display: "flex", gap: "0.625rem", alignItems: "flex-end" }}>
+            <div style={{ flex: 1, position: "relative" }}>
+              <textarea
+                ref={textareaRef}
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }}}
+                placeholder="Pregunta algo sobre tu tipo… (Enter para enviar, Shift+Enter nueva línea)"
+                disabled={loading}
+                rows={1}
+                style={{
+                  width: "100%", background: "rgba(255,255,255,0.04)",
+                  border: `1px solid ${input ? color + "44" : "rgba(255,255,255,0.08)"}`,
+                  borderRadius: "12px", padding: "0.75rem 1rem",
+                  color: "#F0EBF8", fontSize: "0.88rem", outline: "none",
+                  resize: "none", overflow: "hidden", lineHeight: 1.6,
+                  fontFamily: "'Outfit', sans-serif", boxSizing: "border-box",
+                  transition: "border-color 0.15s",
+                  display: "block",
+                }}
+              />
+            </div>
+            <button
+              onClick={() => sendMessage()}
+              disabled={loading || !input.trim()}
+              style={{
+                background: loading || !input.trim() ? "#161220" : `linear-gradient(135deg, ${color}, #6C63FF)`,
+                border: `1px solid ${loading || !input.trim() ? "rgba(255,255,255,0.06)" : color + "55"}`,
+                borderRadius: "10px", padding: "0.75rem 1rem",
+                color: loading || !input.trim() ? "#3D3550" : "#fff",
+                cursor: loading || !input.trim() ? "not-allowed" : "pointer",
+                fontSize: "1.1rem", fontWeight: 700, minWidth: "46px",
+                flexShrink: 0, height: "44px", display: "flex", alignItems: "center", justifyContent: "center",
+                transition: "all 0.15s",
+              }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
+            </button>
+          </div>
+          <div style={{ maxWidth: "760px", margin: "0.4rem auto 0", textAlign: "center" }}>
+            <span style={{ color: "#2A2040", fontSize: "0.67rem" }}>El Advisor usa tu tipo MBTI como contexto · Las respuestas son orientativas</span>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -3395,7 +3632,7 @@ function ResultsScreen({ type: initialType, display: initialDisplay, onRetake, o
           </div>
 
           {tab === "perfil"         && <TabPerfil type={type} display={display} info={info} />}
-          {tab === "advisor"        && <TabAdvisor type={type} typeColor={info.color} initialMessage={advisorInitialMessage} />}
+          {tab === "advisor"        && <TabAdvisor type={type} typeColor={info.color} initialMessage={advisorInitialMessage} onClose={() => setTab(null)} />}
           {tab === "psicologia"     && analysis && <TabPsicologia analysis={analysis} typeColor={info.color} />}
           {tab === "profesional"    && <TabProfesional type={type} typeColor={info.color} />}
           {tab === "vinculos"       && analysis && <TabVinculos analysis={analysis} typeColor={info.color} />}
